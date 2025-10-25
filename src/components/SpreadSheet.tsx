@@ -22,13 +22,32 @@ export type SpreadSheetProps = {
   maxRows?: number;
 };
 
+type ActiveSheetContentProps = {
+  maxColumns: number;
+  maxRows: number;
+};
+
+const ActiveSheetContent = ({ maxColumns, maxRows }: ActiveSheetContentProps): ReactElement | null => {
+  const { activeSheet, handleCellsUpdate } = useSpreadSheetContext();
+
+  if (!activeSheet) {
+    return null;
+  }
+
+  return (
+    <SheetProvider sheet={activeSheet} name={activeSheet.name} id={activeSheet.id} onCellsUpdate={handleCellsUpdate}>
+      <FormulaBar />
+      <Sheet sheet={activeSheet} maxColumns={maxColumns} maxRows={maxRows} />
+    </SheetProvider>
+  );
+};
+
 const SpreadSheetContent = ({
   style,
   maxColumns = SAFE_MAX_COLUMNS,
   maxRows = SAFE_MAX_ROWS,
 }: Omit<SpreadSheetProps, "spreadsheet">): ReactElement => {
-  const { spreadsheet, activeSheetId, activeSheet, tabs, formulaEngine, handleTabChange, handleCellsUpdate } =
-    useSpreadSheetContext();
+  const { spreadsheet, activeSheetId, activeSheet, tabs, formulaEngine, handleTabChange } = useSpreadSheetContext();
 
   return (
     <FormulaEngineProvider engine={formulaEngine}>
@@ -38,12 +57,7 @@ const SpreadSheetContent = ({
         {/* Active sheet content */}
         <div className={styles.sheetContent}>
           <Activity mode={activeSheet ? "visible" : "hidden"}>
-            {activeSheet && (
-              <SheetProvider sheet={activeSheet} name={activeSheet.name} id={activeSheet.id} onCellsUpdate={handleCellsUpdate}>
-                <FormulaBar />
-                <Sheet sheet={activeSheet} maxColumns={maxColumns} maxRows={maxRows} />
-              </SheetProvider>
-            )}
+            <ActiveSheetContent maxColumns={maxColumns} maxRows={maxRows} />
           </Activity>
         </div>
         {/* Sheet tabs */}

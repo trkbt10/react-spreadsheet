@@ -13,6 +13,22 @@ import { createCellTarget, createRangeTarget } from "../../modules/spreadsheet/c
 import { resolveStyle } from "../../modules/spreadsheet/styleResolver";
 import styles from "./FormulaBar.module.css";
 
+type EditingRange = {
+  endCol: number;
+  endRow: number;
+  startCol: number;
+  startRow: number;
+};
+
+const toColumnName = (index: number): string => {
+  if (index < 0) {
+    return "";
+  }
+  const parent = toColumnName(Math.floor(index / 26) - 1);
+  const current = String.fromCharCode(65 + (index % 26));
+  return `${parent}${current}`;
+};
+
 /**
  * Converts column and row indices to A1 notation.
  * @param col - Column index
@@ -20,13 +36,15 @@ import styles from "./FormulaBar.module.css";
  * @returns A1 notation (e.g., "A1", "Z10")
  */
 const getCellReference = (col: number, row: number): string => {
-  let columnName = "";
-  let tempCol = col;
-  while (tempCol >= 0) {
-    columnName = String.fromCharCode(65 + (tempCol % 26)) + columnName;
-    tempCol = Math.floor(tempCol / 26) - 1;
-  }
-  return `${columnName}${row + 1}`;
+  return `${toColumnName(col)}${row + 1}`;
+};
+
+const createRangeUpdates = (range: EditingRange, value: string) => {
+  const rowIndexes = Array.from({ length: range.endRow - range.startRow }, (_, index) => range.startRow + index);
+  return rowIndexes.flatMap((row) => {
+    const colIndexes = Array.from({ length: range.endCol - range.startCol }, (__, index) => range.startCol + index);
+    return colIndexes.map((col) => ({ col, row, value }));
+  });
 };
 
 /**
@@ -37,7 +55,25 @@ export const FormulaBar = (): ReactElement => {
   const { sheet, state, actions, onCellsUpdate } = useSheetContext();
   const { activeCell, editingCell, selectionRange } = state;
   const inputRef = useRef<HTMLInputElement>(null);
-  const formulaEngine = useFormulaEngine();
+  useFormulaEngine();
+
+  const readCellDisplayValue = useCallback(
+    (col: number, row: number): string => {
+      const cellId = `${col}:${row}` as const;
+      const cell = sheet.cells[cellId];
+      if (!cell) {
+        return "";
+      }
+      if (cell.type === "formula" && cell.formula) {
+        return `=${cell.formula}`;
+      }
+      if (cell.value === null || cell.value === undefined) {
+        return "";
+      }
+      return String(cell.value);
+    },
+    [sheet.cells],
+  );
 
   const currentCellStyle = useMemo(() => {
     if (activeCell) {
@@ -50,29 +86,30 @@ export const FormulaBar = (): ReactElement => {
     return cellStyleToToolbarStyle(currentCellStyle);
   }, [currentCellStyle]);
 
-  const cellReference = selectionRange
-    ? `${getCellReference(selectionRange.startCol, selectionRange.startRow)}:${getCellReference(selectionRange.endCol - 1, selectionRange.endRow - 1)}`
-    : activeCell
-      ? getCellReference(activeCell.col, activeCell.row)
-      : "";
+  const cellReference = useMemo(() => {
+    if (selectionRange) {
+      const start = getCellReference(selectionRange.startCol, selectionRange.startRow);
+      const end = getCellReference(selectionRange.endCol - 1, selectionRange.endRow - 1);
+      return `${start}:${end}`;
+    }
+    if (activeCell) {
+      return getCellReference(activeCell.col, activeCell.row);
+    }
+    return "";
+  }, [activeCell, selectionRange]);
 
-  const currentValue = editingCell
-    ? editingCell.value
-    : activeCell
-      ? (() => {
-          const cellId = `${activeCell.col}:${activeCell.row}` as const;
-          const cell = sheet.cells[cellId];
-          if (!cell) {
-            return "";
-          }
-          if (cell.type === "formula" && cell.formula) {
-            return `=${cell.formula}`;
-          }
-          return cell.value === null ? "" : String(cell.value);
-        })()
-      : "";
+  const currentValue = useMemo(() => {
+    if (editingCell) {
+      return editingCell.value;
+    }
+    if (!activeCell) {
+      return "";
+    }
+    return readCellDisplayValue(activeCell.col, activeCell.row);
+  }, [activeCell, editingCell, readCellDisplayValue]);
 
   const isFormula = currentValue.startsWith("=");
+  const displayedReference = cellReference === "" ? "\u00A0" : cellReference;
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -81,78 +118,53 @@ export const FormulaBar = (): ReactElement => {
     [actions],
   );
 
+  const commitEditingValue = useCallback(() => {
+    if (!editingCell || !onCellsUpdate) {
+      return;
+    }
+    const { value } = editingCell;
+    const updates = editingCell.range
+      ? createRangeUpdates(editingCell.range, value)
+      : [{ col: editingCell.col, row: editingCell.row, value }];
+    onCellsUpdate(updates);
+    actions.commitEdit();
+  }, [actions, editingCell, onCellsUpdate]);
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        if (editingCell && onCellsUpdate) {
-          const { value, range } = editingCell;
-          if (range) {
-            // Apply to all cells in range
-            const updates: Array<{ col: number; row: number; value: string }> = [];
-            for (let row = range.startRow; row < range.endRow; row++) {
-              for (let col = range.startCol; col < range.endCol; col++) {
-                updates.push({ col, row, value });
-              }
-            }
-            onCellsUpdate(updates);
-          } else {
-            // Apply to single cell
-            onCellsUpdate([{ col: editingCell.col, row: editingCell.row, value }]);
-          }
-        }
-        actions.commitEdit();
+        commitEditingValue();
         inputRef.current?.blur();
-      } else if (event.key === "Escape") {
+        return;
+      }
+      if (event.key === "Escape") {
         event.preventDefault();
         actions.cancelEdit();
         inputRef.current?.blur();
       }
     },
-    [actions, editingCell, onCellsUpdate],
+    [actions, commitEditingValue],
   );
 
   const handleFocus = useCallback(() => {
-    if (!editingCell) {
-      if (selectionRange) {
-        // Start editing range
-        actions.startEditingRange(selectionRange, "");
-      } else if (activeCell) {
-        // Start editing single cell
-        const cellId = `${activeCell.col}:${activeCell.row}` as const;
-        const cell = sheet.cells[cellId];
-        let initialValue = "";
-        if (cell) {
-          if (cell.type === "formula" && cell.formula) {
-            initialValue = `=${cell.formula}`;
-          } else {
-            initialValue = cell.value === null ? "" : String(cell.value);
-          }
-        }
-        actions.startEditingCell(activeCell.col, activeCell.row, initialValue);
-      }
+    if (editingCell) {
+      return;
     }
-  }, [activeCell, editingCell, selectionRange, sheet.cells, actions]);
+    if (selectionRange) {
+      actions.startEditingRange(selectionRange, "");
+      return;
+    }
+    if (!activeCell) {
+      return;
+    }
+    const initialValue = readCellDisplayValue(activeCell.col, activeCell.row);
+    actions.startEditingCell(activeCell.col, activeCell.row, initialValue);
+  }, [actions, activeCell, editingCell, readCellDisplayValue, selectionRange]);
 
   const handleBlur = useCallback(() => {
-    if (editingCell && onCellsUpdate) {
-      const { value, range } = editingCell;
-      if (range) {
-        // Apply to all cells in range
-        const updates: Array<{ col: number; row: number; value: string }> = [];
-        for (let row = range.startRow; row < range.endRow; row++) {
-          for (let col = range.startCol; col < range.endCol; col++) {
-            updates.push({ col, row, value });
-          }
-        }
-        onCellsUpdate(updates);
-      } else {
-        // Apply to single cell
-        onCellsUpdate([{ col: editingCell.col, row: editingCell.row, value }]);
-      }
-      actions.commitEdit();
-    }
-  }, [editingCell, actions, onCellsUpdate]);
+    commitEditingValue();
+  }, [commitEditingValue]);
 
   useEffect(() => {
     if (editingCell && inputRef.current && document.activeElement !== inputRef.current) {
@@ -193,7 +205,7 @@ export const FormulaBar = (): ReactElement => {
         isDisabled={!activeCell && !selectionRange}
       />
       <div className={styles.formulaBar}>
-        <div className={styles.cellReference}>{cellReference || "\u00A0"}</div>
+        <div className={styles.cellReference}>{displayedReference}</div>
         <div className={styles.inputWrapper}>
           <input
             ref={inputRef}

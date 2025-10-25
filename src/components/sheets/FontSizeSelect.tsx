@@ -4,7 +4,7 @@
 
 import { useCallback, useState } from "react";
 import type { ReactElement } from "react";
-import { Popover } from "./Popover";
+import { Popover } from "../layouts/Popover";
 import styles from "./FontSizeSelect.module.css";
 
 export type FontSizeSelectProps = {

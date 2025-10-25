@@ -4,7 +4,7 @@
 
 import { useCallback, useState, useEffect } from "react";
 import type { ReactElement } from "react";
-import { Popover } from "./Popover";
+import { Popover } from "../layouts/Popover";
 import { ColorMap } from "./ColorMap";
 import { ColorSlider } from "./ColorSlider";
 import { ColorInputFields } from "./ColorInputFields";

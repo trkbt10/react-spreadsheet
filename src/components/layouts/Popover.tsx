@@ -23,7 +23,7 @@ export const Popover = ({ isOpen, onClose, trigger, children, align = "left" }: 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
+    (event: PointerEvent) => {
       if (!containerRef.current) {
         return;
       }
@@ -39,9 +39,9 @@ export const Popover = ({ isOpen, onClose, trigger, children, align = "left" }: 
       return;
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handleClickOutside);
     };
   }, [isOpen, handleClickOutside]);
 
