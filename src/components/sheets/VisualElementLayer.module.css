@@ -6,6 +6,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: calc(var(--z-index-overlay) + 60);
 }
 
 .element {
@@ -17,12 +18,33 @@
   justify-content: center;
   border-radius: var(--radius-lg);
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  cursor: grab;
+  user-select: none;
+  --visual-handle-size: calc(var(--spacing-md) + var(--spacing-2xs));
+  --visual-rotation-distance: calc(var(--visual-handle-size) * 1.6);
+  --visual-rotation-size: calc(var(--visual-handle-size) * 1.1);
 }
 
 .element[data-element-type="image"] {
-  overflow: hidden;
   background-color: var(--color-bg-primary);
   box-shadow: var(--shadow-sm);
+}
+
+.element[data-element-type="graph"] {
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 92%, transparent);
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(4px);
+}
+
+.element[data-focused="true"] {
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--color-border-focus);
+}
+
+.element[data-interaction="move"],
+.element[data-interaction="rotate"] {
+  cursor: grabbing;
 }
 
 .image {
@@ -30,14 +52,130 @@
   height: 100%;
   object-fit: cover;
   user-select: none;
+  border-radius: inherit;
 }
 
-.graph {
-  width: 100%;
-  height: 100%;
-  background-color: color-mix(in srgb, var(--color-bg-secondary) 92%, transparent);
-  border: 1px solid var(--color-border-secondary);
+.handleGroup {
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.handleGroup[data-handle="northwest"] {
+  top: 0;
+  left: 0;
+}
+
+.handleGroup[data-handle="northeast"] {
+  top: 0;
+  right: 0;
+}
+
+.handleGroup[data-handle="southeast"] {
+  bottom: 0;
+  right: 0;
+}
+
+.handleGroup[data-handle="southwest"] {
+  bottom: 0;
+  left: 0;
+}
+
+.resizeHandle,
+.rotationHandle {
+  position: absolute;
+  width: var(--visual-handle-size);
+  height: var(--visual-handle-size);
+  pointer-events: auto;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resizeHandle {
+  background-color: var(--color-bg-accent);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-sm);
+  --resize-transform: translate(-50%, -50%);
+  transform: var(--resize-transform);
+}
+
+.resizeHandle:hover {
+  transform: var(--resize-transform, translate(-50%, -50%)) scale(1.05);
   box-shadow: var(--shadow-sm);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(4px);
+}
+
+.rotationHandle:hover {
+  transform: var(--rotation-transform, translate(-50%, -50%)) scale(1.05);
+  box-shadow: var(--shadow-sm);
+}
+
+.resizeHandle[data-handle="northwest"] {
+  --resize-transform: translate(-50%, -50%);
+  cursor: nwse-resize;
+}
+
+.resizeHandle[data-handle="northeast"] {
+  --resize-transform: translate(50%, -50%);
+  cursor: nesw-resize;
+}
+
+.resizeHandle[data-handle="southeast"] {
+  --resize-transform: translate(50%, 50%);
+  cursor: nwse-resize;
+}
+
+.resizeHandle[data-handle="southwest"] {
+  --resize-transform: translate(-50%, 50%);
+  cursor: nesw-resize;
+}
+
+.rotationHandle {
+  width: var(--visual-rotation-size);
+  height: var(--visual-rotation-size);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-focus);
+  border-radius: 999px;
+  cursor: grab;
+  --rotation-transform: translate(-50%, -50%);
+  transform: var(--rotation-transform);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotationHandle::after {
+  content: "";
+  width: 40%;
+  height: 40%;
+  border-radius: 999px;
+  border: 1px dashed var(--color-border-focus);
+  opacity: 0.7;
+}
+
+.rotationHandle[data-handle="northwest"] {
+  top: calc(-1 * var(--visual-rotation-distance));
+  left: calc(-1 * var(--visual-rotation-distance));
+}
+
+.rotationHandle[data-handle="northeast"] {
+  top: calc(-1 * var(--visual-rotation-distance));
+  left: var(--visual-rotation-distance);
+}
+
+.rotationHandle[data-handle="southeast"] {
+  top: var(--visual-rotation-distance);
+  left: var(--visual-rotation-distance);
+}
+
+.rotationHandle[data-handle="southwest"] {
+  top: var(--visual-rotation-distance);
+  left: calc(-1 * var(--visual-rotation-distance));
+}
+
+.element[data-interaction="rotate"] .rotationHandle {
+  cursor: grabbing;
 }

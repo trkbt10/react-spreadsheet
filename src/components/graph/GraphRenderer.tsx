@@ -24,7 +24,19 @@ export type GraphRendererProps = {
 };
 
 const DEFAULT_MARGIN = { top: 24, right: 24, bottom: 36, left: 48 };
-const COLOR_PALETTE = ["#2563eb", "#d946ef", "#22c55e", "#f97316", "#0ea5e9", "#facc15"];
+const COLOR_PALETTE = [
+  "var(--color-bg-accent)",
+  "var(--color-text-danger)",
+  "var(--color-text-secondary)",
+  "var(--color-border-focus)",
+  "color-mix(in srgb, var(--color-bg-accent) 60%, transparent)",
+  "color-mix(in srgb, var(--color-text-danger) 55%, transparent)",
+];
+
+const AXIS_LINE_COLOR = "var(--color-border-secondary)";
+const GRID_LINE_COLOR = "color-mix(in srgb, var(--color-border-secondary) 65%, transparent)";
+const GLYPH_OUTLINE_COLOR = "var(--color-text-inverse)";
+const GLYPH_BASE_FILL = "var(--color-bg-secondary)";
 
 const getColor = (element: SheetGraphElement, index: number): string => {
   const customColor = element.options?.color;
@@ -66,7 +78,7 @@ const renderColumnChart = (
 
   return (
     <g transform={`translate(${margin.left}, ${margin.top})`}>
-      <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="#94a3b8" strokeWidth={1} />
+      <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke={AXIS_LINE_COLOR} strokeWidth={1} />
       {data.map((point, index) => {
         const x = xScale(point.label);
         if (x === undefined) {
@@ -100,7 +112,7 @@ const renderColumnChart = (
           </g>
         );
       })}
-      <line x1={0} y1={0} x2={0} y2={innerHeight} stroke="#cbd5f5" strokeDasharray="2 4" />
+      <line x1={0} y1={0} x2={0} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="2 4" />
     </g>
   );
 };
@@ -129,7 +141,7 @@ const renderBarChart = (
 
   return (
     <g transform={`translate(${margin.left}, ${margin.top})`}>
-      <line x1={0} y1={0} x2={0} y2={innerHeight} stroke="#94a3b8" strokeWidth={1} />
+      <line x1={0} y1={0} x2={0} y2={innerHeight} stroke={AXIS_LINE_COLOR} strokeWidth={1} />
       {data.map((point, index) => {
         const y = yScale(point.label);
         if (y === undefined) {
@@ -187,7 +199,7 @@ const renderLineChart = (
 
   return (
     <g transform={`translate(${margin.left}, ${margin.top})`}>
-      <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="#cbd5f5" strokeDasharray="4 6" />
+      <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="4 6" />
       <LinePath
         data={data}
         x={(point) => {
@@ -206,7 +218,7 @@ const renderLineChart = (
         }
         return (
           <g key={`${point.label}-${index}`}>
-            <GlyphCircle left={x} top={y} size={70} stroke="#ffffff" strokeWidth={2} fill={color} />
+            <GlyphCircle left={x} top={y} size={70} stroke={GLYPH_OUTLINE_COLOR} strokeWidth={2} fill={color} />
             <text className={styles.valueLabel} textAnchor="middle" x={x} y={y - 10}>
               {point.value}
             </text>
@@ -267,7 +279,7 @@ const renderAreaChart = (
         }
         return (
           <g key={`${point.label}-${index}`}>
-            <GlyphCircle left={x} top={y} size={60} stroke="#1e293b" strokeWidth={1} fill="#fff" />
+            <GlyphCircle left={x} top={y} size={60} stroke={AXIS_LINE_COLOR} strokeWidth={1} fill={GLYPH_BASE_FILL} />
             <text className={styles.valueLabel} textAnchor="middle" x={x} y={y - 10}>
               {point.value}
             </text>
@@ -306,14 +318,14 @@ const renderScatterChart = (
 
   return (
     <g transform={`translate(${margin.left}, ${margin.top})`}>
-      <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke="#cbd5f5" strokeDasharray="4 6" />
-      <line x1={0} y1={0} x2={0} y2={innerHeight} stroke="#cbd5f5" strokeDasharray="4 6" />
+      <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="4 6" />
+      <line x1={0} y1={0} x2={0} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="4 6" />
       {data.map((point, index) => {
         const x = xScale(index);
         const y = yScale(point.value);
         return (
           <g key={`${point.label}-${index}`}>
-            <GlyphCircle left={x} top={y} size={80} stroke="#f8fafc" strokeWidth={2} fill={color} />
+            <GlyphCircle left={x} top={y} size={80} stroke={GLYPH_OUTLINE_COLOR} strokeWidth={2} fill={color} />
             <text className={styles.valueLabel} textAnchor="middle" x={x} y={y - 10}>
               {point.value}
             </text>
@@ -359,7 +371,7 @@ const renderPieChart = (
             const [centroidX, centroidY] = pie.path.centroid(arc);
             return (
               <g key={arc.data.label}>
-                <path d={arcPath} fill={colorScale(arc.data.label)} stroke="#ffffff" strokeWidth={1} />
+                <path d={arcPath} fill={colorScale(arc.data.label)} stroke={GLYPH_OUTLINE_COLOR} strokeWidth={1} />
                 <text className={styles.valueLabel} x={centroidX} y={centroidY} textAnchor="middle">
                   {arc.data.value}
                 </text>
@@ -436,3 +448,6 @@ export const GraphRenderer = ({ element, data, title }: GraphRendererProps): Rea
     </div>
   );
 };
+
+// Debug notes:
+// - Reviewed src/global.css to source color and spacing tokens for chart styling.

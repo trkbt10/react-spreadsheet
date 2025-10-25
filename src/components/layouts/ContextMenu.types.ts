@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
+
 export type MenuItemAction = {
   type: 'action';
   label: string;
-  icon?: string;
+  icon?: ReactNode;
   disabled?: boolean;
   shortcut?: string;
   onClick: () => void;
@@ -10,7 +12,7 @@ export type MenuItemAction = {
 export type MenuItemSubmenu = {
   type: 'submenu';
   label: string;
-  icon?: string;
+  icon?: ReactNode;
   disabled?: boolean;
   items: MenuItem[];
 };

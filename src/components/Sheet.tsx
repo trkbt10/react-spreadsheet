@@ -301,8 +301,8 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
         maxRows={maxRows}
       />
       <CellRenderer />
-      <VisualElementLayer sheet={sheet} viewport={viewportRect} />
       <SelectionHighlight headerColumnWidth={HEADER_COLUMN_WIDTH} headerRowHeight={HEADER_ROW_HEIGHT} />
+      <VisualElementLayer sheet={sheet} viewport={viewportRect} />
       <CellEditor />
     </div>
   );
