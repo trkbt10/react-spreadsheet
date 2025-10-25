@@ -9,7 +9,7 @@ import { App } from "./App";
 import { Catalog } from "./Catalog";
 import { DependencyGraphShowcase } from "./showcase/DependencyGraphShowcase";
 import "./global.css";
-
+import "./themes/adobe-light.css";
 const container = document.getElementById("root");
 
 if (!container) {

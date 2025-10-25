@@ -1,38 +1,33 @@
 /**
- * @file Global design tokens for spreadsheet application.
- * Default theme: Adobe-style dark UI.
- *
- * To change themes, import a different theme file from src/themes/ instead of this file.
- * Available themes:
- * - src/themes/adobe.css (default, dark)
- * - src/themes/adobe-light.css (light)
- * - src/themes/windows98.css (retro)
+ * @file Adobe Light theme for spreadsheet application.
+ * Professional light UI inspired by Adobe Creative Cloud applications.
+ * Import this file to apply the Adobe Light theme.
  */
 
 :root {
-  /* Palette - Adobe Dark Theme */
-  --color-bg-primary: #2c2c2c;
-  --color-bg-secondary: #1e1e1e;
-  --color-bg-hover: #3a3a3a;
-  --color-bg-selected: #094771;
+  /* Palette - Adobe Light Theme */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafafa;
+  --color-bg-hover: #f5f5f5;
+  --color-bg-selected: #e7f4ff;
   --color-bg-accent: #1473e6;
   --color-bg-accent-hover: #0d66d0;
   --color-bg-accent-disabled: rgba(20, 115, 230, 0.3);
 
-  --color-border-primary: #4a4a4a;
-  --color-border-secondary: #3a3a3a;
+  --color-border-primary: #d5d5d5;
+  --color-border-secondary: #e8e8e8;
   --color-border-focus: #1473e6;
-  --color-border-strong: #6a6a6a;
+  --color-border-strong: #ababab;
 
-  --color-text-primary: #f5f5f5;
-  --color-text-secondary: #b8b8b8;
-  --color-text-muted: #8a8a8a;
-  --color-text-inverse: #1e1e1e;
+  --color-text-primary: #2c2c2c;
+  --color-text-secondary: #6e6e6e;
+  --color-text-muted: #959595;
+  --color-text-inverse: #ffffff;
   --color-text-on-accent: #ffffff;
-  --color-text-danger: #e34850;
+  --color-text-danger: #d7373f;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 3px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
 
   /* Spacing */
   --spacing-2xs: 2px;
@@ -67,9 +62,9 @@
   --cell-height: 24px;
   --cell-padding: var(--spacing-xs);
 
-  /* Sheet dimensions (Excel-like limits) */
-  --sheet-max-columns: 9007199254740991; /* Number.MAX_SAFE_INTEGER */
-  --sheet-max-rows: 9007199254740991; /* Number.MAX_SAFE_INTEGER */
+  /* Sheet dimensions */
+  --sheet-max-columns: 9007199254740991;
+  --sheet-max-rows: 9007199254740991;
 
   /* Header dimensions */
   --header-row-height: 24px;
@@ -78,23 +73,23 @@
   --header-corner-height: 24px;
 
   /* Header colors */
-  --header-bg: #323232;
-  --header-bg-hover: #3f3f3f;
-  --header-bg-active: #094771;
-  --header-border: #4a4a4a;
+  --header-bg: #fafafa;
+  --header-bg-hover: #f0f0f0;
+  --header-bg-active: #e7f4ff;
+  --header-border: #e8e8e8;
   --header-text: var(--color-text-primary);
 
   /* Toolbar */
-  --toolbar-bg: #323232;
-  --toolbar-border: #1e1e1e;
+  --toolbar-bg: #fafafa;
+  --toolbar-border: #e8e8e8;
   --toolbar-button-size: 32px;
   --toolbar-button-bg: transparent;
-  --toolbar-button-bg-hover: #3a3a3a;
-  --toolbar-button-bg-active: #4a4a4a;
+  --toolbar-button-bg-hover: #f0f0f0;
+  --toolbar-button-bg-active: #e8e8e8;
   --toolbar-button-border: transparent;
-  --toolbar-button-border-hover: #4a4a4a;
+  --toolbar-button-border-hover: #d5d5d5;
   --toolbar-button-disabled-opacity: 0.4;
-  --toolbar-text-secondary: #b8b8b8;
+  --toolbar-text-secondary: #6e6e6e;
 
   /* Borders */
   --border-width: 1px;
@@ -110,9 +105,9 @@
   --control-border-hover: 1px solid var(--color-border-primary);
   --control-border-focus: 1px solid var(--color-border-focus);
   --control-shadow-focus: 0 0 0 2px rgba(20, 115, 230, 0.25);
-  --control-background: #2c2c2c;
-  --control-background-disabled: #252525;
-  --control-text-placeholder: #6a6a6a;
+  --control-background: #ffffff;
+  --control-background-disabled: #f0f0f0;
+  --control-text-placeholder: #9a9a9a;
 
   /* Z-index */
   --z-index-cell: 1;
@@ -125,20 +120,7 @@
 
   /* Scrollbar */
   --scrollbar-width: 12px;
-  --scrollbar-track-color: #252525;
-  --scrollbar-thumb-color: #4a4a4a;
-  --scrollbar-thumb-hover-color: #5a5a5a;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-secondary);
+  --scrollbar-track-color: #fafafa;
+  --scrollbar-thumb-color: #d5d5d5;
+  --scrollbar-thumb-hover-color: #ababab;
 }

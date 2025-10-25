@@ -47,7 +47,6 @@ export const SheetProvider = ({ sheet, name, id, children, onCellsUpdate: extern
   // TODO: Implement actual cell update logic here
   // For now, just log the updates
   const handleCellsUpdate = useCallback((updates: Array<{ col: number; row: number; value: string }>) => {
-    console.log("Cell updates:", updates);
     if (externalOnCellsUpdate) {
       externalOnCellsUpdate(updates);
     }

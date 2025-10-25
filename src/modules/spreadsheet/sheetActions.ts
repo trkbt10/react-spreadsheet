@@ -49,4 +49,8 @@ export const sheetActions = {
     (col: number, row: number) => ({ col, row }),
   ),
   clearActiveCell: createAction("sheet/clearActiveCell"),
+  extendSelectionToCell: createAction(
+    "sheet/extendSelectionToCell",
+    (col: number, row: number) => ({ col, row }),
+  ),
 } as const;

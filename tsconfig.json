@@ -16,7 +16,7 @@
     "allowImportingTsExtensions": true,
     "declaration": true,
     "outDir": "dist",
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals", "bun-types"]
   },
   "include": ["src/**/*", "spec/**/*"]
 }

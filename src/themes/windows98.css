@@ -1,0 +1,129 @@
+/**
+ * @file Windows 98 theme for spreadsheet application.
+ * Classic retro desktop styling inspired by Windows 98.
+ * Import this file to apply the Windows 98 theme.
+ */
+
+:root {
+  /* Palette - Windows 98 Classic */
+  --color-bg-primary: #c0c0c0;
+  --color-bg-secondary: #c0c0c0;
+  --color-bg-hover: #d4d0c8;
+  --color-bg-selected: #000080;
+  --color-bg-accent: #000080;
+  --color-bg-accent-hover: #0000a0;
+  --color-bg-accent-disabled: rgba(0, 0, 128, 0.5);
+
+  --color-border-primary: #808080;
+  --color-border-secondary: #c0c0c0;
+  --color-border-focus: #000080;
+  --color-border-strong: #000000;
+
+  --color-text-primary: #000000;
+  --color-text-secondary: #000000;
+  --color-text-muted: #808080;
+  --color-text-inverse: #ffffff;
+  --color-text-on-accent: #ffffff;
+  --color-text-danger: #ff0000;
+
+  /* Windows 98 3D borders */
+  --shadow-xs: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff;
+  --shadow-sm: inset -2px -2px 0 #000000, inset 2px 2px 0 #ffffff;
+  --shadow-raised: inset -1px -1px 0 #000000, inset 1px 1px 0 #dfdfdf, inset -2px -2px 0 #808080, inset 2px 2px 0 #ffffff;
+  --shadow-sunken: inset 1px 1px 0 #000000, inset -1px -1px 0 #dfdfdf, inset 2px 2px 0 #808080, inset -2px -2px 0 #ffffff;
+
+  /* Spacing */
+  --spacing-2xs: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Radius - Windows 98 has no rounded corners */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  /* Typography */
+  --font-family-base: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
+  --font-family-mono: "Courier New", Courier, monospace;
+
+  --font-size-xs: 11px;
+  --font-size-sm: 11px;
+  --font-size-base: 11px;
+  --font-size-lg: 12px;
+  --font-size-xl: 13px;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 700;
+  --font-weight-semibold: 700;
+  --font-weight-bold: 700;
+
+  /* Cell dimensions */
+  --cell-width: 100px;
+  --cell-height: 24px;
+  --cell-padding: var(--spacing-xs);
+
+  /* Sheet dimensions */
+  --sheet-max-columns: 9007199254740991;
+  --sheet-max-rows: 9007199254740991;
+
+  /* Header dimensions */
+  --header-row-height: 24px;
+  --header-column-width: 48px;
+  --header-corner-width: 48px;
+  --header-corner-height: 24px;
+
+  /* Header colors */
+  --header-bg: #c0c0c0;
+  --header-bg-hover: #d4d0c8;
+  --header-bg-active: #000080;
+  --header-border: #808080;
+  --header-text: var(--color-text-primary);
+
+  /* Toolbar */
+  --toolbar-bg: #c0c0c0;
+  --toolbar-border: #808080;
+  --toolbar-button-size: 32px;
+  --toolbar-button-bg: #c0c0c0;
+  --toolbar-button-bg-hover: #d4d0c8;
+  --toolbar-button-bg-active: #808080;
+  --toolbar-button-border: #808080;
+  --toolbar-button-border-hover: #000000;
+  --toolbar-button-disabled-opacity: 0.5;
+  --toolbar-text-secondary: #000000;
+
+  /* Borders */
+  --border-width: 1px;
+  --border-style: solid;
+
+  /* Form controls */
+  --control-height: 24px;
+  --control-padding-x: 4px;
+  --control-padding-y: 2px;
+  --control-gap: var(--spacing-xs);
+  --control-radius: 0px;
+  --control-border: 1px solid #808080;
+  --control-border-hover: 1px solid #000000;
+  --control-border-focus: 1px solid #000080;
+  --control-shadow-focus: none;
+  --control-background: #ffffff;
+  --control-background-disabled: #c0c0c0;
+  --control-text-placeholder: #808080;
+
+  /* Z-index */
+  --z-index-cell: 1;
+  --z-index-header: 10;
+  --z-index-overlay: 100;
+
+  /* Transitions - Windows 98 had no transitions */
+  --transition-fast: 0ms;
+  --transition-base: 0ms;
+
+  /* Scrollbar */
+  --scrollbar-width: 16px;
+  --scrollbar-track-color: #c0c0c0;
+  --scrollbar-thumb-color: #c0c0c0;
+  --scrollbar-thumb-hover-color: #d4d0c8;
+}

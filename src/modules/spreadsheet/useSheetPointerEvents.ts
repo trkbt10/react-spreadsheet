@@ -166,6 +166,14 @@ export const useSheetPointerEvents = ({
               : "";
 
             actions.startEditingCell(cell.col, cell.row, initialValue);
+          } else if (event.shiftKey) {
+            // Shift+click - extend selection
+            if (clickTimeoutRef.current !== null) {
+              window.clearTimeout(clickTimeoutRef.current);
+              clickTimeoutRef.current = null;
+            }
+
+            actions.extendSelectionToCell(cell.col, cell.row);
           } else {
             // Single click - set active cell after delay
             if (clickTimeoutRef.current !== null) {

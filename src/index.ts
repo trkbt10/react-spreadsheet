@@ -20,7 +20,21 @@ export type { SheetContextValue, SheetProviderProps } from "./modules/spreadshee
 export { SpreadSheetProvider, useSpreadSheetContext } from "./modules/spreadsheet/SpreadSheetContext";
 export type { SpreadSheetContextValue, SpreadSheetProviderProps } from "./modules/spreadsheet/SpreadSheetContext";
 export { sheetActions } from "./modules/spreadsheet/sheetActions";
-export type { SheetState, SheetAction, SelectionRange } from "./modules/spreadsheet/sheetReducer";
+export type {
+  SheetState,
+  SheetAction,
+  SelectionRange,
+  SelectionTarget,
+  CellSelectionTarget,
+  RangeSelectionTarget,
+  EditingSelection,
+} from "./modules/spreadsheet/sheetReducer";
+export { rangeToSelectionTarget, selectionToRange } from "./modules/spreadsheet/sheetReducer";
+export {
+  createUpdatesFromRange,
+  createUpdatesFromSelection,
+  getSelectionAnchor,
+} from "./modules/spreadsheet/selectionUtils";
 export { useSheetPointerEvents } from "./modules/spreadsheet/useSheetPointerEvents";
 export type { UseSheetPointerEventsParams, UseSheetPointerEventsReturn } from "./modules/spreadsheet/useSheetPointerEvents";
 export type { CellPosition, GridRange, ColumnSizeMap, RowSizeMap } from "./modules/spreadsheet/gridLayout";

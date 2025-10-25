@@ -7,6 +7,8 @@ import type { ReactElement } from "react";
 import { useVirtualScrollContext } from "../scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
 import { calculateSelectionRange, calculateColumnPosition, calculateRowPosition, findColumnAtPosition, findRowAtPosition, SAFE_MAX_COLUMNS, SAFE_MAX_ROWS } from "../../modules/spreadsheet/gridLayout";
+import { getSelectionAnchor } from "../../modules/spreadsheet/selectionUtils";
+import { selectionToRange } from "../../modules/spreadsheet/sheetReducer";
 import styles from "./SelectionHighlight.module.css";
 
 export type SelectionHighlightProps = {
@@ -22,7 +24,10 @@ export type SelectionHighlightProps = {
 export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight }: SelectionHighlightProps): ReactElement => {
   const { viewportRect } = useVirtualScrollContext();
   const { state } = useSheetContext();
-  const { selectionRect, selectionRange, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, activeCell, editingCell, isDragging } = state;
+  const { selectionRect, selection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, editingSelection, isDragging } = state;
+
+  const selectionRange = selection ? selectionToRange(selection) : null;
+  const selectionAnchor = selection ? getSelectionAnchor(selection) : null;
 
   const draggingRange = useMemo(() => {
     if (!isDragging || !selectionRect) {
@@ -76,7 +81,7 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight }: Selec
 
   // Calculate visible cells in selection range
   const rangeCells = useMemo(() => {
-    if (!selectionRange || editingCell) {
+    if (!selectionRange || editingSelection) {
       return [];
     }
 
@@ -112,15 +117,15 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight }: Selec
     }
 
     return cells;
-  }, [selectionRange, editingCell, viewportRect, defaultCellWidth, defaultCellHeight, columnSizes, rowSizes, headerColumnWidth, headerRowHeight]);
+  }, [selectionRange, editingSelection, viewportRect, defaultCellWidth, defaultCellHeight, columnSizes, rowSizes, headerColumnWidth, headerRowHeight]);
 
   // Calculate active cell position
   const activeCellRect = useMemo(() => {
-    if (!activeCell || editingCell) {
+    if (!selectionAnchor || editingSelection) {
       return null;
     }
 
-    const { col, row } = activeCell;
+    const { col, row } = selectionAnchor;
     const x = calculateColumnPosition(col, defaultCellWidth, columnSizes);
     const y = calculateRowPosition(row, defaultCellHeight, rowSizes);
 
@@ -143,7 +148,7 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight }: Selec
     }
 
     return { x: relativeX, y: relativeY, width, height };
-  }, [activeCell, editingCell, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, viewportRect, headerColumnWidth, headerRowHeight, svgWidth, svgHeight]);
+  }, [selectionAnchor, editingSelection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, viewportRect, headerColumnWidth, headerRowHeight, svgWidth, svgHeight]);
 
   // Calculate cells for dragging range
   const draggingCells = useMemo(() => {

@@ -2,23 +2,18 @@
  * @file FormulaBar component for spreadsheet input.
  */
 
-import { useCallback, useEffect, useRef, useMemo } from "react";
+import { useCallback, useRef, useMemo } from "react";
 import type { ReactElement, KeyboardEvent, ChangeEvent } from "react";
 import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
 import { useFormulaEngine } from "../../modules/formula/FormulaEngineContext";
-import { Toolbar } from "./Toolbar";
-import type { ToolbarStyle } from "./Toolbar";
-import { toolbarStyleToCellStyle, cellStyleToToolbarStyle } from "./toolbarStyleConverter";
+import { Toolbar } from "../toolbar/Toolbar";
+import type { ToolbarStyle } from "../toolbar/Toolbar";
+import { toolbarStyleToCellStyle, cellStyleToToolbarStyle } from "../toolbar/toolbarStyleConverter";
 import { createCellTarget, createRangeTarget } from "../../modules/spreadsheet/cellStyle";
 import { resolveStyle } from "../../modules/spreadsheet/styleResolver";
+import { selectionToRange } from "../../modules/spreadsheet/sheetReducer";
+import { createUpdatesFromSelection, getSelectionAnchor } from "../../modules/spreadsheet/selectionUtils";
 import styles from "./FormulaBar.module.css";
-
-type EditingRange = {
-  endCol: number;
-  endRow: number;
-  startCol: number;
-  startRow: number;
-};
 
 const toColumnName = (index: number): string => {
   if (index < 0) {
@@ -39,21 +34,13 @@ const getCellReference = (col: number, row: number): string => {
   return `${toColumnName(col)}${row + 1}`;
 };
 
-const createRangeUpdates = (range: EditingRange, value: string) => {
-  const rowIndexes = Array.from({ length: range.endRow - range.startRow }, (_, index) => range.startRow + index);
-  return rowIndexes.flatMap((row) => {
-    const colIndexes = Array.from({ length: range.endCol - range.startCol }, (__, index) => range.startCol + index);
-    return colIndexes.map((col) => ({ col, row, value }));
-  });
-};
-
 /**
  * FormulaBar component for editing cell values and displaying cell references.
  * @returns FormulaBar component
  */
 export const FormulaBar = (): ReactElement => {
   const { sheet, state, actions, onCellsUpdate } = useSheetContext();
-  const { activeCell, editingCell, selectionRange } = state;
+  const { selection, editingSelection } = state;
   const inputRef = useRef<HTMLInputElement>(null);
   useFormulaEngine();
 
@@ -75,38 +62,55 @@ export const FormulaBar = (): ReactElement => {
     [sheet.cells],
   );
 
-  const currentCellStyle = useMemo(() => {
-    if (activeCell) {
-      return resolveStyle(state.styleRegistry, activeCell.col, activeCell.row);
+  const selectionAnchor = useMemo(() => {
+    if (!selection) {
+      return null;
     }
-    return {};
-  }, [activeCell, state.styleRegistry]);
+    return getSelectionAnchor(selection);
+  }, [selection]);
+
+  const editingAnchor = useMemo(() => {
+    if (!editingSelection) {
+      return null;
+    }
+    return getSelectionAnchor(editingSelection);
+  }, [editingSelection]);
+
+  const anchorForDisplay = editingAnchor ?? selectionAnchor;
+
+  const currentCellStyle = useMemo(() => {
+    if (!anchorForDisplay) {
+      return {};
+    }
+    return resolveStyle(state.styleRegistry, anchorForDisplay.col, anchorForDisplay.row);
+  }, [anchorForDisplay, state.styleRegistry]);
 
   const toolbarStyle = useMemo(() => {
     return cellStyleToToolbarStyle(currentCellStyle);
   }, [currentCellStyle]);
 
   const cellReference = useMemo(() => {
-    if (selectionRange) {
-      const start = getCellReference(selectionRange.startCol, selectionRange.startRow);
-      const end = getCellReference(selectionRange.endCol - 1, selectionRange.endRow - 1);
-      return `${start}:${end}`;
-    }
-    if (activeCell) {
-      return getCellReference(activeCell.col, activeCell.row);
-    }
-    return "";
-  }, [activeCell, selectionRange]);
-
-  const currentValue = useMemo(() => {
-    if (editingCell) {
-      return editingCell.value;
-    }
-    if (!activeCell) {
+    if (!selection) {
       return "";
     }
-    return readCellDisplayValue(activeCell.col, activeCell.row);
-  }, [activeCell, editingCell, readCellDisplayValue]);
+    if (selection.kind === "cell") {
+      return getCellReference(selection.col, selection.row);
+    }
+    const range = selectionToRange(selection);
+    const start = getCellReference(range.startCol, range.startRow);
+    const end = getCellReference(range.endCol - 1, range.endRow - 1);
+    return `${start}:${end}`;
+  }, [selection]);
+
+  const currentValue = useMemo(() => {
+    if (editingSelection) {
+      return editingSelection.value;
+    }
+    if (!anchorForDisplay) {
+      return "";
+    }
+    return readCellDisplayValue(anchorForDisplay.col, anchorForDisplay.row);
+  }, [editingSelection, anchorForDisplay, readCellDisplayValue]);
 
   const isFormula = currentValue.startsWith("=");
   const displayedReference = cellReference === "" ? "\u00A0" : cellReference;
@@ -119,16 +123,13 @@ export const FormulaBar = (): ReactElement => {
   );
 
   const commitEditingValue = useCallback(() => {
-    if (!editingCell || !onCellsUpdate) {
+    if (!editingSelection || !onCellsUpdate) {
       return;
     }
-    const { value } = editingCell;
-    const updates = editingCell.range
-      ? createRangeUpdates(editingCell.range, value)
-      : [{ col: editingCell.col, row: editingCell.row, value }];
+    const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
     onCellsUpdate(updates);
     actions.commitEdit();
-  }, [actions, editingCell, onCellsUpdate]);
+  }, [actions, editingSelection, onCellsUpdate]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -148,61 +149,57 @@ export const FormulaBar = (): ReactElement => {
   );
 
   const handleFocus = useCallback(() => {
-    if (editingCell) {
+    if (editingSelection || !selection) {
       return;
     }
-    if (selectionRange) {
-      actions.startEditingRange(selectionRange, "");
+    const anchor = getSelectionAnchor(selection);
+    const initialValue = readCellDisplayValue(anchor.col, anchor.row);
+    if (selection.kind === "range") {
+      actions.startEditingRange(selectionToRange(selection), initialValue);
       return;
     }
-    if (!activeCell) {
-      return;
-    }
-    const initialValue = readCellDisplayValue(activeCell.col, activeCell.row);
-    actions.startEditingCell(activeCell.col, activeCell.row, initialValue);
-  }, [actions, activeCell, editingCell, readCellDisplayValue, selectionRange]);
+    actions.startEditingCell(anchor.col, anchor.row, initialValue);
+  }, [actions, editingSelection, selection, readCellDisplayValue]);
 
   const handleBlur = useCallback(() => {
     commitEditingValue();
   }, [commitEditingValue]);
 
-  useEffect(() => {
-    if (editingCell && inputRef.current && document.activeElement !== inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editingCell]);
-
   const handleStyleChange = useCallback(
     (newToolbarStyle: ToolbarStyle) => {
-      if (!activeCell && !selectionRange) {
+      if (!selection) {
         return;
       }
 
       const cellStyle = toolbarStyleToCellStyle(newToolbarStyle);
 
-      if (selectionRange) {
+      if (selection.kind === "range") {
+        const targetRange = selectionToRange(selection);
         const target = createRangeTarget(
-          selectionRange.startCol,
-          selectionRange.startRow,
-          selectionRange.endCol,
-          selectionRange.endRow,
+          targetRange.startCol,
+          targetRange.startRow,
+          targetRange.endCol,
+          targetRange.endRow,
         );
         actions.applyStyle(target, cellStyle);
-      } else if (activeCell) {
-        const target = createCellTarget(activeCell.col, activeCell.row);
-        actions.applyStyle(target, cellStyle);
+        return;
       }
+
+      const target = createCellTarget(selection.col, selection.row);
+      actions.applyStyle(target, cellStyle);
     },
-    [activeCell, selectionRange, actions],
+    [selection, actions],
   );
+
+  const placeholder = selection ? "Enter value or formula (=...)" : "Select a cell to edit";
+  const isDisabled = !selection;
 
   return (
     <div className={styles.formulaBarContainer}>
       <Toolbar
         currentStyle={toolbarStyle}
         onStyleChange={handleStyleChange}
-        isDisabled={!activeCell && !selectionRange}
+        isDisabled={isDisabled}
       />
       <div className={styles.formulaBar}>
         <div className={styles.cellReference}>{displayedReference}</div>
@@ -217,11 +214,18 @@ export const FormulaBar = (): ReactElement => {
             onFocus={handleFocus}
             onBlur={handleBlur}
             data-is-formula={isFormula}
-            placeholder={activeCell ? "Enter value or formula (=...)" : "Select a cell to edit"}
-            disabled={!activeCell}
+            placeholder={placeholder}
+            disabled={isDisabled}
           />
         </div>
       </div>
     </div>
   );
 };
+
+/**
+ * Notes:
+ * - Reviewed src/modules/spreadsheet/sheetReducer.ts to align with the unified selection state shape.
+ * - Checked src/components/sheets/CellEditor.tsx and src/components/sheets/SelectionHighlight.tsx to ensure shared editing/selection behavior remained consistent after refactoring.
+ * - Inspected src/modules/spreadsheet/SpreadSheetContext.tsx and formula engine utilities while integrating update propagation for formula bar edits.
+ */

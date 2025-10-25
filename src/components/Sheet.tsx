@@ -29,6 +29,7 @@ import { CellEditor } from "./sheets/CellEditor";
 import styles from "./Sheet.module.css";
 import { GridLines } from "./GridLines";
 import { resolveStyle } from "../modules/spreadsheet/styleResolver";
+import { VisualElementLayer } from "./sheets/VisualElementLayer";
 
 export type SheetProps = {
   sheet?: SheetType;
@@ -300,6 +301,7 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
         maxRows={maxRows}
       />
       <CellRenderer />
+      <VisualElementLayer sheet={sheet} viewport={viewportRect} />
       <SelectionHighlight headerColumnWidth={HEADER_COLUMN_WIDTH} headerRowHeight={HEADER_ROW_HEIGHT} />
       <CellEditor />
     </div>

@@ -5,9 +5,9 @@
 import { useCallback, useState, useEffect } from "react";
 import type { ReactElement } from "react";
 import { Popover } from "../layouts/Popover";
-import { ColorMap } from "./ColorMap";
-import { ColorSlider } from "./ColorSlider";
-import { ColorInputFields } from "./ColorInputFields";
+import { ColorMap } from "../inputs/ColorMap";
+import { ColorSlider } from "../inputs/ColorSlider";
+import { ColorInputFields } from "../inputs/ColorInputFields";
 import { hexToRgb, hexToHsl, rgbToHex, hslToRgb } from "../../utils/colorConversion";
 import type { RGBColor, HSLColor } from "../../utils/colorConversion";
 import styles from "./ColorPicker.module.css";

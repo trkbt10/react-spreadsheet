@@ -4,14 +4,14 @@
 
 .gridLines {
   position: absolute;
-  top: 24px;
-  left: 48px;
+  top: var(--header-row-height);
+  left: var(--header-column-width);
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-index-cell);
 }
 
 .gridLine {
-  stroke: #e0e0e0;
-  stroke-width: 1;
+  stroke: var(--color-border-secondary);
+  stroke-width: var(--border-width);
   shape-rendering: crispEdges;
 }

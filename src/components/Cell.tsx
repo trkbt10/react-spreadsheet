@@ -8,6 +8,7 @@ import type { CellStyle } from "../modules/spreadsheet/cellStyle";
 import { useFormulaEngine } from "../modules/formula/FormulaEngineContext";
 import { resolveStyle } from "../modules/spreadsheet/styleResolver";
 import { useSheetContext } from "../modules/spreadsheet/SheetContext";
+import { getSelectionAnchor } from "../modules/spreadsheet/selectionUtils";
 import styles from "./Cell.module.css";
 
 export type CellProps = {
@@ -54,7 +55,7 @@ const resolveCellDisplayValue = (
  */
 export const Cell = ({ cell, col, row, style, selected = false }: CellProps): ReactElement => {
   const { sheet, state } = useSheetContext();
-  const { styleRegistry, activeCell, editingCell } = state;
+  const { styleRegistry, selection, editingSelection } = state;
   const formulaEngine = useFormulaEngine();
 
   const displayValue = resolveCellDisplayValue(cell, sheet.id, col, row, formulaEngine);
@@ -62,8 +63,11 @@ export const Cell = ({ cell, col, row, style, selected = false }: CellProps): Re
   const isEmpty = !cell;
   const cellId = cell?.id ?? null;
 
-  const isActive = activeCell?.col === col && activeCell?.row === row;
-  const isEditing = editingCell?.col === col && editingCell?.row === row;
+  const selectionAnchor = selection ? getSelectionAnchor(selection) : null;
+  const editingAnchor = editingSelection ? getSelectionAnchor(editingSelection) : null;
+
+  const isActive = selectionAnchor?.col === col && selectionAnchor?.row === row;
+  const isEditing = editingAnchor?.col === col && editingAnchor?.row === row;
 
   // Resolve style for this cell
   const cellStyle: CellStyle = resolveStyle(styleRegistry, col, row);

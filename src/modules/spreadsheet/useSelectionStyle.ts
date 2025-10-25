@@ -7,6 +7,7 @@ import { useSheetContext } from "./SheetContext";
 import { useSheetStyles } from "./useSheetStyles";
 import type { CellStyle } from "./cellStyle";
 import { calculateSelectionRange, SAFE_MAX_COLUMNS, SAFE_MAX_ROWS } from "./gridLayout";
+import { selectionToRange } from "./sheetReducer";
 
 /**
  * Selection type for styling.
@@ -26,7 +27,8 @@ export const useSelectionStyle = () => {
     applyRangeStyle,
   } = useSheetStyles();
 
-  const { selectionRect, selectionRange, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
+  const { selectionRect, selection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
+  const selectionRange = selection ? selectionToRange(selection) : null;
 
   /**
    * Get the current selection type.

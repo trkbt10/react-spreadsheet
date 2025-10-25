@@ -1,12 +1,7 @@
 /**
- * @file Global design tokens for spreadsheet application.
- * Default theme: Adobe-style dark UI.
- *
- * To change themes, import a different theme file from src/themes/ instead of this file.
- * Available themes:
- * - src/themes/adobe.css (default, dark)
- * - src/themes/adobe-light.css (light)
- * - src/themes/windows98.css (retro)
+ * @file Adobe-style theme for spreadsheet application.
+ * Professional dark UI inspired by Adobe Creative Cloud applications.
+ * Import this file to apply the Adobe theme.
  */
 
 :root {
@@ -67,9 +62,9 @@
   --cell-height: 24px;
   --cell-padding: var(--spacing-xs);
 
-  /* Sheet dimensions (Excel-like limits) */
-  --sheet-max-columns: 9007199254740991; /* Number.MAX_SAFE_INTEGER */
-  --sheet-max-rows: 9007199254740991; /* Number.MAX_SAFE_INTEGER */
+  /* Sheet dimensions */
+  --sheet-max-columns: 9007199254740991;
+  --sheet-max-rows: 9007199254740991;
 
   /* Header dimensions */
   --header-row-height: 24px;
@@ -128,17 +123,4 @@
   --scrollbar-track-color: #252525;
   --scrollbar-thumb-color: #4a4a4a;
   --scrollbar-thumb-hover-color: #5a5a5a;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-secondary);
 }
