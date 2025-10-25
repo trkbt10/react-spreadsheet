@@ -1,0 +1,50 @@
+/**
+ * @file Scrollbar component styles.
+ */
+
+.scrollbar {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  user-select: none;
+}
+
+.scrollbar[data-orientation="vertical"] {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+}
+
+.scrollbar[data-orientation="horizontal"] {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+}
+
+.thumb {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.scrollbar[data-orientation="vertical"] .thumb {
+  width: 100%;
+  min-height: 20px;
+}
+
+.scrollbar[data-orientation="horizontal"] .thumb {
+  height: 100%;
+  min-width: 20px;
+}
+
+.thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.thumb[data-is-dragging="true"] {
+  background-color: rgba(0, 0, 0, 0.5);
+}

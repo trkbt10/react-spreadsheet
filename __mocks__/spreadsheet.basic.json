@@ -1,0 +1,136 @@
+{
+  "name": "Sample Spreadsheet",
+  "meta": {
+    "owner": "Mock User",
+    "description": "Basic spreadsheet mock for tests"
+  },
+  "sheets": [
+    {
+      "name": "Summary",
+      "id": "summary-sheet",
+      "cells": {
+        "0:0": {
+          "id": "0:0",
+          "x": 0,
+          "y": 0,
+          "type": "string",
+          "value": "Category"
+        },
+        "1:0": {
+          "id": "1:0",
+          "x": 1,
+          "y": 0,
+          "type": "string",
+          "value": "Budget"
+        },
+        "0:1": {
+          "id": "0:1",
+          "x": 0,
+          "y": 1,
+          "type": "string",
+          "value": "Marketing"
+        },
+        "1:1": {
+          "id": "1:1",
+          "x": 1,
+          "y": 1,
+          "type": "number",
+          "value": 1500
+        },
+        "0:2": {
+          "id": "0:2",
+          "x": 0,
+          "y": 2,
+          "type": "string",
+          "value": "Operations"
+        },
+        "1:2": {
+          "id": "1:2",
+          "x": 1,
+          "y": 2,
+          "type": "number",
+          "value": 2300
+        },
+        "0:3": {
+          "id": "0:3",
+          "x": 0,
+          "y": 3,
+          "type": "string",
+          "value": "Total"
+        },
+        "1:3": {
+          "id": "1:3",
+          "x": 1,
+          "y": 3,
+          "type": "formula",
+          "value": 3800,
+          "formula": "=SUM(B2:B3)"
+        }
+      }
+    },
+    {
+      "name": "Flags",
+      "id": "flags-sheet",
+      "cells": {
+        "0:0": {
+          "id": "0:0",
+          "x": 0,
+          "y": 0,
+          "type": "string",
+          "value": "Feature"
+        },
+        "1:0": {
+          "id": "1:0",
+          "x": 1,
+          "y": 0,
+          "type": "string",
+          "value": "Enabled"
+        },
+        "0:1": {
+          "id": "0:1",
+          "x": 0,
+          "y": 1,
+          "type": "string",
+          "value": "Beta Access"
+        },
+        "1:1": {
+          "id": "1:1",
+          "x": 1,
+          "y": 1,
+          "type": "boolean",
+          "value": true
+        },
+        "0:2": {
+          "id": "0:2",
+          "x": 0,
+          "y": 2,
+          "type": "string",
+          "value": "Legacy Mode"
+        },
+        "1:2": {
+          "id": "1:2",
+          "x": 1,
+          "y": 2,
+          "type": "boolean",
+          "value": false
+        },
+        "0:3": {
+          "id": "0:3",
+          "x": 0,
+          "y": 3,
+          "type": "string",
+          "value": "Notes"
+        },
+        "1:3": {
+          "id": "1:3",
+          "x": 1,
+          "y": 3,
+          "type": "null",
+          "value": null
+        }
+      }
+    }
+  ],
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-02T00:00:00.000Z"
+}

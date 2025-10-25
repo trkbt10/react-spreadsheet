@@ -4,15 +4,29 @@
 
 import { defineConfig } from "vite";
 
-export default defineConfig({
-  build: {
-    outDir: "dist",
-    lib: {
-      entry: "src/index.ts",
-      formats: ["cjs", "es"],
+export default defineConfig(({ command }) => {
+  const baseConfig = {
+    esbuild: {
+      jsx: "automatic",
+      jsxImportSource: "react",
     },
-    rollupOptions: {
-      external: [/node:.+/],
-    },
-  },
+  };
+
+  if (command === "build") {
+    return {
+      ...baseConfig,
+      build: {
+        outDir: "dist",
+        lib: {
+          entry: "src/index.ts",
+          formats: ["cjs", "es"],
+        },
+        rollupOptions: {
+          external: [/node:.+/],
+        },
+      },
+    };
+  }
+
+  return baseConfig;
 });

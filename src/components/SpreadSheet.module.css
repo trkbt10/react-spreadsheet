@@ -1,0 +1,16 @@
+/**
+ * @file SpreadSheet component styles.
+ */
+
+.spreadsheet {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  max-height: 100vh;
+  height: 100vh;
+}
+
+.sheetContent {
+  flex: 1;
+  overflow: hidden;
+}

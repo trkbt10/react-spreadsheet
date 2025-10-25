@@ -1,0 +1,23 @@
+/**
+ * @file VirtualScroll component styles.
+ */
+
+.scrollContainer {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  outline: none;
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.content {
+  position: relative;
+  will-change: transform;
+}

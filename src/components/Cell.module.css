@@ -1,0 +1,57 @@
+/**
+ * @file Cell component styles.
+ */
+
+.cell {
+  display: flex;
+  align-items: center;
+  padding: var(--cell-padding);
+  border-right: var(--border-width) var(--border-style) var(--color-border-secondary);
+  border-bottom: var(--border-width) var(--border-style) var(--color-border-secondary);
+  background-color: var(--color-bg-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast);
+  user-select: none;
+  cursor: default;
+}
+
+.cell:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.cell[data-selected="true"] {
+  background-color: var(--color-bg-selected);
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+  z-index: var(--z-index-cell);
+}
+
+.cell[data-empty="true"] {
+  color: var(--color-text-muted);
+}
+
+.cell[data-type="number"] {
+  justify-content: flex-end;
+  font-family: var(--font-family-mono);
+}
+
+.cell[data-type="boolean"] {
+  justify-content: center;
+  font-weight: var(--font-weight-medium);
+}
+
+.cell[data-type="formula"] {
+  font-family: var(--font-family-mono);
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.cell[data-type="null"] {
+  color: var(--color-text-muted);
+  font-style: italic;
+}

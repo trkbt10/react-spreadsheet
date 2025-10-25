@@ -1,0 +1,36 @@
+/**
+ * @file AppHeader component styles.
+ */
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-primary);
+  border-bottom: var(--border-width) var(--border-style) var(--color-border-primary);
+  gap: var(--spacing-md);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.metadata {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.metadataItem {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.metadataLabel {
+  font-weight: var(--font-weight-medium);
+}

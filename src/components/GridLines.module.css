@@ -1,0 +1,17 @@
+/**
+ * @file GridLines component styles.
+ */
+
+.gridLines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gridLine {
+  stroke: #e0e0e0;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
