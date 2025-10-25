@@ -4,20 +4,25 @@
 
 import { useMemo } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import type { Sheet as SheetType, CellId } from "../types";
+import type { Sheet as SheetType } from "../types";
 import { VirtualScroll } from "./scrollarea/VirtualScroll";
 import { useVirtualScrollContext } from "./scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../modules/spreadsheet/SheetContext";
 import { useSheetPointerEvents } from "../modules/spreadsheet/useSheetPointerEvents";
 import {
   calculateVisibleRange,
-  generateCellPositions,
   calculateTotalWidth,
   calculateTotalHeight,
   calculateSelectionRange,
+  calculateColumnPosition,
+  calculateRowPosition,
 } from "../modules/spreadsheet/gridLayout";
-import { GridLines } from "./GridLines";
+import { useColumnResize } from "../modules/spreadsheet/useColumnResize";
+import { useRowResize } from "../modules/spreadsheet/useRowResize";
+import { ColumnHeader } from "./headers/ColumnHeader";
+import { RowHeader } from "./headers/RowHeader";
 import styles from "./Sheet.module.css";
+import { GridLines } from "./GridLines";
 
 export type SheetProps = {
   sheet?: SheetType;
@@ -26,8 +31,8 @@ export type SheetProps = {
   maxRows?: number;
 };
 
-const DEFAULT_CELL_WIDTH = 100;
-const DEFAULT_CELL_HEIGHT = 24;
+const HEADER_ROW_HEIGHT = 24;
+const HEADER_COLUMN_WIDTH = 48;
 
 /**
  * Renders cells in the visible viewport range.
@@ -36,7 +41,7 @@ const DEFAULT_CELL_HEIGHT = 24;
 const CellRenderer = (): ReactElement => {
   const { viewportRect } = useVirtualScrollContext();
   const { sheet, state } = useSheetContext();
-  const { columnSizes, rowSizes } = state;
+  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
   const visibleRange = useMemo(
     () =>
@@ -45,44 +50,70 @@ const CellRenderer = (): ReactElement => {
         viewportRect.left,
         viewportRect.width,
         viewportRect.height,
-        DEFAULT_CELL_WIDTH,
-        DEFAULT_CELL_HEIGHT,
+        defaultCellWidth,
+        defaultCellHeight,
         columnSizes,
         rowSizes,
         16384,
         1048576,
         5,
       ),
-    [viewportRect, columnSizes, rowSizes],
+    [viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight],
   );
 
-  const cellPositions = useMemo(
-    () => generateCellPositions(visibleRange, DEFAULT_CELL_WIDTH, DEFAULT_CELL_HEIGHT, columnSizes, rowSizes),
-    [visibleRange, columnSizes, rowSizes],
-  );
+  const visibleCells = useMemo(() => {
+    return Object.entries(sheet.cells)
+      .filter(([, cell]) => {
+        return cell !== undefined;
+      })
+      .filter(([cellId]) => {
+        const [colStr, rowStr] = cellId.split(":");
+        const col = Number(colStr);
+        const row = Number(rowStr);
+        return (
+          col >= visibleRange.startCol &&
+          col < visibleRange.endCol &&
+          row >= visibleRange.startRow &&
+          row < visibleRange.endRow
+        );
+      });
+  }, [sheet.cells, visibleRange]);
 
   return (
     <>
-      {cellPositions.map((pos) => {
-        const cellId: CellId = `${pos.col}:${pos.row}`;
-        const cell = sheet.cells[cellId];
+      {visibleCells.map(([cellId, cell]) => {
+        if (cell === undefined) {
+          return null;
+        }
+
+        const [colStr, rowStr] = cellId.split(":");
+        const col = Number(colStr);
+        const row = Number(rowStr);
+
+        const x = calculateColumnPosition(col, defaultCellWidth, columnSizes);
+        const y = calculateRowPosition(row, defaultCellHeight, rowSizes);
+
+        const customWidth = columnSizes.get(col);
+        const width = customWidth === undefined ? defaultCellWidth : customWidth;
+        const customHeight = rowSizes.get(row);
+        const height = customHeight === undefined ? defaultCellHeight : customHeight;
 
         return (
           <div
             key={cellId}
             className={styles.cell}
             data-cell-id={cellId}
-            data-col={pos.col}
-            data-row={pos.row}
+            data-col={col}
+            data-row={row}
             style={{
-              left: pos.x - viewportRect.left,
-              top: pos.y - viewportRect.top,
-              width: pos.width,
-              height: pos.height,
-              lineHeight: `${pos.height - 4}px`,
+              left: x - viewportRect.left + HEADER_COLUMN_WIDTH,
+              top: y - viewportRect.top + HEADER_ROW_HEIGHT,
+              width,
+              height,
+              lineHeight: `${height - 4}px`,
             }}
           >
-            {cell ? String(cell.value) : ""}
+            {String(cell.value)}
           </div>
         );
       })}
@@ -97,7 +128,7 @@ const CellRenderer = (): ReactElement => {
 const SelectionHighlight = (): ReactElement | null => {
   const { viewportRect } = useVirtualScrollContext();
   const { state } = useSheetContext();
-  const { selectionRect, columnSizes, rowSizes } = state;
+  const { selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
   if (!selectionRect || selectionRect.width === 0 || selectionRect.height === 0) {
     return null;
@@ -107,14 +138,14 @@ const SelectionHighlight = (): ReactElement | null => {
     () =>
       calculateSelectionRange(
         selectionRect,
-        DEFAULT_CELL_WIDTH,
-        DEFAULT_CELL_HEIGHT,
+        defaultCellWidth,
+        defaultCellHeight,
         columnSizes,
         rowSizes,
         16384,
         1048576,
       ),
-    [selectionRect, columnSizes, rowSizes],
+    [selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight],
   );
 
   return (
@@ -151,35 +182,115 @@ const SelectionHighlight = (): ReactElement | null => {
  */
 export const Sheet = ({ style, maxColumns = 16384, maxRows = 1048576 }: SheetProps): ReactElement => {
   const { state, actions } = useSheetContext();
-  const { columnSizes, rowSizes } = state;
+  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
   const contentWidth = useMemo(
-    () => calculateTotalWidth(maxColumns, DEFAULT_CELL_WIDTH, columnSizes),
-    [maxColumns, columnSizes],
+    () => calculateTotalWidth(maxColumns, defaultCellWidth, columnSizes),
+    [maxColumns, columnSizes, defaultCellWidth],
   );
 
   const contentHeight = useMemo(
-    () => calculateTotalHeight(maxRows, DEFAULT_CELL_HEIGHT, rowSizes),
-    [maxRows, rowSizes],
+    () => calculateTotalHeight(maxRows, defaultCellHeight, rowSizes),
+    [maxRows, rowSizes, defaultCellHeight],
   );
 
   return (
     <div className={styles.sheetContainer} style={style}>
       <VirtualScroll contentWidth={contentWidth} contentHeight={contentHeight}>
-        <SheetContent actions={actions} />
+        <SheetWithHeaders actions={actions} maxColumns={maxColumns} maxRows={maxRows} />
       </VirtualScroll>
+    </div>
+  );
+};
+
+type SheetWithHeadersProps = {
+  actions: ReturnType<typeof useSheetContext>["actions"];
+  maxColumns: number;
+  maxRows: number;
+};
+
+const SheetWithHeaders = ({ actions, maxColumns, maxRows }: SheetWithHeadersProps): ReactElement => {
+  const { viewportRect } = useVirtualScrollContext();
+  const { state } = useSheetContext();
+  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
+
+  const { handleColumnResizeStart } = useColumnResize({
+    actions,
+    defaultCellWidth,
+    columnSizes,
+  });
+
+  const { handleRowResizeStart } = useRowResize({
+    actions,
+    defaultCellHeight,
+    rowSizes,
+  });
+
+  const visibleRange = useMemo(
+    () =>
+      calculateVisibleRange(
+        viewportRect.top,
+        viewportRect.left,
+        viewportRect.width,
+        viewportRect.height,
+        defaultCellWidth,
+        defaultCellHeight,
+        columnSizes,
+        rowSizes,
+        maxColumns,
+        maxRows,
+        5,
+      ),
+    [viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, maxColumns, maxRows],
+  );
+
+  return (
+    <div className={styles.sheetWithHeaders}>
+      {/* Column header - fixed at top */}
+      <div className={styles.columnHeaderFixed}>
+        <ColumnHeader
+          viewportLeft={viewportRect.left}
+          viewportWidth={viewportRect.width}
+          defaultCellWidth={defaultCellWidth}
+          columnSizes={columnSizes}
+          visibleStartCol={visibleRange.startCol}
+          visibleEndCol={visibleRange.endCol}
+          onResizeStart={handleColumnResizeStart}
+        />
+      </div>
+
+      {/* Row header - fixed at left */}
+      <div className={styles.rowHeaderFixed}>
+        <RowHeader
+          viewportTop={viewportRect.top}
+          viewportHeight={viewportRect.height}
+          defaultCellHeight={defaultCellHeight}
+          rowSizes={rowSizes}
+          visibleStartRow={visibleRange.startRow}
+          visibleEndRow={visibleRange.endRow}
+          onResizeStart={handleRowResizeStart}
+        />
+      </div>
+
+      {/* Header corner - fixed at top-left */}
+      <div className={styles.headerCornerFixed} />
+
+      {/* Main grid content */}
+      <SheetContent actions={actions} maxColumns={maxColumns} maxRows={maxRows} />
     </div>
   );
 };
 
 type SheetContentProps = {
   actions: ReturnType<typeof useSheetContext>["actions"];
+  maxColumns: number;
+  maxRows: number;
 };
 
-const SheetContent = ({ actions }: SheetContentProps): ReactElement => {
+const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): ReactElement => {
   const { scrollLeft, scrollTop, viewportRect } = useVirtualScrollContext();
   const { state } = useSheetContext();
-  const { columnSizes, rowSizes } = state;
+  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
   const { handlePointerDown, handlePointerMove, handlePointerUp } = useSheetPointerEvents({
     actions,
@@ -200,12 +311,12 @@ const SheetContent = ({ actions }: SheetContentProps): ReactElement => {
         viewportLeft={viewportRect.left}
         viewportWidth={viewportRect.width}
         viewportHeight={viewportRect.height}
-        defaultCellWidth={DEFAULT_CELL_WIDTH}
-        defaultCellHeight={DEFAULT_CELL_HEIGHT}
+        defaultCellWidth={defaultCellWidth}
+        defaultCellHeight={defaultCellHeight}
         columnSizes={columnSizes}
         rowSizes={rowSizes}
-        maxColumns={16384}
-        maxRows={1048576}
+        maxColumns={maxColumns}
+        maxRows={maxRows}
       />
       <CellRenderer />
       <SelectionHighlight />

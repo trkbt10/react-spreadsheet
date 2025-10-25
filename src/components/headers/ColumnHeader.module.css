@@ -1,0 +1,45 @@
+/**
+ * @file Column header styles.
+ */
+
+.columnHeaderContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.columnHeader {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #e0e0e0;
+  box-sizing: border-box;
+  user-select: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+}
+
+.label {
+  pointer-events: none;
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.resizeHandle:hover {
+  background-color: rgba(66, 133, 244, 0.3);
+}

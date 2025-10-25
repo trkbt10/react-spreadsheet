@@ -4,8 +4,8 @@
 
 .gridLines {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 24px;
+  left: 48px;
   pointer-events: none;
   z-index: 1;
 }

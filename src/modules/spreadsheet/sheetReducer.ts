@@ -19,6 +19,8 @@ export type SelectionRange = {
 export type SheetState = {
   columnSizes: ColumnSizeMap;
   rowSizes: RowSizeMap;
+  defaultCellWidth: number;
+  defaultCellHeight: number;
   selectionRect: Rect | null;
   selectionRange: SelectionRange | null;
   isDragging: boolean;
@@ -30,6 +32,8 @@ export type SheetAction = ActionUnion<typeof sheetActions>;
 export const initialSheetState: SheetState = {
   columnSizes: new Map(),
   rowSizes: new Map(),
+  defaultCellWidth: 100,
+  defaultCellHeight: 24,
   selectionRect: null,
   selectionRange: null,
   isDragging: false,

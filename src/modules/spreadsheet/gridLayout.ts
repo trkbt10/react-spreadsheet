@@ -37,7 +37,12 @@ export const calculateColumnPosition = (
 ): number => {
   let position = 0;
   for (let i = 0; i < col; i++) {
-    position += columnSizes.get(i) ?? defaultWidth;
+    const width = columnSizes.get(i);
+    if (width === undefined) {
+      position += defaultWidth;
+    } else {
+      position += width;
+    }
   }
   return position;
 };
@@ -56,7 +61,12 @@ export const calculateRowPosition = (
 ): number => {
   let position = 0;
   for (let i = 0; i < row; i++) {
-    position += rowSizes.get(i) ?? defaultHeight;
+    const height = rowSizes.get(i);
+    if (height === undefined) {
+      position += defaultHeight;
+    } else {
+      position += height;
+    }
   }
   return position;
 };
@@ -75,7 +85,12 @@ export const calculateTotalWidth = (
 ): number => {
   let total = 0;
   for (let i = 0; i < maxColumns; i++) {
-    total += columnSizes.get(i) ?? defaultWidth;
+    const width = columnSizes.get(i);
+    if (width === undefined) {
+      total += defaultWidth;
+    } else {
+      total += width;
+    }
   }
   return total;
 };
@@ -94,7 +109,12 @@ export const calculateTotalHeight = (
 ): number => {
   let total = 0;
   for (let i = 0; i < maxRows; i++) {
-    total += rowSizes.get(i) ?? defaultHeight;
+    const height = rowSizes.get(i);
+    if (height === undefined) {
+      total += defaultHeight;
+    } else {
+      total += height;
+    }
   }
   return total;
 };
@@ -115,7 +135,8 @@ export const findColumnAtPosition = (
 ): number => {
   let position = 0;
   for (let col = 0; col < maxColumns; col++) {
-    const width = columnSizes.get(col) ?? defaultWidth;
+    const customWidth = columnSizes.get(col);
+    const width = customWidth === undefined ? defaultWidth : customWidth;
     if (position + width > x) {
       return col;
     }
@@ -140,7 +161,8 @@ export const findRowAtPosition = (
 ): number => {
   let position = 0;
   for (let row = 0; row < maxRows; row++) {
-    const height = rowSizes.get(row) ?? defaultHeight;
+    const customHeight = rowSizes.get(row);
+    const height = customHeight === undefined ? defaultHeight : customHeight;
     if (position + height > y) {
       return row;
     }
@@ -212,11 +234,13 @@ export const generateCellPositions = (
 
   for (let row = range.startRow; row < range.endRow; row++) {
     const y = calculateRowPosition(row, defaultHeight, rowSizes);
-    const height = rowSizes.get(row) ?? defaultHeight;
+    const customHeight = rowSizes.get(row);
+    const height = customHeight === undefined ? defaultHeight : customHeight;
 
     for (let col = range.startCol; col < range.endCol; col++) {
       const x = calculateColumnPosition(col, defaultWidth, columnSizes);
-      const width = columnSizes.get(col) ?? defaultWidth;
+      const customWidth = columnSizes.get(col);
+      const width = customWidth === undefined ? defaultWidth : customWidth;
 
       positions.push({ col, row, x, y, width, height });
     }

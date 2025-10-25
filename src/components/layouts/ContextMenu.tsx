@@ -1,8 +1,11 @@
+/**
+ * @file Context menu component with nested submenu support.
+ */
+
 import { useEffect, useRef, useState, Activity } from 'react';
 import type {
   ContextMenuProps,
   MenuItem,
-  MenuItemAction,
   MenuItemSubmenu,
   MenuPosition,
 } from './ContextMenu.types';
@@ -10,7 +13,9 @@ import styles from './ContextMenu.module.css';
 
 type SubmenuState = {
   item: MenuItemSubmenu;
-  position: MenuPosition;
+  triggerRect: DOMRect;
+  rootMenuX: number;
+  depth: number;
 } | null;
 
 type CalculatePositionParams = {
@@ -28,7 +33,9 @@ const calculateMenuPosition = ({
   viewportWidth,
   viewportHeight,
 }: CalculatePositionParams): MenuPosition => {
+  // eslint-disable-next-line no-restricted-syntax -- Position calculation requires mutable values for overflow checks
   let x = triggerPosition.x;
+  // eslint-disable-next-line no-restricted-syntax -- Position calculation requires mutable values for overflow checks
   let y = triggerPosition.y;
 
   // Right overflow check
@@ -54,18 +61,67 @@ const calculateMenuPosition = ({
   return { x, y };
 };
 
+type CalculateSubmenuPositionParams = {
+  triggerRect: DOMRect;
+  rootMenuX: number;
+  menuWidth: number;
+  menuHeight: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  depth: number;
+};
+
+const calculateSubmenuPosition = ({
+  triggerRect,
+  rootMenuX,
+  menuWidth,
+  menuHeight,
+  viewportWidth,
+  viewportHeight,
+  depth,
+}: CalculateSubmenuPositionParams): MenuPosition => {
+  // eslint-disable-next-line no-restricted-syntax -- Position calculation requires mutable values for overflow checks
+  let y = triggerRect.top;
+
+  const rightX = triggerRect.right + 4;
+  const leftX = triggerRect.left - menuWidth - 4;
+
+  // Check if right side would overflow screen
+  const wouldOverflowRight = rightX + menuWidth > viewportWidth - 8;
+
+  // First level submenu (depth 0) always goes right unless it overflows
+  // Deeper submenus prefer the side that keeps them closer to root
+  const preferLeft = depth === 0 ? false : (() => {
+    const rightDistanceFromRoot = Math.abs((rightX + menuWidth / 2) - rootMenuX);
+    const leftDistanceFromRoot = Math.abs((leftX + menuWidth / 2) - rootMenuX);
+    return leftDistanceFromRoot < rightDistanceFromRoot;
+  })();
+
+  const x = wouldOverflowRight || preferLeft ? leftX : rightX;
+
+  // Bottom overflow check
+  if (y + menuHeight > viewportHeight - 8) {
+    y = viewportHeight - menuHeight - 8;
+  }
+
+  // Top overflow check
+  if (y < 8) {
+    y = 8;
+  }
+
+  return { x, y };
+};
+
 type MenuItemComponentProps = {
   item: MenuItem;
   onSubmenuOpen: (item: MenuItemSubmenu, triggerElement: HTMLElement) => void;
   onItemEnter: (item: MenuItem) => void;
-  activeSubmenu: MenuItemSubmenu | null;
 };
 
 const MenuItemComponent = ({
   item,
   onSubmenuOpen,
   onItemEnter,
-  activeSubmenu,
 }: MenuItemComponentProps) => {
   const itemRef = useRef<HTMLDivElement>(null);
 
@@ -73,12 +129,30 @@ const MenuItemComponent = ({
     return <div className={styles.separator} />;
   }
 
+  const getDisabledAttribute = () => {
+    return item.disabled ? 'true' : 'false';
+  };
+
+  const renderIcon = () => {
+    if (item.icon === undefined) {
+      return null;
+    }
+    return <span className={styles.menuItemIcon}>{item.icon}</span>;
+  };
+
+  const renderShortcut = () => {
+    if (item.type !== 'action' || item.shortcut === undefined) {
+      return null;
+    }
+    return <span className={styles.menuItemShortcut}>{item.shortcut}</span>;
+  };
+
   if (item.type === 'submenu') {
     return (
       <div
         ref={itemRef}
         className={styles.menuItem}
-        data-disabled={item.disabled ? 'true' : 'false'}
+        data-disabled={getDisabledAttribute()}
         onPointerEnter={() => {
           if (item.disabled) {
             return;
@@ -90,9 +164,7 @@ const MenuItemComponent = ({
           onSubmenuOpen(item, itemRef.current);
         }}
       >
-        {item.icon !== undefined ? (
-          <span className={styles.menuItemIcon}>{item.icon}</span>
-        ) : null}
+        {renderIcon()}
         <span className={styles.menuItemLabel}>{item.label}</span>
         <span className={styles.menuItemArrow} />
       </div>
@@ -109,19 +181,15 @@ const MenuItemComponent = ({
   return (
     <div
       className={styles.menuItem}
-      data-disabled={item.disabled ? 'true' : 'false'}
+      data-disabled={getDisabledAttribute()}
       onClick={handleClick}
       onPointerEnter={() => {
         onItemEnter(item);
       }}
     >
-      {item.icon !== undefined ? (
-        <span className={styles.menuItemIcon}>{item.icon}</span>
-      ) : null}
+      {renderIcon()}
       <span className={styles.menuItemLabel}>{item.label}</span>
-      {item.shortcut !== undefined ? (
-        <span className={styles.menuItemShortcut}>{item.shortcut}</span>
-      ) : null}
+      {renderShortcut()}
     </div>
   );
 };
@@ -170,13 +238,17 @@ export const ContextMenu = ({ items, position, onClose }: ContextMenuProps) => {
 
 
   const handleSubmenuOpen = (item: MenuItemSubmenu, triggerElement: HTMLElement) => {
-    const rect = triggerElement.getBoundingClientRect();
-    const submenuPosition: MenuPosition = {
-      x: rect.right + 4,
-      y: rect.top,
-    };
-
-    setSubmenuState({ item, position: submenuPosition });
+    const triggerRect = triggerElement.getBoundingClientRect();
+    const rootMenuRect = menuRef.current?.getBoundingClientRect();
+    if (rootMenuRect === undefined) {
+      return;
+    }
+    setSubmenuState({
+      item,
+      triggerRect,
+      rootMenuX: rootMenuRect.left,
+      depth: 0,
+    });
   };
 
   const handleItemEnter = (item: MenuItem) => {
@@ -193,6 +265,30 @@ export const ContextMenu = ({ items, position, onClose }: ContextMenuProps) => {
 
   const handleSubmenuPointerLeave = () => {
     isOverSubmenuRef.current = false;
+  };
+
+  const getActivityMode = () => {
+    return submenuState !== null ? 'visible' : 'hidden';
+  };
+
+  const renderSubmenu = () => {
+    if (submenuState === null) {
+      return null;
+    }
+    return (
+      <div
+        onPointerEnter={handleSubmenuPointerEnter}
+        onPointerLeave={handleSubmenuPointerLeave}
+      >
+        <Submenu
+          items={submenuState.item.items}
+          triggerRect={submenuState.triggerRect}
+          rootMenuX={submenuState.rootMenuX}
+          depth={submenuState.depth}
+          onClose={onClose}
+        />
+      </div>
+    );
   };
 
   return (
@@ -216,24 +312,12 @@ export const ContextMenu = ({ items, position, onClose }: ContextMenuProps) => {
             item={item}
             onSubmenuOpen={handleSubmenuOpen}
             onItemEnter={handleItemEnter}
-            activeSubmenu={submenuState?.item ?? null}
           />
         ))}
       </div>
 
-      <Activity mode={submenuState !== null ? 'visible' : 'hidden'}>
-        {submenuState !== null ? (
-          <div
-            onPointerEnter={handleSubmenuPointerEnter}
-            onPointerLeave={handleSubmenuPointerLeave}
-          >
-            <Submenu
-              items={submenuState.item.items}
-              position={submenuState.position}
-              onClose={onClose}
-            />
-          </div>
-        ) : null}
+      <Activity mode={getActivityMode()}>
+        {renderSubmenu()}
       </Activity>
     </dialog>
   );
@@ -241,13 +325,15 @@ export const ContextMenu = ({ items, position, onClose }: ContextMenuProps) => {
 
 type SubmenuProps = {
   items: MenuItem[];
-  position: MenuPosition;
+  triggerRect: DOMRect;
+  rootMenuX: number;
+  depth: number;
   onClose: () => void;
 };
 
-const Submenu = ({ items, position, onClose }: SubmenuProps) => {
+const Submenu = ({ items, triggerRect, rootMenuX, depth, onClose }: SubmenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const [menuPosition, setMenuPosition] = useState<MenuPosition>(position);
+  const [menuPosition, setMenuPosition] = useState<MenuPosition>({ x: 0, y: 0 });
   const [submenuState, setSubmenuState] = useState<SubmenuState>(null);
   const isOverSubmenuRef = useRef<boolean>(false);
 
@@ -258,25 +344,22 @@ const Submenu = ({ items, position, onClose }: SubmenuProps) => {
     }
 
     const rect = menu.getBoundingClientRect();
-    const calculatedPosition = calculateMenuPosition({
-      triggerPosition: position,
+    const calculatedPosition = calculateSubmenuPosition({
+      triggerRect,
+      rootMenuX,
       menuWidth: rect.width,
       menuHeight: rect.height,
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
+      depth,
     });
 
     setMenuPosition(calculatedPosition);
-  }, [position]);
+  }, [triggerRect, rootMenuX, depth]);
 
   const handleSubmenuOpen = (item: MenuItemSubmenu, triggerElement: HTMLElement) => {
-    const rect = triggerElement.getBoundingClientRect();
-    const submenuPosition: MenuPosition = {
-      x: rect.right + 4,
-      y: rect.top,
-    };
-
-    setSubmenuState({ item, position: submenuPosition });
+    const triggerRect = triggerElement.getBoundingClientRect();
+    setSubmenuState({ item, triggerRect, rootMenuX, depth: depth + 1 });
   };
 
   const handleItemEnter = (item: MenuItem) => {
@@ -293,6 +376,30 @@ const Submenu = ({ items, position, onClose }: SubmenuProps) => {
 
   const handleSubmenuPointerLeave = () => {
     isOverSubmenuRef.current = false;
+  };
+
+  const getActivityMode = () => {
+    return submenuState !== null ? 'visible' : 'hidden';
+  };
+
+  const renderSubmenu = () => {
+    if (submenuState === null) {
+      return null;
+    }
+    return (
+      <div
+        onPointerEnter={handleSubmenuPointerEnter}
+        onPointerLeave={handleSubmenuPointerLeave}
+      >
+        <Submenu
+          items={submenuState.item.items}
+          triggerRect={submenuState.triggerRect}
+          rootMenuX={submenuState.rootMenuX}
+          depth={submenuState.depth}
+          onClose={onClose}
+        />
+      </div>
+    );
   };
 
   return (
@@ -312,24 +419,12 @@ const Submenu = ({ items, position, onClose }: SubmenuProps) => {
             item={item}
             onSubmenuOpen={handleSubmenuOpen}
             onItemEnter={handleItemEnter}
-            activeSubmenu={submenuState?.item ?? null}
           />
         ))}
       </div>
 
-      <Activity mode={submenuState !== null ? 'visible' : 'hidden'}>
-        {submenuState !== null ? (
-          <div
-            onPointerEnter={handleSubmenuPointerEnter}
-            onPointerLeave={handleSubmenuPointerLeave}
-          >
-            <Submenu
-              items={submenuState.item.items}
-              position={submenuState.position}
-              onClose={onClose}
-            />
-          </div>
-        ) : null}
+      <Activity mode={getActivityMode()}>
+        {renderSubmenu()}
       </Activity>
     </>
   );
