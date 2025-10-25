@@ -6,16 +6,16 @@
   position: relative;
   width: 100%;
   height: 100%;
-  padding: 12px 16px 16px;
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  color: var(--color-text-primary, #0f172a);
+  gap: var(--spacing-sm);
+  color: var(--color-text-primary);
 }
 
 .title {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   line-height: 1.2;
 }
 
@@ -28,32 +28,32 @@
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  font-size: 0.75rem;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
 }
 
 .legendItem {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-2xs);
 }
 
 .legendSwatch {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  box-shadow: 0 0 1px rgba(15, 23, 42, 0.28);
+  box-shadow: var(--shadow-xs);
 }
 
 .valueLabel {
-  font-size: 0.7rem;
-  font-weight: 600;
-  fill: #1f2937;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  fill: var(--color-text-primary);
 }
 
 .axisLabel {
-  font-size: 0.65rem;
-  fill: #475569;
+  font-size: var(--font-size-xs);
+  fill: var(--color-text-secondary);
 }
 
 .emptyState {
@@ -61,6 +61,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
 }
