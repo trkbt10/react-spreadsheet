@@ -1,0 +1,17 @@
+.headerCorner {
+  width: var(--header-corner-width);
+  height: var(--header-corner-height);
+  background-color: var(--header-bg);
+  border-right: var(--border-width) var(--border-style) var(--header-border);
+  border-bottom: var(--border-width) var(--border-style) var(--header-border);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.headerCorner:hover {
+  background-color: var(--header-bg-hover);
+}
+
+.headerCorner:active {
+  background-color: var(--header-bg-active);
+}

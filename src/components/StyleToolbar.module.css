@@ -1,0 +1,54 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-sm);
+  background-color: var(--toolbar-bg);
+  border-bottom: var(--border-width) var(--border-style) var(--toolbar-border);
+}
+
+.selectionInfo {
+  font-size: var(--font-size-sm);
+  color: var(--toolbar-text-secondary);
+  min-width: 200px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-xs);
+  border-left: var(--border-width) var(--border-style) var(--toolbar-border);
+  padding-left: var(--spacing-sm);
+}
+
+.buttonGroup:first-of-type {
+  border-left: none;
+  padding-left: 0;
+}
+
+.button {
+  width: var(--toolbar-button-size);
+  height: var(--toolbar-button-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width) var(--border-style) var(--toolbar-button-border);
+  background-color: var(--toolbar-button-bg);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  border-radius: var(--spacing-xs);
+  transition: all var(--transition-base);
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--toolbar-button-bg-hover);
+  border-color: var(--toolbar-button-border-hover);
+}
+
+.button:active:not(:disabled) {
+  background-color: var(--toolbar-button-bg-active);
+}
+
+.button:disabled {
+  opacity: var(--toolbar-button-disabled-opacity);
+  cursor: not-allowed;
+}

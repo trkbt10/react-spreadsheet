@@ -17,6 +17,7 @@ export type ColumnHeaderProps = {
   visibleStartCol: number;
   visibleEndCol: number;
   onResizeStart: (col: number, clientX: number) => void;
+  onColumnClick?: (col: number) => void;
 };
 
 /**
@@ -32,6 +33,7 @@ export const ColumnHeader = ({
   visibleStartCol,
   visibleEndCol,
   onResizeStart,
+  onColumnClick,
 }: ColumnHeaderProps): ReactElement => {
   const columns = useMemo(() => {
     const result: Array<{ col: number; x: number; width: number; label: string }> = [];
@@ -57,6 +59,15 @@ export const ColumnHeader = ({
     [onResizeStart],
   );
 
+  const handleHeaderClick = useCallback(
+    (col: number) => {
+      if (onColumnClick) {
+        onColumnClick(col);
+      }
+    },
+    [onColumnClick],
+  );
+
   return (
     <div className={styles.columnHeaderContainer}>
       {columns.map(({ col, x, width, label }) => {
@@ -67,6 +78,9 @@ export const ColumnHeader = ({
             style={{
               left: x - viewportLeft,
               width,
+            }}
+            onClick={() => {
+              return handleHeaderClick(col);
             }}
           >
             <span className={styles.label}>{label}</span>

@@ -3,6 +3,13 @@
  */
 
 import type { Rect } from "../../utils/rect";
+import type { AdaptiveAdjustmentCache } from "./adaptiveAdjustments";
+import {
+  calculatePositionWithCache,
+  getAdaptiveCache,
+  sumAdjustmentsBeforeIndex,
+  toSafeNumber,
+} from "./adaptiveAdjustments";
 
 export type ColumnSizeMap = Map<number, number>;
 export type RowSizeMap = Map<number, number>;
@@ -23,6 +30,61 @@ export type GridRange = {
   endRow: number;
 };
 
+export const SAFE_MAX_COLUMNS = Number.MAX_SAFE_INTEGER;
+export const SAFE_MAX_ROWS = Number.MAX_SAFE_INTEGER;
+
+const columnAdjustmentCache = new WeakMap<ColumnSizeMap, AdaptiveAdjustmentCache>();
+const rowAdjustmentCache = new WeakMap<RowSizeMap, AdaptiveAdjustmentCache>();
+
+const MAX_SAFE_BIGINT = BigInt(Number.MAX_SAFE_INTEGER);
+
+const absBigInt = (value: bigint): bigint => {
+  return value < 0n ? -value : value;
+};
+
+const ensurePositiveInteger = (value: number, label: string): bigint => {
+  if (!Number.isFinite(value) || !Number.isInteger(value) || value <= 0) {
+    throw new Error(`${label} must be a positive integer value.`);
+  }
+  return BigInt(value);
+};
+
+const ensureNonNegativeInteger = (value: number, label: string): bigint => {
+  if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative integer value.`);
+  }
+  return BigInt(value);
+};
+
+const getMaxRepresentableCount = (defaultSize: bigint): number => {
+  const sizeAbs = absBigInt(defaultSize);
+  if (sizeAbs === 0n) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+  return Number(MAX_SAFE_BIGINT / sizeAbs);
+};
+
+const getEffectiveMaxCount = (requested: number, defaultSize: bigint): number => {
+  const representable = getMaxRepresentableCount(defaultSize);
+  if (requested > representable) {
+    return representable;
+  }
+  return requested;
+};
+
+const clampIndex = (value: number, maxExclusive: number): number => {
+  if (maxExclusive <= 0) {
+    return 0;
+  }
+  if (value < 0) {
+    return 0;
+  }
+  if (value >= maxExclusive) {
+    return maxExclusive - 1;
+  }
+  return value;
+};
+
 /**
  * Calculate the x position for a given column.
  * @param col - Column index
@@ -35,16 +97,12 @@ export const calculateColumnPosition = (
   defaultWidth: number,
   columnSizes: ColumnSizeMap,
 ): number => {
-  let position = 0;
-  for (let i = 0; i < col; i++) {
-    const width = columnSizes.get(i);
-    if (width === undefined) {
-      position += defaultWidth;
-    } else {
-      position += width;
-    }
+  const defaultWidthBigInt = ensurePositiveInteger(defaultWidth, "default column width");
+  if (col > getMaxRepresentableCount(defaultWidthBigInt)) {
+    throw new Error("Column index exceeds representable layout range.");
   }
-  return position;
+  const cache = getAdaptiveCache(columnAdjustmentCache, columnSizes, defaultWidth, defaultWidthBigInt);
+  return calculatePositionWithCache(col, defaultWidth, cache);
 };
 
 /**
@@ -59,16 +117,12 @@ export const calculateRowPosition = (
   defaultHeight: number,
   rowSizes: RowSizeMap,
 ): number => {
-  let position = 0;
-  for (let i = 0; i < row; i++) {
-    const height = rowSizes.get(i);
-    if (height === undefined) {
-      position += defaultHeight;
-    } else {
-      position += height;
-    }
+  const defaultHeightBigInt = ensurePositiveInteger(defaultHeight, "default row height");
+  if (row > getMaxRepresentableCount(defaultHeightBigInt)) {
+    throw new Error("Row index exceeds representable layout range.");
   }
-  return position;
+  const cache = getAdaptiveCache(rowAdjustmentCache, rowSizes, defaultHeight, defaultHeightBigInt);
+  return calculatePositionWithCache(row, defaultHeight, cache);
 };
 
 /**
@@ -83,16 +137,16 @@ export const calculateTotalWidth = (
   defaultWidth: number,
   columnSizes: ColumnSizeMap,
 ): number => {
-  let total = 0;
-  for (let i = 0; i < maxColumns; i++) {
-    const width = columnSizes.get(i);
-    if (width === undefined) {
-      total += defaultWidth;
-    } else {
-      total += width;
-    }
+  if (maxColumns <= 0) {
+    return 0;
   }
-  return total;
+  const defaultWidthBigInt = ensurePositiveInteger(defaultWidth, "default column width");
+  const cache = getAdaptiveCache(columnAdjustmentCache, columnSizes, defaultWidth, defaultWidthBigInt);
+  const effectiveMaxColumns = getEffectiveMaxCount(maxColumns, cache.defaultSizeBigInt);
+  const maxColumnsBigInt = ensureNonNegativeInteger(effectiveMaxColumns, "maxColumns");
+  const baseline = maxColumnsBigInt * cache.defaultSizeBigInt;
+  const adjustment = sumAdjustmentsBeforeIndex(cache, effectiveMaxColumns);
+  return toSafeNumber(baseline + adjustment, "total width");
 };
 
 /**
@@ -107,16 +161,16 @@ export const calculateTotalHeight = (
   defaultHeight: number,
   rowSizes: RowSizeMap,
 ): number => {
-  let total = 0;
-  for (let i = 0; i < maxRows; i++) {
-    const height = rowSizes.get(i);
-    if (height === undefined) {
-      total += defaultHeight;
-    } else {
-      total += height;
-    }
+  if (maxRows <= 0) {
+    return 0;
   }
-  return total;
+  const defaultHeightBigInt = ensurePositiveInteger(defaultHeight, "default row height");
+  const cache = getAdaptiveCache(rowAdjustmentCache, rowSizes, defaultHeight, defaultHeightBigInt);
+  const effectiveMaxRows = getEffectiveMaxCount(maxRows, cache.defaultSizeBigInt);
+  const maxRowsBigInt = ensureNonNegativeInteger(effectiveMaxRows, "maxRows");
+  const baseline = maxRowsBigInt * cache.defaultSizeBigInt;
+  const adjustment = sumAdjustmentsBeforeIndex(cache, effectiveMaxRows);
+  return toSafeNumber(baseline + adjustment, "total height");
 };
 
 /**
@@ -133,16 +187,36 @@ export const findColumnAtPosition = (
   columnSizes: ColumnSizeMap,
   maxColumns: number,
 ): number => {
-  let position = 0;
-  for (let col = 0; col < maxColumns; col++) {
-    const customWidth = columnSizes.get(col);
-    const width = customWidth === undefined ? defaultWidth : customWidth;
-    if (position + width > x) {
-      return col;
-    }
-    position += width;
+  if (maxColumns <= 0) {
+    return 0;
   }
-  return maxColumns - 1;
+
+  const defaultWidthBigInt = ensurePositiveInteger(defaultWidth, "default column width");
+  const cache = getAdaptiveCache(columnAdjustmentCache, columnSizes, defaultWidth, defaultWidthBigInt);
+  const effectiveMaxColumns = getEffectiveMaxCount(maxColumns, cache.defaultSizeBigInt);
+
+  let low = 0;
+  let high = effectiveMaxColumns - 1;
+
+  while (low <= high) {
+    const mid = low + Math.floor((high - low) / 2);
+    const position = calculatePositionWithCache(mid, defaultWidth, cache);
+    const width = columnSizes.get(mid) ?? defaultWidth;
+
+    if (x < position) {
+      high = mid - 1;
+      continue;
+    }
+
+    if (x >= position + width) {
+      low = mid + 1;
+      continue;
+    }
+
+    return mid;
+  }
+
+  return clampIndex(low, effectiveMaxColumns);
 };
 
 /**
@@ -159,16 +233,36 @@ export const findRowAtPosition = (
   rowSizes: RowSizeMap,
   maxRows: number,
 ): number => {
-  let position = 0;
-  for (let row = 0; row < maxRows; row++) {
-    const customHeight = rowSizes.get(row);
-    const height = customHeight === undefined ? defaultHeight : customHeight;
-    if (position + height > y) {
-      return row;
-    }
-    position += height;
+  if (maxRows <= 0) {
+    return 0;
   }
-  return maxRows - 1;
+
+  const defaultHeightBigInt = ensurePositiveInteger(defaultHeight, "default row height");
+  const cache = getAdaptiveCache(rowAdjustmentCache, rowSizes, defaultHeight, defaultHeightBigInt);
+  const effectiveMaxRows = getEffectiveMaxCount(maxRows, cache.defaultSizeBigInt);
+
+  let low = 0;
+  let high = effectiveMaxRows - 1;
+
+  while (low <= high) {
+    const mid = low + Math.floor((high - low) / 2);
+    const position = calculatePositionWithCache(mid, defaultHeight, cache);
+    const height = rowSizes.get(mid) ?? defaultHeight;
+
+    if (y < position) {
+      high = mid - 1;
+      continue;
+    }
+
+    if (y >= position + height) {
+      low = mid + 1;
+      continue;
+    }
+
+    return mid;
+  }
+
+  return clampIndex(low, effectiveMaxRows);
 };
 
 /**
@@ -195,8 +289,8 @@ export const calculateVisibleRange = (
   defaultHeight: number,
   columnSizes: ColumnSizeMap,
   rowSizes: RowSizeMap,
-  maxColumns: number,
-  maxRows: number,
+  maxColumns: number = SAFE_MAX_COLUMNS,
+  maxRows: number = SAFE_MAX_ROWS,
   overscan: number = 5,
 ): GridRange => {
   const startCol = Math.max(0, findColumnAtPosition(viewportLeft, defaultWidth, columnSizes, maxColumns) - overscan);
@@ -266,8 +360,8 @@ export const calculateSelectionRange = (
   defaultHeight: number,
   columnSizes: ColumnSizeMap,
   rowSizes: RowSizeMap,
-  maxColumns: number,
-  maxRows: number,
+  maxColumns: number = SAFE_MAX_COLUMNS,
+  maxRows: number = SAFE_MAX_ROWS,
 ): GridRange => {
   const startCol = findColumnAtPosition(rect.x, defaultWidth, columnSizes, maxColumns);
   const endCol = findColumnAtPosition(rect.x + rect.width, defaultWidth, columnSizes, maxColumns);
@@ -281,3 +375,8 @@ export const calculateSelectionRange = (
     endRow: endRow + 1,
   };
 };
+
+/**
+ * Notes:
+ * - Reviewed src/components/Sheet.tsx to validate how position helpers feed virtual scrolling before introducing adaptive windows.
+ */

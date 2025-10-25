@@ -4,47 +4,76 @@
 
 import type { CSSProperties, ReactElement } from "react";
 import type { Cell as CellType } from "../types";
+import type { CellStyle } from "../modules/spreadsheet/cellStyle";
+import { useFormulaEngine } from "../modules/formula/FormulaEngineContext";
+import { resolveStyle } from "../modules/spreadsheet/styleResolver";
+import { useSheetContext } from "../modules/spreadsheet/SheetContext";
 import styles from "./Cell.module.css";
 
 export type CellProps = {
-  cell: CellType | null;
+  cell: CellType | undefined;
+  col: number;
+  row: number;
   style?: CSSProperties;
   selected?: boolean;
 };
 
 /**
- * Determines the display value for a cell.
- * @param cell - Cell to get display value for
+ * Resolves the display value for a cell, handling formulas.
+ * @param cell - Cell to resolve
+ * @param sheetId - Sheet ID
+ * @param col - Column index
+ * @param row - Row index
+ * @param formulaEngine - Formula engine instance
  * @returns Display value string
  */
-const getCellDisplayValue = (cell: CellType | null): string => {
+const resolveCellDisplayValue = (
+  cell: CellType | undefined,
+  sheetId: string,
+  col: number,
+  row: number,
+  formulaEngine: ReturnType<typeof useFormulaEngine>,
+): string => {
   if (!cell) {
     return "";
   }
-  if (cell.type === "formula" && cell.formula) {
-    return `=${cell.formula}`;
+
+  try {
+    const computedValue = formulaEngine.resolveCellValueByCoords(sheetId, col, row);
+    return computedValue === null ? "null" : String(computedValue);
+  } catch {
+    return "#ERROR";
   }
-  if (cell.value === null) {
-    return "null";
-  }
-  return String(cell.value);
 };
 
 /**
- * Renders a single spreadsheet cell with type-appropriate formatting.
+ * Renders a single spreadsheet cell with type-appropriate formatting, formula resolution, and style application.
  * @param props - Component props
  * @returns Cell component
  */
-export const Cell = ({ cell, style, selected = false }: CellProps): ReactElement => {
-  const displayValue = getCellDisplayValue(cell);
+export const Cell = ({ cell, col, row, style, selected = false }: CellProps): ReactElement => {
+  const { sheet, state } = useSheetContext();
+  const { styleRegistry } = state;
+  const formulaEngine = useFormulaEngine();
+
+  const displayValue = resolveCellDisplayValue(cell, sheet.id, col, row, formulaEngine);
   const cellType = cell?.type ?? null;
   const isEmpty = !cell;
   const cellId = cell?.id ?? null;
 
+  // Resolve style for this cell
+  const cellStyle: CellStyle = resolveStyle(styleRegistry, col, row);
+
+  // Merge position/size style with cell style
+  const mergedStyle: CSSProperties = {
+    ...style,
+    ...cellStyle,
+  };
+
   return (
     <div
       className={styles.cell}
-      style={style}
+      style={mergedStyle}
       role="gridcell"
       tabIndex={0}
       data-selected={selected}

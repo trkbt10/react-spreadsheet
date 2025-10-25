@@ -17,6 +17,7 @@ export type RowHeaderProps = {
   visibleStartRow: number;
   visibleEndRow: number;
   onResizeStart: (row: number, clientY: number) => void;
+  onRowClick?: (row: number) => void;
 };
 
 /**
@@ -32,6 +33,7 @@ export const RowHeader = ({
   visibleStartRow,
   visibleEndRow,
   onResizeStart,
+  onRowClick,
 }: RowHeaderProps): ReactElement => {
   const rows = useMemo(() => {
     const result: Array<{ row: number; y: number; height: number; label: string }> = [];
@@ -57,6 +59,15 @@ export const RowHeader = ({
     [onResizeStart],
   );
 
+  const handleHeaderClick = useCallback(
+    (row: number) => {
+      if (onRowClick) {
+        onRowClick(row);
+      }
+    },
+    [onRowClick],
+  );
+
   return (
     <div className={styles.rowHeaderContainer}>
       {rows.map(({ row, y, height, label }) => {
@@ -67,6 +78,9 @@ export const RowHeader = ({
             style={{
               top: y - viewportTop,
               height,
+            }}
+            onClick={() => {
+              return handleHeaderClick(row);
             }}
           >
             <span className={styles.label}>{label}</span>

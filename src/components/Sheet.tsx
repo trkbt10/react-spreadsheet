@@ -2,9 +2,9 @@
  * @file Sheet component for rendering spreadsheet cells.
  */
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import type { Sheet as SheetType } from "../types";
+import type { Sheet as SheetType, Cell as CellType } from "../types";
 import { VirtualScroll } from "./scrollarea/VirtualScroll";
 import { useVirtualScrollContext } from "./scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../modules/spreadsheet/SheetContext";
@@ -16,13 +16,18 @@ import {
   calculateSelectionRange,
   calculateColumnPosition,
   calculateRowPosition,
+  SAFE_MAX_COLUMNS,
+  SAFE_MAX_ROWS,
 } from "../modules/spreadsheet/gridLayout";
 import { useColumnResize } from "../modules/spreadsheet/useColumnResize";
 import { useRowResize } from "../modules/spreadsheet/useRowResize";
 import { ColumnHeader } from "./headers/ColumnHeader";
 import { RowHeader } from "./headers/RowHeader";
+import { HeaderCorner } from "./headers/HeaderCorner";
 import styles from "./Sheet.module.css";
 import { GridLines } from "./GridLines";
+import { resolveStyle } from "../modules/spreadsheet/styleResolver";
+import { useFormulaEngine } from "../modules/formula/FormulaEngineContext";
 
 export type SheetProps = {
   sheet?: SheetType;
@@ -41,7 +46,8 @@ const HEADER_COLUMN_WIDTH = 48;
 const CellRenderer = (): ReactElement => {
   const { viewportRect } = useVirtualScrollContext();
   const { sheet, state } = useSheetContext();
-  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
+  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, styleRegistry } = state;
+  const formulaEngine = useFormulaEngine();
 
   const visibleRange = useMemo(
     () =>
@@ -54,42 +60,41 @@ const CellRenderer = (): ReactElement => {
         defaultCellHeight,
         columnSizes,
         rowSizes,
-        16384,
-        1048576,
+        SAFE_MAX_COLUMNS,
+        SAFE_MAX_ROWS,
         5,
       ),
     [viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight],
   );
 
-  const visibleCells = useMemo(() => {
-    return Object.entries(sheet.cells)
-      .filter(([, cell]) => {
-        return cell !== undefined;
-      })
-      .filter(([cellId]) => {
-        const [colStr, rowStr] = cellId.split(":");
-        const col = Number(colStr);
-        const row = Number(rowStr);
-        return (
-          col >= visibleRange.startCol &&
-          col < visibleRange.endCol &&
-          row >= visibleRange.startRow &&
-          row < visibleRange.endRow
-        );
-      });
-  }, [sheet.cells, visibleRange]);
+  // Generate all visible cells (including empty ones)
+  const allVisibleCells = useMemo(() => {
+    const cells: Array<{ col: number; row: number; cellId: string }> = [];
+    for (let row = visibleRange.startRow; row < visibleRange.endRow; row++) {
+      for (let col = visibleRange.startCol; col < visibleRange.endCol; col++) {
+        const cellId = `${col}:${row}`;
+        cells.push({ col, row, cellId });
+      }
+    }
+    return cells;
+  }, [visibleRange]);
+
+  const resolveDisplayValue = (targetCell: CellType | undefined, column: number, row: number): string => {
+    if (!targetCell) {
+      return "";
+    }
+    try {
+      const computedValue = formulaEngine.resolveCellValueByCoords(sheet.id, column, row);
+      return computedValue === null ? "null" : String(computedValue);
+    } catch {
+      return "#ERROR";
+    }
+  };
 
   return (
     <>
-      {visibleCells.map(([cellId, cell]) => {
-        if (cell === undefined) {
-          return null;
-        }
-
-        const [colStr, rowStr] = cellId.split(":");
-        const col = Number(colStr);
-        const row = Number(rowStr);
-
+      {allVisibleCells.map(({ col, row, cellId }) => {
+        const cell = sheet.cells[cellId as `${number}:${number}`];
         const x = calculateColumnPosition(col, defaultCellWidth, columnSizes);
         const y = calculateRowPosition(row, defaultCellHeight, rowSizes);
 
@@ -97,6 +102,13 @@ const CellRenderer = (): ReactElement => {
         const width = customWidth === undefined ? defaultCellWidth : customWidth;
         const customHeight = rowSizes.get(row);
         const height = customHeight === undefined ? defaultCellHeight : customHeight;
+
+        const cellStyle = resolveStyle(styleRegistry, col, row);
+        if (!cell && Object.keys(cellStyle).length === 0) {
+          return null;
+        }
+
+        const displayValue = resolveDisplayValue(cell, col, row);
 
         return (
           <div
@@ -111,9 +123,10 @@ const CellRenderer = (): ReactElement => {
               width,
               height,
               lineHeight: `${height - 4}px`,
+              ...cellStyle,
             }}
           >
-            {String(cell.value)}
+            {displayValue}
           </div>
         );
       })}
@@ -130,23 +143,52 @@ const SelectionHighlight = (): ReactElement | null => {
   const { state } = useSheetContext();
   const { selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
-  if (!selectionRect || selectionRect.width === 0 || selectionRect.height === 0) {
+  const selectionRange = useMemo(() => {
+    if (!selectionRect) {
+      return null;
+    }
+    return calculateSelectionRange(
+      selectionRect,
+      defaultCellWidth,
+      defaultCellHeight,
+      columnSizes,
+      rowSizes,
+      SAFE_MAX_COLUMNS,
+      SAFE_MAX_ROWS,
+    );
+  }, [selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight]);
+
+  if (!selectionRect || selectionRect.width === 0 || selectionRect.height === 0 || !selectionRange) {
     return null;
   }
 
-  const selectionRange = useMemo(
-    () =>
-      calculateSelectionRange(
-        selectionRect,
-        defaultCellWidth,
-        defaultCellHeight,
-        columnSizes,
-        rowSizes,
-        16384,
-        1048576,
-      ),
-    [selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight],
-  );
+  const getSelectionLabel = (): string => {
+    const { startCol, endCol, startRow, endRow } = selectionRange;
+
+    // Check if entire sheet
+    if (startCol === 0 && endCol >= SAFE_MAX_COLUMNS && startRow === 0 && endRow >= SAFE_MAX_ROWS) {
+      return "Entire sheet";
+    }
+
+    // Check if column(s)
+    if (startRow === 0 && endRow >= SAFE_MAX_ROWS) {
+      if (startCol === endCol - 1) {
+        return `Column ${startCol}`;
+      }
+      return `Columns ${startCol}-${endCol - 1}`;
+    }
+
+    // Check if row(s)
+    if (startCol === 0 && endCol >= SAFE_MAX_COLUMNS) {
+      if (startRow === endRow - 1) {
+        return `Row ${startRow}`;
+      }
+      return `Rows ${startRow}-${endRow - 1}`;
+    }
+
+    // Regular range
+    return `Col: ${startCol}-${endCol - 1} | Row: ${startRow}-${endRow - 1}`;
+  };
 
   return (
     <>
@@ -168,8 +210,7 @@ const SelectionHighlight = (): ReactElement | null => {
           top: selectionRect.y - viewportRect.top + 5,
         }}
       >
-        Col: {selectionRange.startCol}-{selectionRange.endCol - 1} | Row: {selectionRange.startRow}-
-        {selectionRange.endRow - 1}
+        {getSelectionLabel()}
       </div>
     </>
   );
@@ -180,7 +221,13 @@ const SelectionHighlight = (): ReactElement | null => {
  * @param props - Component props
  * @returns Sheet component
  */
-export const Sheet = ({ style, maxColumns = 16384, maxRows = 1048576 }: SheetProps): ReactElement => {
+export const Sheet = (
+  {
+    style,
+    maxColumns = SAFE_MAX_COLUMNS,
+    maxRows = SAFE_MAX_ROWS,
+  }: SheetProps,
+): ReactElement => {
   const { state, actions } = useSheetContext();
   const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
@@ -244,6 +291,24 @@ const SheetWithHeaders = ({ actions, maxColumns, maxRows }: SheetWithHeadersProp
     [viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, maxColumns, maxRows],
   );
 
+  const handleColumnClick = useCallback(
+    (col: number) => {
+      actions.selectColumn(col);
+    },
+    [actions],
+  );
+
+  const handleRowClick = useCallback(
+    (row: number) => {
+      actions.selectRow(row);
+    },
+    [actions],
+  );
+
+  const handleCornerClick = useCallback(() => {
+    actions.selectSheet();
+  }, [actions]);
+
   return (
     <div className={styles.sheetWithHeaders}>
       {/* Column header - fixed at top */}
@@ -256,6 +321,7 @@ const SheetWithHeaders = ({ actions, maxColumns, maxRows }: SheetWithHeadersProp
           visibleStartCol={visibleRange.startCol}
           visibleEndCol={visibleRange.endCol}
           onResizeStart={handleColumnResizeStart}
+          onColumnClick={handleColumnClick}
         />
       </div>
 
@@ -269,11 +335,14 @@ const SheetWithHeaders = ({ actions, maxColumns, maxRows }: SheetWithHeadersProp
           visibleStartRow={visibleRange.startRow}
           visibleEndRow={visibleRange.endRow}
           onResizeStart={handleRowResizeStart}
+          onRowClick={handleRowClick}
         />
       </div>
 
       {/* Header corner - fixed at top-left */}
-      <div className={styles.headerCornerFixed} />
+      <div className={styles.headerCornerFixed}>
+        <HeaderCorner onClick={handleCornerClick} />
+      </div>
 
       {/* Main grid content */}
       <SheetContent actions={actions} maxColumns={maxColumns} maxRows={maxRows} />
