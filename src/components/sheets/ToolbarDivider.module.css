@@ -1,0 +1,10 @@
+/**
+ * @file ToolbarDivider component styles.
+ */
+
+.divider {
+  width: var(--border-width);
+  height: 20px;
+  background-color: var(--color-border-secondary);
+  margin: 0 var(--spacing-xs);
+}

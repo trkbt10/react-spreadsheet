@@ -1,0 +1,42 @@
+/**
+ * @file ToolbarButton component styles.
+ */
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--toolbar-button-size);
+  height: var(--toolbar-button-size);
+  padding: 0;
+  background-color: var(--toolbar-button-bg);
+  border: var(--border-width) var(--border-style) var(--toolbar-button-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text-primary);
+}
+
+.button:hover {
+  background-color: var(--toolbar-button-bg-hover);
+  border-color: var(--toolbar-button-border-hover);
+}
+
+.button:active {
+  background-color: var(--toolbar-button-bg-active);
+}
+
+.button[data-is-active="true"] {
+  background-color: var(--color-bg-selected);
+  border-color: var(--color-border-focus);
+}
+
+.button[data-is-disabled="true"] {
+  opacity: var(--toolbar-button-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.button[data-is-disabled="true"]:hover {
+  background-color: var(--toolbar-button-bg);
+  border-color: var(--toolbar-button-border);
+}

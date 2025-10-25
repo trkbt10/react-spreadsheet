@@ -2,7 +2,7 @@
  * @file Shared types for the formula evaluation module.
  */
 
-import type { Cell, Sheet, SpreadSheet } from "../../types";
+import type { Cell, Sheet } from "../../types";
 import type { FormulaAstNode } from "./ast";
 
 export type FormulaPrimitiveValue = string | number | boolean | null;
@@ -60,11 +60,6 @@ export type WorkbookSheetIndex = {
 export type WorkbookIndex = {
   byId: Map<string, WorkbookSheetIndex>;
   byName: Map<string, WorkbookSheetIndex>;
-};
-
-export type MatrixFactoryDependencies = {
-  spreadsheet: SpreadSheet;
-  sheets: ReadonlyArray<Sheet>;
 };
 
 export type ParsedFormula = {

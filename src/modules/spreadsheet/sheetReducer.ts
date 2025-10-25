@@ -13,6 +13,7 @@ import {
   calculateRowPosition,
   calculateTotalWidth,
   calculateTotalHeight,
+  calculateSelectionRange,
 } from "./gridLayout";
 import type { Rect, Point } from "../../utils/rect";
 import { createRectFromPoints } from "../../utils/rect";
@@ -27,6 +28,18 @@ export type SelectionRange = {
   endRow: number;
 };
 
+export type EditingCell = {
+  col: number;
+  row: number;
+  value: string;
+  range?: SelectionRange | null;
+};
+
+export type ActiveCell = {
+  col: number;
+  row: number;
+};
+
 export type SheetState = {
   columnSizes: ColumnSizeMap;
   rowSizes: RowSizeMap;
@@ -37,6 +50,8 @@ export type SheetState = {
   isDragging: boolean;
   dragStartPos: Point | null;
   styleRegistry: StyleRegistry;
+  editingCell: EditingCell | null;
+  activeCell: ActiveCell | null;
 };
 
 export type SheetAction = ActionUnion<typeof sheetActions>;
@@ -51,6 +66,8 @@ export const initialSheetState: SheetState = {
   isDragging: false,
   dragStartPos: null,
   styleRegistry: createStyleRegistry(),
+  editingCell: null,
+  activeCell: null,
 };
 
 const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(sheetActions, {
@@ -105,9 +122,35 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
   },
 
   endRectSelection: (state) => {
+    if (!state.selectionRect) {
+      return {
+        ...state,
+        isDragging: false,
+      };
+    }
+
+    // Calculate selection range from rect
+    const range = calculateSelectionRange(
+      state.selectionRect,
+      state.defaultCellWidth,
+      state.defaultCellHeight,
+      state.columnSizes,
+      state.rowSizes,
+      SAFE_MAX_COLUMNS,
+      SAFE_MAX_ROWS,
+    );
+
+    // Set active cell to the top-left of the range
+    const activeCell = range
+      ? { col: range.startCol, row: range.startRow }
+      : null;
+
     return {
       ...state,
       isDragging: false,
+      selectionRect: null, // Clear rect after selection is done
+      selectionRange: range,
+      activeCell,
     };
   },
 
@@ -148,21 +191,17 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
 
   selectRow: (state, action) => {
     const { row } = action.payload;
-    const x = 0;
-    const y = calculateRowPosition(row, state.defaultCellHeight, state.rowSizes);
-    const width = calculateTotalWidth(SAFE_MAX_COLUMNS, state.defaultCellWidth, state.columnSizes);
-    const customHeight = state.rowSizes.get(row);
-    const height = customHeight === undefined ? state.defaultCellHeight : customHeight;
 
     return {
       ...state,
-      selectionRect: { x, y, width, height },
+      selectionRect: null,
       selectionRange: {
         startCol: 0,
         endCol: SAFE_MAX_COLUMNS,
         startRow: row,
         endRow: row + 1,
       },
+      activeCell: { col: 0, row },
       isDragging: false,
       dragStartPos: null,
     };
@@ -170,41 +209,105 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
 
   selectColumn: (state, action) => {
     const { col } = action.payload;
-    const x = calculateColumnPosition(col, state.defaultCellWidth, state.columnSizes);
-    const y = 0;
-    const customWidth = state.columnSizes.get(col);
-    const width = customWidth === undefined ? state.defaultCellWidth : customWidth;
-    const height = calculateTotalHeight(SAFE_MAX_ROWS, state.defaultCellHeight, state.rowSizes);
 
     return {
       ...state,
-      selectionRect: { x, y, width, height },
+      selectionRect: null,
       selectionRange: {
         startCol: col,
         endCol: col + 1,
         startRow: 0,
         endRow: SAFE_MAX_ROWS,
       },
+      activeCell: { col, row: 0 },
       isDragging: false,
       dragStartPos: null,
     };
   },
 
   selectSheet: (state) => {
-    const width = calculateTotalWidth(SAFE_MAX_COLUMNS, state.defaultCellWidth, state.columnSizes);
-    const height = calculateTotalHeight(SAFE_MAX_ROWS, state.defaultCellHeight, state.rowSizes);
-
     return {
       ...state,
-      selectionRect: { x: 0, y: 0, width, height },
+      selectionRect: null,
       selectionRange: {
         startCol: 0,
         endCol: SAFE_MAX_COLUMNS,
         startRow: 0,
         endRow: SAFE_MAX_ROWS,
       },
+      activeCell: { col: 0, row: 0 },
       isDragging: false,
       dragStartPos: null,
+    };
+  },
+
+  startEditingCell: (state, action) => {
+    const { col, row, initialValue } = action.payload;
+    return {
+      ...state,
+      editingCell: { col, row, value: initialValue, range: null },
+      activeCell: { col, row },
+    };
+  },
+
+  startEditingRange: (state, action) => {
+    const { range, initialValue } = action.payload;
+    return {
+      ...state,
+      editingCell: {
+        col: range.startCol,
+        row: range.startRow,
+        value: initialValue,
+        range,
+      },
+      activeCell: { col: range.startCol, row: range.startRow },
+    };
+  },
+
+  updateEditingValue: (state, action) => {
+    if (!state.editingCell) {
+      return state;
+    }
+    return {
+      ...state,
+      editingCell: {
+        ...state.editingCell,
+        value: action.payload.value,
+      },
+    };
+  },
+
+  commitEdit: (state, action) => {
+    // TODO: Apply the edit value to the actual cell data
+    // For now, we just clear the editing state
+    // The actual implementation should update sheet.cells based on:
+    // - action.payload.value (or state.editingCell.value if not provided)
+    // - action.payload.range (or state.editingCell.range if not provided)
+    return {
+      ...state,
+      editingCell: null,
+    };
+  },
+
+  cancelEdit: (state) => {
+    return {
+      ...state,
+      editingCell: null,
+    };
+  },
+
+  setActiveCell: (state, action) => {
+    const { col, row } = action.payload;
+    return {
+      ...state,
+      activeCell: { col, row },
+    };
+  },
+
+  clearActiveCell: (state) => {
+    return {
+      ...state,
+      activeCell: null,
     };
   },
 });

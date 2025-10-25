@@ -32,12 +32,42 @@ const buildAdaptiveStructure = (
   entries: Array<[number, bigint]>,
   windowSize: number,
 ): AdaptiveStructure => {
-  if (windowSize === 1) {
+  if (entries.length === 1) {
     const [index, delta] = entries[0];
     return {
       kind: "leaf",
       index,
       delta,
+    };
+  }
+
+  if (windowSize === 1) {
+    const sortedEntries = [...entries].sort((a, b) => a[0] - b[0]);
+    const blockIds: number[] = [];
+    const prefixTotals: bigint[] = [];
+    const children = new Map<number, AdaptiveStructure>();
+
+    let runningTotal = 0n;
+    for (const [index, delta] of sortedEntries) {
+      runningTotal += delta;
+      blockIds.push(index);
+      prefixTotals.push(runningTotal);
+      children.set(
+        index,
+        {
+          kind: "leaf",
+          index,
+          delta,
+        },
+      );
+    }
+
+    return {
+      kind: "node",
+      windowSize,
+      blockIds,
+      prefixTotals,
+      children,
     };
   }
 
@@ -219,10 +249,10 @@ export const sumAdjustmentsBeforeIndex = (
 
 export const toSafeNumber = (value: bigint, context: string): number => {
   if (value > MAX_SAFE_BIGINT) {
-    throw new Error(`${context} exceeds Number.MAX_SAFE_INTEGER.`);
+    return Number.MAX_SAFE_INTEGER;
   }
   if (value < MIN_SAFE_BIGINT) {
-    throw new Error(`${context} is below Number.MIN_SAFE_INTEGER.`);
+    return Number.MIN_SAFE_INTEGER;
   }
   return Number(value);
 };

@@ -1,0 +1,85 @@
+/**
+ * @file ColorInputFields component styles.
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.modeSelector {
+  display: flex;
+  gap: 4px;
+  padding: 2px;
+  background-color: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+.modeButton {
+  flex: 1;
+  padding: 4px var(--spacing-sm);
+  background-color: transparent;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.modeButton:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.modeButton[data-is-active="true"] {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.inputGroup {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.inputLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.labelText {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.input {
+  width: 100%;
+  padding: 4px var(--spacing-sm);
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width) var(--border-style) var(--color-border-secondary);
+  border-radius: 2px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input[type="number"]::-webkit-inner-spin-button,
+.input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

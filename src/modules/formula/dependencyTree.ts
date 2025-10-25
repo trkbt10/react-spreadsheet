@@ -3,7 +3,7 @@
  */
 
 import type {
-  FormulaWorkbookMatrix,
+  FormulaWorkbookGrid,
   DependencyTree,
   ParsedFormula,
   CellAddress,
@@ -34,7 +34,7 @@ const getNode = (tree: DependencyTree, address: CellAddress): CellAddressKey => 
 };
 
 export type BuildDependencyTreeParams = {
-  matrix: FormulaWorkbookMatrix;
+  matrix: FormulaWorkbookGrid;
   index: WorkbookIndex;
 };
 
@@ -48,8 +48,8 @@ export const buildDependencyTree = ({ matrix, index }: BuildDependencyTreeParams
   const formulas = new Map<CellAddressKey, ParsedFormula>();
 
   matrix.forEach((sheetMatrix) => {
-    sheetMatrix.rows.forEach((row, rowIndex) => {
-      row.forEach((cell, columnIndex) => {
+    sheetMatrix.rows.forEach((rowMap, rowIndex) => {
+      rowMap.forEach((cell, columnIndex) => {
         const address: CellAddress = {
           sheetId: sheetMatrix.sheetId,
           sheetName: sheetMatrix.sheetName,

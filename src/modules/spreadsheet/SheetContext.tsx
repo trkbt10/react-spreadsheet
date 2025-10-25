@@ -2,7 +2,7 @@
  * @file Sheet-level context for providing sheet information to child components.
  */
 
-import { createContext, useContext, useReducer, useMemo } from "react";
+import { createContext, useContext, useReducer, useMemo, useCallback } from "react";
 import type { ReactNode, ReactElement, Dispatch } from "react";
 import type { Sheet } from "../../types";
 import { sheetReducer, initialSheetState } from "./sheetReducer";
@@ -21,6 +21,7 @@ export type SheetContextValue = {
   state: SheetState;
   dispatch: Dispatch<SheetAction>;
   actions: BoundActionCreators<typeof sheetActions>;
+  onCellsUpdate?: (updates: Array<{ col: number; row: number; value: string }>) => void;
 };
 
 const SheetContext = createContext<SheetContextValue | null>(null);
@@ -30,6 +31,7 @@ export type SheetProviderProps = {
   name: string;
   id: string;
   children: ReactNode;
+  onCellsUpdate?: (updates: Array<{ col: number; row: number; value: string }>) => void;
 };
 
 /**
@@ -37,10 +39,19 @@ export type SheetProviderProps = {
  * @param props - Provider props
  * @returns SheetProvider component
  */
-export const SheetProvider = ({ sheet, name, id, children }: SheetProviderProps): ReactElement => {
+export const SheetProvider = ({ sheet, name, id, children, onCellsUpdate: externalOnCellsUpdate }: SheetProviderProps): ReactElement => {
   const [state, dispatch] = useReducer(sheetReducer, initialSheetState);
 
   const actions = useMemo(() => bindActionCreators(sheetActions, dispatch), []);
+
+  // TODO: Implement actual cell update logic here
+  // For now, just log the updates
+  const handleCellsUpdate = useCallback((updates: Array<{ col: number; row: number; value: string }>) => {
+    console.log("Cell updates:", updates);
+    if (externalOnCellsUpdate) {
+      externalOnCellsUpdate(updates);
+    }
+  }, [externalOnCellsUpdate]);
 
   const value = useMemo(
     (): SheetContextValue => ({
@@ -50,8 +61,9 @@ export const SheetProvider = ({ sheet, name, id, children }: SheetProviderProps)
       state,
       dispatch,
       actions,
+      onCellsUpdate: handleCellsUpdate,
     }),
-    [sheet, name, id, state, actions],
+    [sheet, name, id, state, actions, handleCellsUpdate],
   );
 
   return <SheetContext.Provider value={value}>{children}</SheetContext.Provider>;

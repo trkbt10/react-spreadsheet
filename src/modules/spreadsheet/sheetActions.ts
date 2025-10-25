@@ -30,4 +30,23 @@ export const sheetActions = {
     (key: StyleKey) => ({ key }),
   ),
   clearAllStyles: createAction("sheet/clearAllStyles"),
+  startEditingCell: createAction(
+    "sheet/startEditingCell",
+    (col: number, row: number, initialValue: string) => ({ col, row, initialValue }),
+  ),
+  startEditingRange: createAction(
+    "sheet/startEditingRange",
+    (range: { startCol: number; startRow: number; endCol: number; endRow: number }, initialValue: string) => ({ range, initialValue }),
+  ),
+  updateEditingValue: createAction(
+    "sheet/updateEditingValue",
+    (value: string) => ({ value }),
+  ),
+  commitEdit: createAction("sheet/commitEdit", (value?: string, range?: { startCol: number; startRow: number; endCol: number; endRow: number } | null) => ({ value, range })),
+  cancelEdit: createAction("sheet/cancelEdit"),
+  setActiveCell: createAction(
+    "sheet/setActiveCell",
+    (col: number, row: number) => ({ col, row }),
+  ),
+  clearActiveCell: createAction("sheet/clearActiveCell"),
 } as const;

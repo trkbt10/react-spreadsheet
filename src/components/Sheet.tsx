@@ -4,7 +4,7 @@
 
 import { useMemo, useCallback } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import type { Sheet as SheetType, Cell as CellType } from "../types";
+import type { Sheet as SheetType } from "../types";
 import { VirtualScroll } from "./scrollarea/VirtualScroll";
 import { useVirtualScrollContext } from "./scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../modules/spreadsheet/SheetContext";
@@ -13,7 +13,6 @@ import {
   calculateVisibleRange,
   calculateTotalWidth,
   calculateTotalHeight,
-  calculateSelectionRange,
   calculateColumnPosition,
   calculateRowPosition,
   SAFE_MAX_COLUMNS,
@@ -24,10 +23,12 @@ import { useRowResize } from "../modules/spreadsheet/useRowResize";
 import { ColumnHeader } from "./headers/ColumnHeader";
 import { RowHeader } from "./headers/RowHeader";
 import { HeaderCorner } from "./headers/HeaderCorner";
+import { Cell } from "./Cell";
+import { SelectionHighlight } from "./sheets/SelectionHighlight";
+import { CellEditor } from "./sheets/CellEditor";
 import styles from "./Sheet.module.css";
 import { GridLines } from "./GridLines";
 import { resolveStyle } from "../modules/spreadsheet/styleResolver";
-import { useFormulaEngine } from "../modules/formula/FormulaEngineContext";
 
 export type SheetProps = {
   sheet?: SheetType;
@@ -47,7 +48,6 @@ const CellRenderer = (): ReactElement => {
   const { viewportRect } = useVirtualScrollContext();
   const { sheet, state } = useSheetContext();
   const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, styleRegistry } = state;
-  const formulaEngine = useFormulaEngine();
 
   const visibleRange = useMemo(
     () =>
@@ -79,18 +79,6 @@ const CellRenderer = (): ReactElement => {
     return cells;
   }, [visibleRange]);
 
-  const resolveDisplayValue = (targetCell: CellType | undefined, column: number, row: number): string => {
-    if (!targetCell) {
-      return "";
-    }
-    try {
-      const computedValue = formulaEngine.resolveCellValueByCoords(sheet.id, column, row);
-      return computedValue === null ? "null" : String(computedValue);
-    } catch {
-      return "#ERROR";
-    }
-  };
-
   return (
     <>
       {allVisibleCells.map(({ col, row, cellId }) => {
@@ -103,118 +91,33 @@ const CellRenderer = (): ReactElement => {
         const customHeight = rowSizes.get(row);
         const height = customHeight === undefined ? defaultCellHeight : customHeight;
 
+        // Skip rendering if no data and no style
         const cellStyle = resolveStyle(styleRegistry, col, row);
         if (!cell && Object.keys(cellStyle).length === 0) {
           return null;
         }
 
-        const displayValue = resolveDisplayValue(cell, col, row);
-
         return (
-          <div
+          <Cell
             key={cellId}
-            className={styles.cell}
-            data-cell-id={cellId}
-            data-col={col}
-            data-row={row}
+            cell={cell}
+            col={col}
+            row={row}
             style={{
+              position: "absolute",
               left: x - viewportRect.left + HEADER_COLUMN_WIDTH,
               top: y - viewportRect.top + HEADER_ROW_HEIGHT,
               width,
               height,
               lineHeight: `${height - 4}px`,
-              ...cellStyle,
             }}
-          >
-            {displayValue}
-          </div>
+          />
         );
       })}
     </>
   );
 };
 
-/**
- * Renders selection highlight overlay.
- * @returns SelectionHighlight component
- */
-const SelectionHighlight = (): ReactElement | null => {
-  const { viewportRect } = useVirtualScrollContext();
-  const { state } = useSheetContext();
-  const { selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
-
-  const selectionRange = useMemo(() => {
-    if (!selectionRect) {
-      return null;
-    }
-    return calculateSelectionRange(
-      selectionRect,
-      defaultCellWidth,
-      defaultCellHeight,
-      columnSizes,
-      rowSizes,
-      SAFE_MAX_COLUMNS,
-      SAFE_MAX_ROWS,
-    );
-  }, [selectionRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight]);
-
-  if (!selectionRect || selectionRect.width === 0 || selectionRect.height === 0 || !selectionRange) {
-    return null;
-  }
-
-  const getSelectionLabel = (): string => {
-    const { startCol, endCol, startRow, endRow } = selectionRange;
-
-    // Check if entire sheet
-    if (startCol === 0 && endCol >= SAFE_MAX_COLUMNS && startRow === 0 && endRow >= SAFE_MAX_ROWS) {
-      return "Entire sheet";
-    }
-
-    // Check if column(s)
-    if (startRow === 0 && endRow >= SAFE_MAX_ROWS) {
-      if (startCol === endCol - 1) {
-        return `Column ${startCol}`;
-      }
-      return `Columns ${startCol}-${endCol - 1}`;
-    }
-
-    // Check if row(s)
-    if (startCol === 0 && endCol >= SAFE_MAX_COLUMNS) {
-      if (startRow === endRow - 1) {
-        return `Row ${startRow}`;
-      }
-      return `Rows ${startRow}-${endRow - 1}`;
-    }
-
-    // Regular range
-    return `Col: ${startCol}-${endCol - 1} | Row: ${startRow}-${endRow - 1}`;
-  };
-
-  return (
-    <>
-      {/* Selection rect overlay */}
-      <div
-        className={styles.selectionOverlay}
-        style={{
-          left: selectionRect.x - viewportRect.left,
-          top: selectionRect.y - viewportRect.top,
-          width: selectionRect.width,
-          height: selectionRect.height,
-        }}
-      />
-      {/* Selection range info */}
-      <div
-        className={styles.selectionInfo}
-        style={{
-          left: selectionRect.x - viewportRect.left + 5,
-          top: selectionRect.y - viewportRect.top + 5,
-        }}
-      >
-        {getSelectionLabel()}
-      </div>
-    </>
-  );
-};
 
 /**
  * Renders a spreadsheet sheet with virtual scrolling for performance.
@@ -358,13 +261,22 @@ type SheetContentProps = {
 
 const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): ReactElement => {
   const { scrollLeft, scrollTop, viewportRect } = useVirtualScrollContext();
-  const { state } = useSheetContext();
+  const { sheet, state } = useSheetContext();
   const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
   const { handlePointerDown, handlePointerMove, handlePointerUp } = useSheetPointerEvents({
     actions,
     scrollLeft,
     scrollTop,
+    headerColumnWidth: HEADER_COLUMN_WIDTH,
+    headerRowHeight: HEADER_ROW_HEIGHT,
+    defaultCellWidth,
+    defaultCellHeight,
+    columnSizes,
+    rowSizes,
+    maxColumns,
+    maxRows,
+    sheet,
   });
 
   return (
@@ -388,7 +300,8 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
         maxRows={maxRows}
       />
       <CellRenderer />
-      <SelectionHighlight />
+      <SelectionHighlight headerColumnWidth={HEADER_COLUMN_WIDTH} headerRowHeight={HEADER_ROW_HEIGHT} />
+      <CellEditor />
     </div>
   );
 };

@@ -1,0 +1,39 @@
+/**
+ * @file SelectionHighlight component styles.
+ */
+
+.highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 150;
+}
+
+.draggingRect {
+  fill: rgba(66, 133, 244, 0.2);
+  stroke: #4285f4;
+  stroke-width: 2;
+}
+
+.rangeCell {
+  fill: rgba(66, 133, 244, 0.15);
+  stroke: none;
+}
+
+.activeCellRect {
+  fill: none;
+  stroke: #4285f4;
+  stroke-width: 2;
+}
+
+.selectionInfo {
+  fill: rgba(0, 0, 0, 0.7);
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.selectionInfoText {
+  fill: white;
+  dominant-baseline: hanging;
+}

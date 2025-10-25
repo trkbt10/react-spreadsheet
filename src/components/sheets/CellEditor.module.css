@@ -1,0 +1,39 @@
+/**
+ * @file CellEditor component styles.
+ */
+
+.editor {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 2px 4px;
+  background-color: white;
+  border: 2px solid #4285f4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  overflow: visible;
+}
+
+.input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.input[data-is-formula="true"] {
+  font-family: var(--font-family-mono);
+  color: #1a73e8;
+  font-weight: var(--font-weight-medium);
+}
+
+.input::placeholder {
+  color: #999;
+  font-size: var(--font-size-xs);
+}

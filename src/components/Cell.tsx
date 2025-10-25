@@ -48,18 +48,22 @@ const resolveCellDisplayValue = (
 
 /**
  * Renders a single spreadsheet cell with type-appropriate formatting, formula resolution, and style application.
+ * Note: Cell interaction (click, double-click) is handled by the Sheet component via pointer events.
  * @param props - Component props
  * @returns Cell component
  */
 export const Cell = ({ cell, col, row, style, selected = false }: CellProps): ReactElement => {
   const { sheet, state } = useSheetContext();
-  const { styleRegistry } = state;
+  const { styleRegistry, activeCell, editingCell } = state;
   const formulaEngine = useFormulaEngine();
 
   const displayValue = resolveCellDisplayValue(cell, sheet.id, col, row, formulaEngine);
   const cellType = cell?.type ?? null;
   const isEmpty = !cell;
   const cellId = cell?.id ?? null;
+
+  const isActive = activeCell?.col === col && activeCell?.row === row;
+  const isEditing = editingCell?.col === col && editingCell?.row === row;
 
   // Resolve style for this cell
   const cellStyle: CellStyle = resolveStyle(styleRegistry, col, row);
@@ -70,16 +74,36 @@ export const Cell = ({ cell, col, row, style, selected = false }: CellProps): Re
     ...cellStyle,
   };
 
+  // Hide cell content when editing
+  if (isEditing) {
+    return (
+      <div
+        className={styles.cell}
+        style={mergedStyle}
+        role="gridcell"
+        data-selected={selected}
+        data-empty={isEmpty}
+        data-type={cellType}
+        data-cell-id={cellId}
+        data-active={isActive}
+        data-col={col}
+        data-row={row}
+      />
+    );
+  }
+
   return (
     <div
       className={styles.cell}
       style={mergedStyle}
       role="gridcell"
-      tabIndex={0}
       data-selected={selected}
       data-empty={isEmpty}
       data-type={cellType}
       data-cell-id={cellId}
+      data-active={isActive}
+      data-col={col}
+      data-row={row}
     >
       {displayValue}
     </div>

@@ -21,6 +21,7 @@ export type CellStyle = {
   color?: CSSProperties["color"];
   fontWeight?: CSSProperties["fontWeight"];
   fontStyle?: CSSProperties["fontStyle"];
+  fontFamily?: CSSProperties["fontFamily"];
   textAlign?: CSSProperties["textAlign"];
   textDecoration?: CSSProperties["textDecoration"];
   fontSize?: CSSProperties["fontSize"];

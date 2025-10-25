@@ -1,0 +1,173 @@
+/**
+ * @file ColorPicker component for selecting colors.
+ */
+
+import { useCallback, useState, useEffect } from "react";
+import type { ReactElement } from "react";
+import { Popover } from "./Popover";
+import { ColorMap } from "./ColorMap";
+import { ColorSlider } from "./ColorSlider";
+import { ColorInputFields } from "./ColorInputFields";
+import { hexToRgb, hexToHsl, rgbToHex, hslToRgb } from "../../utils/colorConversion";
+import type { RGBColor, HSLColor } from "../../utils/colorConversion";
+import styles from "./ColorPicker.module.css";
+
+export type ColorPickerProps = {
+  readonly value: string;
+  readonly onChange: (color: string) => void;
+  readonly icon: ReactElement;
+  readonly ariaLabel: string;
+};
+
+const PRESET_COLORS = [
+  "#000000", "#434343", "#666666", "#999999", "#B7B7B7", "#CCCCCC", "#D9D9D9", "#EFEFEF", "#F3F3F3", "#FFFFFF",
+  "#980000", "#FF0000", "#FF9900", "#FFFF00", "#00FF00", "#00FFFF", "#4A86E8", "#0000FF", "#9900FF", "#FF00FF",
+  "#E6B8AF", "#F4CCCC", "#FCE5CD", "#FFF2CC", "#D9EAD3", "#D0E0E3", "#C9DAF8", "#CFE2F3", "#D9D2E9", "#EAD1DC",
+  "#DD7E6B", "#EA9999", "#F9CB9C", "#FFE599", "#B6D7A8", "#A2C4C9", "#A4C2F4", "#9FC5E8", "#B4A7D6", "#D5A6BD",
+  "#CC4125", "#E06666", "#F6B26B", "#FFD966", "#93C47D", "#76A5AF", "#6D9EEB", "#6FA8DC", "#8E7CC3", "#C27BA0",
+  "#A61C00", "#CC0000", "#E69138", "#F1C232", "#6AA84F", "#45818E", "#3C78D8", "#3D85C6", "#674EA7", "#A64D79",
+  "#85200C", "#990000", "#B45F06", "#BF9000", "#38761D", "#134F5C", "#1155CC", "#0B5394", "#351C75", "#741B47",
+  "#5B0F00", "#660000", "#783F04", "#7F6000", "#274E13", "#0C343D", "#1C4587", "#073763", "#20124D", "#4C1130",
+];
+
+/**
+ * ColorPicker component for selecting colors with Photoshop-style advanced UI.
+ * @param props - ColorPicker props
+ * @returns ColorPicker component
+ */
+export const ColorPicker = ({ value, onChange, icon, ariaLabel }: ColorPickerProps): ReactElement => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [rgb, setRgb] = useState<RGBColor>(hexToRgb(value));
+  const [hsl, setHsl] = useState<HSLColor>(hexToHsl(value));
+
+  useEffect(() => {
+    setRgb(hexToRgb(value));
+    setHsl(hexToHsl(value));
+  }, [value]);
+
+  const handleColorSelect = useCallback(
+    (color: string) => {
+      onChange(color);
+    },
+    [onChange],
+  );
+
+  const handleMapChange = useCallback(
+    (saturation: number, lightness: number) => {
+      const newHsl: HSLColor = { h: hsl.h, s: saturation, l: lightness };
+      const newHex = rgbToHex(hslToRgb(newHsl));
+      onChange(newHex);
+    },
+    [hsl.h, onChange],
+  );
+
+  const handleHueChange = useCallback(
+    (hue: number) => {
+      const newHsl: HSLColor = { h: hue, s: hsl.s, l: hsl.l };
+      const newHex = rgbToHex(hslToRgb(newHsl));
+      onChange(newHex);
+    },
+    [hsl.s, hsl.l, onChange],
+  );
+
+  const handleRgbChange = useCallback(
+    (newRgb: RGBColor) => {
+      const newHex = rgbToHex(newRgb);
+      onChange(newHex);
+    },
+    [onChange],
+  );
+
+  const handleHslChange = useCallback(
+    (newHsl: HSLColor) => {
+      const newHex = rgbToHex(hslToRgb(newHsl));
+      onChange(newHex);
+    },
+    [onChange],
+  );
+
+  const handleHexChange = useCallback(
+    (hex: string) => {
+      if (hex.length === 7) {
+        onChange(hex);
+      }
+    },
+    [onChange],
+  );
+
+  const toggleDropdown = useCallback(() => {
+    setIsOpen((prev) => !prev);
+  }, []);
+
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const trigger = (
+    <button
+      type="button"
+      className={styles.trigger}
+      onClick={toggleDropdown}
+      aria-label={ariaLabel}
+      data-is-open={isOpen}
+    >
+      {icon}
+      <span className={styles.colorPreview} style={{ backgroundColor: value }} />
+    </button>
+  );
+
+  return (
+    <Popover isOpen={isOpen} onClose={closeDropdown} trigger={trigger}>
+      <div className={styles.content}>
+          <div className={styles.currentColorPreview}>
+            <div className={styles.colorSwatch} style={{ backgroundColor: value }} />
+            <span className={styles.colorValue}>{value.toUpperCase()}</span>
+          </div>
+
+          <div className={styles.colorMapSection}>
+            <ColorMap
+              hue={hsl.h}
+              saturation={hsl.s}
+              lightness={hsl.l}
+              onChange={handleMapChange}
+            />
+          </div>
+
+          <div className={styles.sliderSection}>
+            <ColorSlider
+              value={hsl.h}
+              onChange={handleHueChange}
+              type="hue"
+            />
+          </div>
+
+          <ColorInputFields
+            rgb={rgb}
+            hsl={hsl}
+            hex={value}
+            onRgbChange={handleRgbChange}
+            onHslChange={handleHslChange}
+            onHexChange={handleHexChange}
+          />
+
+          <div className={styles.divider} />
+
+          <div className={styles.presetColors}>
+            {PRESET_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={styles.colorOption}
+                style={{ backgroundColor: color }}
+                onClick={() => {
+                  handleColorSelect(color);
+                }}
+                data-is-selected={value === color}
+                aria-label={`Color ${color}`}
+              />
+            ))}
+          </div>
+        </div>
+    </Popover>
+  );
+};

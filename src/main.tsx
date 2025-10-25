@@ -4,9 +4,10 @@
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { App } from "./App";
 import { Catalog } from "./Catalog";
+import { DependencyGraphShowcase } from "./showcase/DependencyGraphShowcase";
 import "./global.css";
 
 const container = document.getElementById("root");
@@ -21,6 +22,7 @@ createRoot(container).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/catalog" element={<Catalog />} />
+        <Route path="/catalog/dependency-graph" element={<DependencyGraphShowcase />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

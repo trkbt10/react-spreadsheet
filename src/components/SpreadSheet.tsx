@@ -2,19 +2,17 @@
  * @file SpreadSheet component for rendering entire spreadsheet with multiple sheets.
  */
 
-import { useState, useMemo, useCallback, Activity } from "react";
+import { Activity } from "react";
 import type { CSSProperties, ReactElement } from "react";
 import type { SpreadSheet as SpreadSheetType } from "../types";
 import { Sheet } from "./Sheet";
 import { Tabs } from "./layouts/Tabs";
-import type { Tab } from "./layouts/Tabs";
 import { AppHeader } from "./app-header/AppHeader";
-import { StyleToolbar } from "./StyleToolbar";
+import { FormulaBar } from "./sheets/FormulaBar";
 import { SheetProvider } from "../modules/spreadsheet/SheetContext";
-import { SpreadSheetProvider } from "../modules/spreadsheet/SpreadSheetContext";
-import type { SpreadSheetContextValue } from "../modules/spreadsheet/SpreadSheetContext";
+import { SpreadSheetProvider, useSpreadSheetContext } from "../modules/spreadsheet/SpreadSheetContext";
 import { SAFE_MAX_COLUMNS, SAFE_MAX_ROWS } from "../modules/spreadsheet/gridLayout";
-import { FormulaEngineProvider, useFormulaEngineWithSpreadsheet } from "../modules/formula/FormulaEngineContext";
+import { FormulaEngineProvider } from "../modules/formula/FormulaEngineContext";
 import styles from "./SpreadSheet.module.css";
 
 export type SpreadSheetProps = {
@@ -22,6 +20,37 @@ export type SpreadSheetProps = {
   style?: CSSProperties;
   maxColumns?: number;
   maxRows?: number;
+};
+
+const SpreadSheetContent = ({
+  style,
+  maxColumns = SAFE_MAX_COLUMNS,
+  maxRows = SAFE_MAX_ROWS,
+}: Omit<SpreadSheetProps, "spreadsheet">): ReactElement => {
+  const { spreadsheet, activeSheetId, activeSheet, tabs, formulaEngine, handleTabChange, handleCellsUpdate } =
+    useSpreadSheetContext();
+
+  return (
+    <FormulaEngineProvider engine={formulaEngine}>
+      <div className={styles.spreadsheet} style={style}>
+        <AppHeader title={spreadsheet.name} createdAt={spreadsheet.createdAt} updatedAt={spreadsheet.updatedAt} />
+
+        {/* Active sheet content */}
+        <div className={styles.sheetContent}>
+          <Activity mode={activeSheet ? "visible" : "hidden"}>
+            {activeSheet && (
+              <SheetProvider sheet={activeSheet} name={activeSheet.name} id={activeSheet.id} onCellsUpdate={handleCellsUpdate}>
+                <FormulaBar />
+                <Sheet sheet={activeSheet} maxColumns={maxColumns} maxRows={maxRows} />
+              </SheetProvider>
+            )}
+          </Activity>
+        </div>
+        {/* Sheet tabs */}
+        <Tabs tabs={tabs} activeTabId={activeSheetId} onTabChange={handleTabChange} />
+      </div>
+    </FormulaEngineProvider>
+  );
 };
 
 /**
@@ -35,52 +64,9 @@ export const SpreadSheet = ({
   maxColumns = SAFE_MAX_COLUMNS,
   maxRows = SAFE_MAX_ROWS,
 }: SpreadSheetProps): ReactElement => {
-  const [activeSheetId, setActiveSheetId] = useState<string>(spreadsheet.sheets[0]?.id ?? "");
-
-  const activeSheet = spreadsheet.sheets.find((sheet) => sheet.id === activeSheetId) ?? spreadsheet.sheets[0];
-
-  const tabs = useMemo(
-    (): Tab[] =>
-      spreadsheet.sheets.map((sheet) => ({
-        id: sheet.id,
-        label: sheet.name,
-      })),
-    [spreadsheet.sheets],
-  );
-
-  const handleTabChange = useCallback((tabId: string): void => {
-    setActiveSheetId(tabId);
-  }, []);
-
-  const spreadsheetContextValue = useMemo(
-    (): SpreadSheetContextValue => ({
-      spreadsheet,
-      name: spreadsheet.name,
-    }),
-    [spreadsheet],
-  );
-  const formulaEngine = useFormulaEngineWithSpreadsheet(spreadsheet);
-
   return (
-    <SpreadSheetProvider value={spreadsheetContextValue}>
-      <FormulaEngineProvider engine={formulaEngine}>
-        <div className={styles.spreadsheet} style={style}>
-          <AppHeader title={spreadsheet.name} createdAt={spreadsheet.createdAt} updatedAt={spreadsheet.updatedAt} />
-
-          {/* Sheet tabs */}
-          <Tabs tabs={tabs} activeTabId={activeSheetId} onTabChange={handleTabChange} />
-
-          {/* Active sheet content */}
-          <div className={styles.sheetContent}>
-            <Activity mode={activeSheet ? "visible" : "hidden"}>
-              <SheetProvider sheet={activeSheet} name={activeSheet.name} id={activeSheet.id}>
-                <StyleToolbar />
-                <Sheet sheet={activeSheet} maxColumns={maxColumns} maxRows={maxRows} />
-              </SheetProvider>
-            </Activity>
-          </div>
-        </div>
-      </FormulaEngineProvider>
+    <SpreadSheetProvider spreadsheet={spreadsheet}>
+      <SpreadSheetContent style={style} maxColumns={maxColumns} maxRows={maxRows} />
     </SpreadSheetProvider>
   );
 };

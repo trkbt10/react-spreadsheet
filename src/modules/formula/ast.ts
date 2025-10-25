@@ -72,7 +72,7 @@ const expandRangeDependencies = (start: CellAddress, end: CellAddress): Set<Cell
   return dependencies;
 };
 
-const expandRangeAddresses = (start: CellAddress, end: CellAddress): CellAddress[] => {
+export const expandRangeAddresses = (start: CellAddress, end: CellAddress): CellAddress[] => {
   if (start.sheetId !== end.sheetId) {
     throw new Error("Cross-sheet ranges are not supported");
   }
