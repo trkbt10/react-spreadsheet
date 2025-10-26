@@ -17,12 +17,9 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-lg);
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
   cursor: grab;
   user-select: none;
-  --visual-handle-size: calc(var(--spacing-md) + var(--spacing-2xs));
-  --visual-rotation-distance: calc(var(--visual-handle-size) * 1.6);
-  --visual-rotation-size: calc(var(--visual-handle-size) * 1.1);
+  --visual-handle-size: var(--spacing-sm);
 }
 
 .element[data-element-type="image"] {
@@ -82,35 +79,20 @@
   left: 0;
 }
 
-.resizeHandle,
-.rotationHandle {
+.resizeHandle {
   position: absolute;
   width: var(--visual-handle-size);
   height: var(--visual-handle-size);
   pointer-events: auto;
   box-shadow: var(--shadow-xs);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.resizeHandle {
   background-color: var(--color-bg-accent);
   border: 1px solid var(--color-border-focus);
   border-radius: var(--radius-sm);
   --resize-transform: translate(-50%, -50%);
   transform: var(--resize-transform);
-}
-
-.resizeHandle:hover {
-  transform: var(--resize-transform, translate(-50%, -50%)) scale(1.05);
-  box-shadow: var(--shadow-sm);
-}
-
-.rotationHandle:hover {
-  transform: var(--rotation-transform, translate(-50%, -50%)) scale(1.05);
-  box-shadow: var(--shadow-sm);
 }
 
 .resizeHandle[data-handle="northwest"] {
@@ -133,49 +115,6 @@
   cursor: nesw-resize;
 }
 
-.rotationHandle {
-  width: var(--visual-rotation-size);
-  height: var(--visual-rotation-size);
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-focus);
-  border-radius: 999px;
+.element[data-interaction="rotate"] .resizeHandle {
   cursor: grab;
-  --rotation-transform: translate(-50%, -50%);
-  transform: var(--rotation-transform);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.rotationHandle::after {
-  content: "";
-  width: 40%;
-  height: 40%;
-  border-radius: 999px;
-  border: 1px dashed var(--color-border-focus);
-  opacity: 0.7;
-}
-
-.rotationHandle[data-handle="northwest"] {
-  top: calc(-1 * var(--visual-rotation-distance));
-  left: calc(-1 * var(--visual-rotation-distance));
-}
-
-.rotationHandle[data-handle="northeast"] {
-  top: calc(-1 * var(--visual-rotation-distance));
-  left: var(--visual-rotation-distance);
-}
-
-.rotationHandle[data-handle="southeast"] {
-  top: var(--visual-rotation-distance);
-  left: var(--visual-rotation-distance);
-}
-
-.rotationHandle[data-handle="southwest"] {
-  top: var(--visual-rotation-distance);
-  left: calc(-1 * var(--visual-rotation-distance));
-}
-
-.element[data-interaction="rotate"] .rotationHandle {
-  cursor: grabbing;
 }

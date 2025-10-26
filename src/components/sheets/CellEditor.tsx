@@ -34,7 +34,7 @@ export const CellEditor = (): ReactElement | null => {
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        if (editingSelection && onCellsUpdate) {
+        if (editingSelection?.isDirty && onCellsUpdate) {
           const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
           onCellsUpdate(updates);
         }
@@ -48,7 +48,7 @@ export const CellEditor = (): ReactElement | null => {
   );
 
   const handleBlur = useCallback(() => {
-    if (editingSelection && onCellsUpdate) {
+    if (editingSelection?.isDirty && onCellsUpdate) {
       const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
       onCellsUpdate(updates);
     }

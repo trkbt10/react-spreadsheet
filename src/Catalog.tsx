@@ -4,6 +4,8 @@
 
 import { useState } from 'react';
 import type { ReactElement } from 'react';
+import { FiScissors, FiCopy, FiClipboard, FiTrash2 } from 'react-icons/fi';
+import { MdFormatColorText } from 'react-icons/md';
 import { ContextMenu } from './components/layouts/ContextMenu.tsx';
 import type { MenuItem, MenuPosition } from './components/layouts/ContextMenu.types';
 import styles from './Catalog.module.css';
@@ -18,7 +20,7 @@ export function Catalog(): ReactElement {
     {
       type: 'action',
       label: 'Cut',
-      icon: '✂️',
+      icon: <FiScissors />,
       shortcut: '⌘X',
       onClick: () => {
         console.log('Cut clicked');
@@ -28,7 +30,7 @@ export function Catalog(): ReactElement {
     {
       type: 'action',
       label: 'Copy',
-      icon: '📋',
+      icon: <FiCopy />,
       shortcut: '⌘C',
       onClick: () => {
         console.log('Copy clicked');
@@ -38,7 +40,7 @@ export function Catalog(): ReactElement {
     {
       type: 'action',
       label: 'Paste',
-      icon: '📄',
+      icon: <FiClipboard />,
       shortcut: '⌘V',
       onClick: () => {
         console.log('Paste clicked');
@@ -51,7 +53,7 @@ export function Catalog(): ReactElement {
     {
       type: 'submenu',
       label: 'Format',
-      icon: '🎨',
+      icon: <MdFormatColorText />,
       items: [
         {
           type: 'action',
@@ -194,7 +196,7 @@ export function Catalog(): ReactElement {
     {
       type: 'action',
       label: 'Delete',
-      icon: '🗑️',
+      icon: <FiTrash2 />,
       shortcut: '⌫',
       onClick: () => {
         console.log('Delete clicked');

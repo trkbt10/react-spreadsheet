@@ -39,7 +39,11 @@ export type RangeSelectionTarget = SelectionRange & {
 
 export type SelectionTarget = CellSelectionTarget | RangeSelectionTarget;
 
-export type EditingSelection = (CellSelectionTarget & { value: string }) | (RangeSelectionTarget & { value: string });
+export type EditingOrigin = "formulaBar" | "cellEditor";
+
+export type EditingSelection =
+  | (CellSelectionTarget & { value: string; origin: EditingOrigin; isDirty: boolean })
+  | (RangeSelectionTarget & { value: string; origin: EditingOrigin; isDirty: boolean });
 
 const isSingleCellRange = (range: SelectionRange): boolean => {
   const isSingleColumn = range.endCol - range.startCol === 1;
@@ -276,7 +280,7 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
   },
 
   startEditingCell: (state, action) => {
-    const { col, row, initialValue } = action.payload;
+    const { col, row, initialValue, origin } = action.payload;
     return {
       ...state,
       selection: {
@@ -289,12 +293,14 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
         col,
         row,
         value: initialValue,
+        origin,
+        isDirty: false,
       },
     };
   },
 
   startEditingRange: (state, action) => {
-    const { range, initialValue } = action.payload;
+    const { range, initialValue, origin } = action.payload;
     return {
       ...state,
       selection: rangeToSelectionTarget(range),
@@ -305,6 +311,8 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
         startRow: range.startRow,
         endRow: range.endRow,
         value: initialValue,
+        origin,
+        isDirty: false,
       },
     };
   },
@@ -313,11 +321,15 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
     if (!state.editingSelection) {
       return state;
     }
+    if (state.editingSelection.value === action.payload.value) {
+      return state;
+    }
     return {
       ...state,
       editingSelection: {
         ...state.editingSelection,
         value: action.payload.value,
+        isDirty: true,
       },
     };
   },

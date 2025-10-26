@@ -53,8 +53,7 @@ export const useSheetPointerEvents = ({
 }: UseSheetPointerEventsParams): UseSheetPointerEventsReturn => {
   const isDraggingRef = useRef(false);
   const pointerDownPosRef = useRef<{ x: number; y: number } | null>(null);
-  const pointerDownTimeRef = useRef<number>(0);
-  const clickTimeoutRef = useRef<number | null>(null);
+  const lastClickRef = useRef<{ col: number; row: number; time: number } | null>(null);
 
   const getPositionFromPointer = useCallback(
     (event: PointerEvent<HTMLDivElement>): { x: number; y: number } | null => {
@@ -93,7 +92,6 @@ export const useSheetPointerEvents = ({
       }
 
       pointerDownPosRef.current = pos;
-      pointerDownTimeRef.current = Date.now();
       isDraggingRef.current = false;
 
       event.currentTarget.setPointerCapture(event.pointerId);
@@ -145,16 +143,18 @@ export const useSheetPointerEvents = ({
         // Was a click - check for cell click or double-click
         const cell = getCellAtPosition(pos.x, pos.y);
         if (cell) {
-          const timeSinceDown = Date.now() - pointerDownTimeRef.current;
-          const isDoubleClick = timeSinceDown < 300 && clickTimeoutRef.current !== null;
+          const now = Date.now();
+          const lastClick = lastClickRef.current;
+          const isDoubleClick =
+            lastClick !== null &&
+            lastClick.col === cell.col &&
+            lastClick.row === cell.row &&
+            now - lastClick.time < 300;
 
-          if (isDoubleClick) {
-            // Double-click - start editing
-            if (clickTimeoutRef.current !== null) {
-              window.clearTimeout(clickTimeoutRef.current);
-              clickTimeoutRef.current = null;
-            }
-
+          if (event.shiftKey) {
+            actions.extendSelectionToCell(cell.col, cell.row);
+            lastClickRef.current = null;
+          } else if (isDoubleClick) {
             const cellId = `${cell.col}:${cell.row}` as const;
             const cellData = sheet.cells[cellId];
             const initialValue = cellData
@@ -165,25 +165,11 @@ export const useSheetPointerEvents = ({
                   : String(cellData.value)
               : "";
 
-            actions.startEditingCell(cell.col, cell.row, initialValue);
-          } else if (event.shiftKey) {
-            // Shift+click - extend selection
-            if (clickTimeoutRef.current !== null) {
-              window.clearTimeout(clickTimeoutRef.current);
-              clickTimeoutRef.current = null;
-            }
-
-            actions.extendSelectionToCell(cell.col, cell.row);
+            actions.startEditingCell(cell.col, cell.row, initialValue, "cellEditor");
+            lastClickRef.current = null;
           } else {
-            // Single click - set active cell after delay
-            if (clickTimeoutRef.current !== null) {
-              window.clearTimeout(clickTimeoutRef.current);
-            }
-
-            clickTimeoutRef.current = window.setTimeout(() => {
-              actions.setActiveCell(cell.col, cell.row);
-              clickTimeoutRef.current = null;
-            }, 200);
+            actions.setActiveCell(cell.col, cell.row);
+            lastClickRef.current = { col: cell.col, row: cell.row, time: now };
           }
         }
       }

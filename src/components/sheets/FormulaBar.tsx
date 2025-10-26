@@ -42,16 +42,23 @@ export const FormulaBar = (): ReactElement => {
   const { sheet, state, actions, onCellsUpdate } = useSheetContext();
   const { selection, editingSelection } = state;
   const inputRef = useRef<HTMLInputElement>(null);
-  const initialEditingValueRef = useRef<string | null>(null);
-  const previousEditingSelectionRef = useRef<typeof editingSelection>(null);
   useFormulaEngine();
 
+  const focusInput = useCallback(() => {
+    requestAnimationFrame(() => {
+      const input = inputRef.current;
+      if (input) {
+        input.focus({ preventScroll: true });
+        input.select();
+      }
+    });
+  }, []);
+
   useEffect(() => {
-    if (editingSelection !== previousEditingSelectionRef.current) {
-      previousEditingSelectionRef.current = editingSelection;
-      initialEditingValueRef.current = editingSelection ? editingSelection.value : null;
+    if (editingSelection && editingSelection.origin === "formulaBar") {
+      focusInput();
     }
-  }, [editingSelection]);
+  }, [editingSelection, focusInput]);
 
   const readCellDisplayValue = useCallback(
     (col: number, row: number): string => {
@@ -112,16 +119,16 @@ export const FormulaBar = (): ReactElement => {
   }, [selection]);
 
   const currentValue = useMemo(() => {
-    if (editingSelection) {
-      return editingSelection.value;
+    if (!editingSelection) {
+      if (!selection) {
+        return "";
+      }
+      if (selection.kind === "range") {
+        return "";
+      }
+      return readCellDisplayValue(selection.col, selection.row);
     }
-    if (!selection) {
-      return "";
-    }
-    if (selection.kind === "range") {
-      return "";
-    }
-    return readCellDisplayValue(selection.col, selection.row);
+    return editingSelection.value;
   }, [editingSelection, selection, readCellDisplayValue]);
 
   const isFormula = currentValue.startsWith("=");
@@ -138,8 +145,7 @@ export const FormulaBar = (): ReactElement => {
     if (!editingSelection) {
       return;
     }
-    const initialValue = initialEditingValueRef.current;
-    if (onCellsUpdate && editingSelection.value !== initialValue) {
+    if (editingSelection.isDirty && onCellsUpdate) {
       const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
       onCellsUpdate(updates);
     }
@@ -168,13 +174,15 @@ export const FormulaBar = (): ReactElement => {
       return;
     }
     if (selection.kind === "range") {
-      actions.startEditingRange(selectionToRange(selection), "");
+      actions.startEditingRange(selectionToRange(selection), "", "formulaBar");
+      focusInput();
       return;
     }
     const anchor = getSelectionAnchor(selection);
     const initialValue = readCellDisplayValue(anchor.col, anchor.row);
-    actions.startEditingCell(anchor.col, anchor.row, initialValue);
-  }, [actions, editingSelection, selection, readCellDisplayValue]);
+    actions.startEditingCell(anchor.col, anchor.row, initialValue, "formulaBar");
+    focusInput();
+  }, [actions, editingSelection, selection, readCellDisplayValue, focusInput]);
 
   const handleBlur = useCallback(() => {
     commitEditingValue();

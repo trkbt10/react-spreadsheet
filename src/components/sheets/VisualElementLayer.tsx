@@ -383,14 +383,41 @@ const InteractiveVisualElement = ({
         });
 
         onChange(next);
+        latestElementRef.current = next;
         return;
       }
 
-      if (active.type === "resize") {
+      if (active.type === "corner") {
         const dx = event.clientX - active.startX;
         const dy = event.clientY - active.startY;
         const cos = Math.cos(active.angleRadians);
         const sin = Math.sin(active.angleRadians);
+
+        const pointerDistance = Math.hypot(event.clientX - active.centerX, event.clientY - active.centerY);
+        if (
+          active.mode === "resize" &&
+          pointerDistance > active.startPointerDistance + ROTATION_DISTANCE_DELTA
+        ) {
+          active.mode = "rotate";
+          active.initialElement = cloneVisualElement(latestElementRef.current);
+          active.startPointerAngle = Math.atan2(event.clientY - active.centerY, event.clientX - active.centerX);
+          setInteractionKind("rotate");
+        }
+
+        if (active.mode === "rotate") {
+          const currentAngle = Math.atan2(event.clientY - active.centerY, event.clientX - active.centerX);
+          const deltaRadians = currentAngle - active.startPointerAngle;
+          const deltaDegrees = deltaRadians * RAD_TO_DEG;
+          const targetAngle = normalizeAngle(active.initialElement.transform.rotation.angle + deltaDegrees);
+          const next = createUpdatedElement(active.initialElement, {
+            transform: {
+              angle: targetAngle,
+            },
+          });
+          onChange(next);
+          latestElementRef.current = next;
+          return;
+        }
 
         const localDx = dx * cos + dy * sin;
         const localDy = -dx * sin + dy * cos;
@@ -398,23 +425,18 @@ const InteractiveVisualElement = ({
         const initialWidth = active.initialElement.transform.width;
         const initialHeight = active.initialElement.transform.height;
 
-        let newWidth = initialWidth;
-        let newHeight = initialHeight;
-        let shiftLocalX = 0;
-        let shiftLocalY = 0;
-
         const horizontalDirection = active.handle.includes("west") ? -1 : 1;
         const verticalDirection = active.handle.includes("north") ? -1 : 1;
 
         const targetWidth = initialWidth + localDx * horizontalDirection;
-        newWidth = Math.max(MIN_ELEMENT_SIZE, targetWidth);
+        const newWidth = Math.max(MIN_ELEMENT_SIZE, targetWidth);
         const widthDelta = newWidth - initialWidth;
-        shiftLocalX = (widthDelta / 2) * horizontalDirection;
+        const shiftLocalX = (widthDelta / 2) * horizontalDirection;
 
         const targetHeight = initialHeight + localDy * verticalDirection;
-        newHeight = Math.max(MIN_ELEMENT_SIZE, targetHeight);
+        const newHeight = Math.max(MIN_ELEMENT_SIZE, targetHeight);
         const heightDelta = newHeight - initialHeight;
-        shiftLocalY = (heightDelta / 2) * verticalDirection;
+        const shiftLocalY = (heightDelta / 2) * verticalDirection;
 
         const shiftX = shiftLocalX * cos - shiftLocalY * sin;
         const shiftY = shiftLocalX * sin + shiftLocalY * cos;
@@ -431,22 +453,8 @@ const InteractiveVisualElement = ({
         });
 
         onChange(next);
-        return;
-      }
-
-      if (active.type === "rotate") {
-        const angleRadians = Math.atan2(event.clientY - active.centerY, event.clientX - active.centerX);
-        const deltaRadians = angleRadians - active.startAngleRadians;
-        const deltaDegrees = deltaRadians * RAD_TO_DEG;
-        const targetAngle = normalizeAngle(active.initialElement.transform.rotation.angle + deltaDegrees);
-
-        const next = createUpdatedElement(active.initialElement, {
-          transform: {
-            angle: targetAngle,
-          },
-        });
-
-        onChange(next);
+        latestElementRef.current = next;
+        setInteractionKind("resize");
       }
     },
     [onChange],
@@ -470,7 +478,11 @@ const InteractiveVisualElement = ({
   const startInteraction = useCallback(
     (interaction: InteractionState, event: React.PointerEvent<HTMLElement>) => {
       interactionRef.current = interaction;
-      setInteractionKind(interaction.type);
+      if (interaction.type === "corner") {
+        setInteractionKind(interaction.mode);
+      } else {
+        setInteractionKind("move");
+      }
       event.currentTarget.setPointerCapture(event.pointerId);
     },
     [],
@@ -508,48 +520,30 @@ const InteractiveVisualElement = ({
       event.preventDefault();
 
       onFocus();
+      const bounding = elementRef.current?.getBoundingClientRect();
+      if (!bounding) {
+        return;
+      }
+
+      const centerX = bounding.left + bounding.width / 2;
+      const centerY = bounding.top + bounding.height / 2;
+      const startPointerDistance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+      const startPointerAngle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+
       startInteraction(
         {
-          type: "resize",
+          type: "corner",
+          mode: "resize",
           pointerId: event.pointerId,
           startX: event.clientX,
           startY: event.clientY,
           handle,
           angleRadians: element.transform.rotation.angle * (Math.PI / 180),
           initialElement: cloneVisualElement(element),
-        },
-        event,
-      );
-    },
-    [element, startInteraction],
-  );
-
-  const handleRotatePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
-      if (event.button !== 0) {
-        return;
-      }
-      event.stopPropagation();
-      event.preventDefault();
-
-      const bounding = elementRef.current?.getBoundingClientRect();
-      if (!bounding) {
-        return;
-      }
-
-      onFocus();
-      const centerX = bounding.left + bounding.width / 2;
-      const centerY = bounding.top + bounding.height / 2;
-      const startAngleRadians = Math.atan2(event.clientY - centerY, event.clientX - centerX);
-
-      startInteraction(
-        {
-          type: "rotate",
-          pointerId: event.pointerId,
           centerX,
           centerY,
-          startAngleRadians,
-          initialElement: cloneVisualElement(element),
+          startPointerDistance,
+          startPointerAngle,
         },
         event,
       );
@@ -581,15 +575,6 @@ const InteractiveVisualElement = ({
       {isFocused
         ? cornerHandles.map((handle) => (
             <div key={`${handle}-group`} className={styles.handleGroup} data-handle={handle}>
-              <div
-                className={styles.rotationHandle}
-                data-handle={handle}
-                onPointerDown={handleRotatePointerDown}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={handlePointerUp}
-                role="presentation"
-              />
               <div
                 className={styles.resizeHandle}
                 data-handle={handle}

@@ -4,6 +4,7 @@
 
 import { createAction } from "../../utils/typedActions";
 import type { StyleTarget, CellStyle, StyleKey } from "./cellStyle";
+import type { EditingOrigin } from "./sheetReducer";
 
 export const sheetActions = {
   setColumnWidth: createAction("sheet/setColumnWidth", (col: number, width: number) => ({ col, width })),
@@ -32,11 +33,15 @@ export const sheetActions = {
   clearAllStyles: createAction("sheet/clearAllStyles"),
   startEditingCell: createAction(
     "sheet/startEditingCell",
-    (col: number, row: number, initialValue: string) => ({ col, row, initialValue }),
+    (col: number, row: number, initialValue: string, origin: EditingOrigin) => ({ col, row, initialValue, origin }),
   ),
   startEditingRange: createAction(
     "sheet/startEditingRange",
-    (range: { startCol: number; startRow: number; endCol: number; endRow: number }, initialValue: string) => ({ range, initialValue }),
+    (
+      range: { startCol: number; startRow: number; endCol: number; endRow: number },
+      initialValue: string,
+      origin: EditingOrigin,
+    ) => ({ range, initialValue, origin }),
   ),
   updateEditingValue: createAction(
     "sheet/updateEditingValue",

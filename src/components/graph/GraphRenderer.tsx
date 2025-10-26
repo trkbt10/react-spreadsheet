@@ -4,7 +4,7 @@
 
 import { useMemo } from "react";
 import type { ReactElement } from "react";
-import type { SheetGraphElement } from "../../types";
+import type { SheetGraphElement, GraphType } from "../../types";
 import { scaleBand, scaleLinear, scalePoint, scaleOrdinal } from "@visx/scale";
 import { Bar, LinePath, AreaClosed, Pie } from "@visx/shape";
 import { GlyphCircle } from "@visx/glyph";
@@ -23,7 +23,26 @@ export type GraphRendererProps = {
   title?: string;
 };
 
-const DEFAULT_MARGIN = { top: 24, right: 24, bottom: 36, left: 48 };
+type ChartMargin = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
+
+type ChartDimensions = {
+  margin: ChartMargin;
+  innerWidth: number;
+  innerHeight: number;
+  translate: string;
+};
+
+const CHART_MARGINS: Record<"default" | "bar" | "pie", ChartMargin> = {
+  default: { top: 24, right: 24, bottom: 36, left: 48 },
+  bar: { top: 24, right: 36, bottom: 24, left: 80 },
+  pie: { top: 16, right: 16, bottom: 16, left: 16 },
+};
+
 const COLOR_PALETTE = [
   "var(--color-bg-accent)",
   "var(--color-text-danger)",
@@ -37,6 +56,17 @@ const AXIS_LINE_COLOR = "var(--color-border-secondary)";
 const GRID_LINE_COLOR = "color-mix(in srgb, var(--color-border-secondary) 65%, transparent)";
 const GLYPH_OUTLINE_COLOR = "var(--color-text-inverse)";
 const GLYPH_BASE_FILL = "var(--color-bg-secondary)";
+
+const getChartDimensions = (width: number, height: number, margin: ChartMargin): ChartDimensions => {
+  const innerWidth = Math.max(0, width - margin.left - margin.right);
+  const innerHeight = Math.max(0, height - margin.top - margin.bottom);
+  return {
+    margin,
+    innerWidth,
+    innerHeight,
+    translate: `translate(${margin.left}, ${margin.top})`,
+  };
+};
 
 const getColor = (element: SheetGraphElement, index: number): string => {
   const customColor = element.options?.color;
@@ -54,16 +84,15 @@ const getMaximumValue = (data: GraphDataPoint[]): number => {
   return range[1];
 };
 
-const renderColumnChart = (
-  element: SheetGraphElement,
-  data: GraphDataPoint[],
-  width: number,
-  height: number,
-): ReactElement => {
-  const margin = DEFAULT_MARGIN;
-  const innerWidth = Math.max(0, width - margin.left - margin.right);
-  const innerHeight = Math.max(0, height - margin.top - margin.bottom);
+type BaseChartProps = {
+  element: SheetGraphElement;
+  data: GraphDataPoint[];
+  width: number;
+  height: number;
+};
 
+const ColumnChart = ({ element, data, width, height }: BaseChartProps): ReactElement => {
+  const { innerWidth, innerHeight, translate } = getChartDimensions(width, height, CHART_MARGINS.default);
   const maxValue = getMaximumValue(data);
   const xScale = scaleBand<string>({
     domain: data.map((point) => point.label),
@@ -77,7 +106,7 @@ const renderColumnChart = (
   });
 
   return (
-    <g transform={`translate(${margin.left}, ${margin.top})`}>
+    <g transform={translate}>
       <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke={AXIS_LINE_COLOR} strokeWidth={1} />
       {data.map((point, index) => {
         const x = xScale(point.label);
@@ -98,12 +127,7 @@ const renderColumnChart = (
               fill={getColor(element, index)}
               rx={6}
             />
-            <text
-              className={styles.axisLabel}
-              textAnchor="middle"
-              x={x + xScale.bandwidth() / 2}
-              y={innerHeight + 16}
-            >
+            <text className={styles.axisLabel} textAnchor="middle" x={x + xScale.bandwidth() / 2} y={innerHeight + 16}>
               {point.label}
             </text>
             <text className={styles.valueLabel} textAnchor="middle" x={x + xScale.bandwidth() / 2} y={y - 6}>
@@ -117,16 +141,8 @@ const renderColumnChart = (
   );
 };
 
-const renderBarChart = (
-  element: SheetGraphElement,
-  data: GraphDataPoint[],
-  width: number,
-  height: number,
-): ReactElement => {
-  const margin = { top: 24, right: 36, bottom: 24, left: 80 };
-  const innerWidth = Math.max(0, width - margin.left - margin.right);
-  const innerHeight = Math.max(0, height - margin.top - margin.bottom);
-
+const BarChart = ({ element, data, width, height }: BaseChartProps): ReactElement => {
+  const { innerWidth, innerHeight, translate } = getChartDimensions(width, height, CHART_MARGINS.bar);
   const maxValue = getMaximumValue(data);
   const yScale = scaleBand<string>({
     domain: data.map((point) => point.label),
@@ -140,7 +156,7 @@ const renderBarChart = (
   });
 
   return (
-    <g transform={`translate(${margin.left}, ${margin.top})`}>
+    <g transform={translate}>
       <line x1={0} y1={0} x2={0} y2={innerHeight} stroke={AXIS_LINE_COLOR} strokeWidth={1} />
       {data.map((point, index) => {
         const y = yScale(point.label);
@@ -173,16 +189,8 @@ const renderBarChart = (
   );
 };
 
-const renderLineChart = (
-  element: SheetGraphElement,
-  data: GraphDataPoint[],
-  width: number,
-  height: number,
-): ReactElement => {
-  const margin = DEFAULT_MARGIN;
-  const innerWidth = Math.max(0, width - margin.left - margin.right);
-  const innerHeight = Math.max(0, height - margin.top - margin.bottom);
-
+const LineChart = ({ element, data, width, height }: BaseChartProps): ReactElement => {
+  const { innerWidth, innerHeight, translate } = getChartDimensions(width, height, CHART_MARGINS.default);
   const maxValue = getMaximumValue(data);
   const xScale = scalePoint<string>({
     domain: data.map((point) => point.label),
@@ -198,7 +206,7 @@ const renderLineChart = (
   const color = getColor(element, 0);
 
   return (
-    <g transform={`translate(${margin.left}, ${margin.top})`}>
+    <g transform={translate}>
       <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="4 6" />
       <LinePath
         data={data}
@@ -232,16 +240,8 @@ const renderLineChart = (
   );
 };
 
-const renderAreaChart = (
-  element: SheetGraphElement,
-  data: GraphDataPoint[],
-  width: number,
-  height: number,
-): ReactElement => {
-  const margin = DEFAULT_MARGIN;
-  const innerWidth = Math.max(0, width - margin.left - margin.right);
-  const innerHeight = Math.max(0, height - margin.top - margin.bottom);
-
+const AreaChart = ({ element, data, width, height }: BaseChartProps): ReactElement => {
+  const { innerWidth, innerHeight, translate } = getChartDimensions(width, height, CHART_MARGINS.default);
   const maxValue = getMaximumValue(data);
   const xScale = scalePoint<string>({
     domain: data.map((point) => point.label),
@@ -257,7 +257,7 @@ const renderAreaChart = (
   const color = getColor(element, 0);
 
   return (
-    <g transform={`translate(${margin.left}, ${margin.top})`}>
+    <g transform={translate}>
       <AreaClosed<GraphDataPoint>
         data={data}
         x={(point) => {
@@ -293,16 +293,8 @@ const renderAreaChart = (
   );
 };
 
-const renderScatterChart = (
-  element: SheetGraphElement,
-  data: GraphDataPoint[],
-  width: number,
-  height: number,
-): ReactElement => {
-  const margin = DEFAULT_MARGIN;
-  const innerWidth = Math.max(0, width - margin.left - margin.right);
-  const innerHeight = Math.max(0, height - margin.top - margin.bottom);
-
+const ScatterChart = ({ element, data, width, height }: BaseChartProps): ReactElement => {
+  const { innerWidth, innerHeight, translate } = getChartDimensions(width, height, CHART_MARGINS.default);
   const maxValue = getMaximumValue(data);
   const xScale = scaleLinear<number>({
     domain: [0, Math.max(1, data.length - 1)],
@@ -317,7 +309,7 @@ const renderScatterChart = (
   const color = getColor(element, 0);
 
   return (
-    <g transform={`translate(${margin.left}, ${margin.top})`}>
+    <g transform={translate}>
       <line x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="4 6" />
       <line x1={0} y1={0} x2={0} y2={innerHeight} stroke={GRID_LINE_COLOR} strokeDasharray="4 6" />
       {data.map((point, index) => {
@@ -339,20 +331,24 @@ const renderScatterChart = (
   );
 };
 
-const renderPieChart = (
-  element: SheetGraphElement,
-  data: GraphDataPoint[],
-  width: number,
-  height: number,
-): { chart: ReactElement; legend: ReactElement | null } => {
-  const margin = { top: 16, right: 16, bottom: 16, left: 16 };
-  const radius = Math.max(0, Math.min(width - margin.left - margin.right, height - margin.top - margin.bottom) / 2);
-  const colorScale = scaleOrdinal<string, string>({
+type OrdinalScale = ReturnType<typeof scaleOrdinal<string, string>>;
+
+const createPieColorScale = (element: SheetGraphElement, data: GraphDataPoint[]): OrdinalScale => {
+  return scaleOrdinal<string, string>({
     domain: data.map((point) => point.label),
     range: data.map((_, index) => getColor(element, index)),
   });
+};
 
-  const chart = (
+type PieChartProps = BaseChartProps & {
+  colorScale: OrdinalScale;
+};
+
+const PieChart = ({ element, data, width, height, colorScale }: PieChartProps): ReactElement => {
+  const margin = CHART_MARGINS.pie;
+  const radius = Math.max(0, Math.min(width - margin.left - margin.right, height - margin.top - margin.bottom) / 2);
+
+  return (
     <g transform={`translate(${width / 2}, ${height / 2})`}>
       <Pie<GraphDataPoint>
         data={data}
@@ -382,24 +378,38 @@ const renderPieChart = (
       </Pie>
     </g>
   );
+};
 
-  const legend =
-    data.length > 1 ? (
-      <div className={styles.legend}>
-        <LegendOrdinal scale={colorScale}>
-          {(labels) =>
-            labels.map((label) => (
-              <span key={label.text ?? label.value} className={styles.legendItem}>
-                <span className={styles.legendSwatch} style={{ backgroundColor: label.value }} aria-hidden="true" />
-                <span>{label.text ?? label.value}</span>
-              </span>
-            ))
-          }
-        </LegendOrdinal>
-      </div>
-    ) : null;
+const createPieLegend = (
+  colorScale: OrdinalScale,
+  data: GraphDataPoint[],
+): ReactElement | null => {
+  if (data.length <= 1) {
+    return null;
+  }
 
-  return { chart, legend };
+  return (
+    <div className={styles.legend}>
+      <LegendOrdinal scale={colorScale}>
+        {(labels) =>
+          labels.map((label) => (
+            <span key={label.text ?? label.value} className={styles.legendItem}>
+              <span className={styles.legendSwatch} style={{ backgroundColor: label.value }} aria-hidden="true" />
+              <span>{label.text ?? label.value}</span>
+            </span>
+          ))
+        }
+      </LegendOrdinal>
+    </div>
+  );
+};
+
+const CHART_COMPONENTS: Record<Exclude<GraphType, "pie">, (props: BaseChartProps) => ReactElement> = {
+  column: (props) => ColumnChart(props),
+  bar: (props) => BarChart(props),
+  line: (props) => LineChart(props),
+  area: (props) => AreaChart(props),
+  scatter: (props) => ScatterChart(props),
 };
 
 /**
@@ -411,24 +421,7 @@ export const GraphRenderer = ({ element, data, title }: GraphRendererProps): Rea
   const width = element.transform.width;
   const height = element.transform.height;
 
-  const graphContent = useMemo(() => {
-    switch (element.graphType) {
-      case "column":
-        return { chart: renderColumnChart(element, data, width, height), legend: null };
-      case "bar":
-        return { chart: renderBarChart(element, data, width, height), legend: null };
-      case "line":
-        return { chart: renderLineChart(element, data, width, height), legend: null };
-      case "area":
-        return { chart: renderAreaChart(element, data, width, height), legend: null };
-      case "scatter":
-        return { chart: renderScatterChart(element, data, width, height), legend: null };
-      case "pie":
-        return renderPieChart(element, data, width, height);
-      default:
-        return { chart: <text>Unsupported graph type</text>, legend: null };
-    }
-  }, [element, data, width, height]);
+  const chartProps = useMemo<BaseChartProps>(() => ({ element, data, width, height }), [element, data, width, height]);
 
   if (data.length === 0) {
     return (
@@ -438,13 +431,25 @@ export const GraphRenderer = ({ element, data, title }: GraphRendererProps): Rea
     );
   }
 
+  let chart: ReactElement;
+  let legend: ReactElement | null = null;
+
+  if (element.graphType === "pie") {
+    const colorScale = createPieColorScale(element, data);
+    chart = <PieChart {...chartProps} colorScale={colorScale} />;
+    legend = createPieLegend(colorScale, data);
+  } else {
+    const component = CHART_COMPONENTS[element.graphType as Exclude<GraphType, "pie">];
+    chart = component ? component(chartProps) : ColumnChart(chartProps);
+  }
+
   return (
     <div className={styles.container} data-graph-type={element.graphType}>
       {title ? <div className={styles.title}>{title}</div> : null}
       <svg className={styles.svg} width={width} height={height} role="img" aria-label={title ?? element.graphType}>
-        {graphContent.chart}
+        {chart}
       </svg>
-      {graphContent.legend}
+      {legend}
     </div>
   );
 };

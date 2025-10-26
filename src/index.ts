@@ -28,6 +28,7 @@ export type {
   CellSelectionTarget,
   RangeSelectionTarget,
   EditingSelection,
+  EditingOrigin,
 } from "./modules/spreadsheet/sheetReducer";
 export { rangeToSelectionTarget, selectionToRange } from "./modules/spreadsheet/sheetReducer";
 export {
