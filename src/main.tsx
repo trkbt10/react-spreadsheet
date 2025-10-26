@@ -4,7 +4,7 @@
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { App } from "./App";
 import { Catalog } from "./Catalog";
 import { DependencyGraphShowcase } from "./showcase/DependencyGraphShowcase";
@@ -18,12 +18,12 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/catalog/dependency-graph" element={<DependencyGraphShowcase />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 );
