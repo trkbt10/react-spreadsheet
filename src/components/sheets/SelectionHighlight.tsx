@@ -9,7 +9,15 @@ import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
 import type { ViewportRect } from "../../hooks/useVirtualScroll";
 import type { SelectionRange } from "../../modules/spreadsheet/sheetReducer";
 import type { ColumnSizeMap, RowSizeMap } from "../../modules/spreadsheet/gridLayout";
-import { calculateSelectionRange, calculateColumnPosition, calculateRowPosition, findColumnAtPosition, findRowAtPosition, SAFE_MAX_COLUMNS, SAFE_MAX_ROWS } from "../../modules/spreadsheet/gridLayout";
+import {
+  calculateSelectionRange,
+  calculateColumnPosition,
+  calculateRowPosition,
+  findColumnAtPosition,
+  findRowAtPosition,
+  SAFE_MAX_COLUMNS,
+  SAFE_MAX_ROWS,
+} from "../../modules/spreadsheet/gridLayout";
 import { selectionToRange } from "../../modules/spreadsheet/sheetReducer";
 import { deriveFillHandlePreview, computeAutofillUpdates } from "../../modules/spreadsheet/autofill";
 import type { AutofillRequest, FillHandlePreview } from "../../modules/spreadsheet/autofill";
@@ -39,9 +47,11 @@ const calculateVisibleRangeRect = (
   headerRowHeight: number,
 ): VisibleRangeRect | null => {
   const visibleStartCol = findColumnAtPosition(viewportRect.left, defaultCellWidth, columnSizes, SAFE_MAX_COLUMNS);
-  const visibleEndCol = findColumnAtPosition(viewportRect.left + viewportRect.width, defaultCellWidth, columnSizes, SAFE_MAX_COLUMNS) + 1;
+  const visibleEndCol =
+    findColumnAtPosition(viewportRect.left + viewportRect.width, defaultCellWidth, columnSizes, SAFE_MAX_COLUMNS) + 1;
   const visibleStartRow = findRowAtPosition(viewportRect.top, defaultCellHeight, rowSizes, SAFE_MAX_ROWS);
-  const visibleEndRow = findRowAtPosition(viewportRect.top + viewportRect.height, defaultCellHeight, rowSizes, SAFE_MAX_ROWS) + 1;
+  const visibleEndRow =
+    findRowAtPosition(viewportRect.top + viewportRect.height, defaultCellHeight, rowSizes, SAFE_MAX_ROWS) + 1;
 
   const startCol = Math.max(range.startCol, visibleStartCol);
   const endCol = Math.min(range.endCol, visibleEndCol);
@@ -70,10 +80,27 @@ const calculateVisibleRangeRect = (
  * @param props - Component props
  * @returns SelectionHighlight component
  */
-export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFillHandler }: SelectionHighlightProps): ReactElement => {
+export const SelectionHighlight = ({
+  headerColumnWidth,
+  headerRowHeight,
+  autoFillHandler,
+}: SelectionHighlightProps): ReactElement => {
   const { viewportRect } = useVirtualScrollContext();
   const { state, sheet, actions, onCellsUpdate } = useSheetContext();
-  const { selectionRect, selection, selectionAnchor, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, editingSelection, isDragging } = state;
+  const {
+    selectionRect,
+    selection,
+    selectionAnchor,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    editingSelection,
+    editorActivity,
+    isDragging,
+  } = state;
+
+  const isInlineEditing = Boolean(editorActivity.cellEditor && editingSelection);
 
   const selectionRange = selection ? selectionToRange(selection) : null;
   const effectiveAutoFillHandler = autoFillHandler ?? computeAutofillUpdates;
@@ -102,7 +129,7 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFil
   const svgHeight = viewportRect.height + headerRowHeight;
 
   const visibleSelectionRect = useMemo(() => {
-    if (!selectionRange || editingSelection) {
+    if (!selectionRange || isInlineEditing) {
       return null;
     }
 
@@ -116,7 +143,17 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFil
       headerColumnWidth,
       headerRowHeight,
     );
-  }, [selectionRange, editingSelection, viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, headerColumnWidth, headerRowHeight]);
+  }, [
+    selectionRange,
+    isInlineEditing,
+    viewportRect,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    headerColumnWidth,
+    headerRowHeight,
+  ]);
 
   const visibleDraggingRect = useMemo(() => {
     if (!isDragging || !draggingRange) {
@@ -133,10 +170,20 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFil
       headerColumnWidth,
       headerRowHeight,
     );
-  }, [isDragging, draggingRange, viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, headerColumnWidth, headerRowHeight]);
+  }, [
+    isDragging,
+    draggingRange,
+    viewportRect,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    headerColumnWidth,
+    headerRowHeight,
+  ]);
 
   const anchorRect = useMemo(() => {
-    if (!selectionRange || !selectionAnchor || editingSelection) {
+    if (!selectionRange || !selectionAnchor || isInlineEditing) {
       return null;
     }
 
@@ -166,7 +213,20 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFil
       width,
       height,
     };
-  }, [selectionRange, selectionAnchor, editingSelection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, viewportRect, headerColumnWidth, headerRowHeight, svgWidth, svgHeight]);
+  }, [
+    selectionRange,
+    selectionAnchor,
+    isInlineEditing,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    viewportRect,
+    headerColumnWidth,
+    headerRowHeight,
+    svgWidth,
+    svgHeight,
+  ]);
 
   const visibleFillPreviewRect = useMemo(() => {
     if (!fillPreview) {
@@ -183,92 +243,113 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFil
       headerColumnWidth,
       headerRowHeight,
     );
-  }, [fillPreview, viewportRect, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, headerColumnWidth, headerRowHeight]);
+  }, [
+    fillPreview,
+    viewportRect,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    headerColumnWidth,
+    headerRowHeight,
+  ]);
 
   const updateFillPreview = useCallback((preview: FillHandlePreview | null) => {
     fillPreviewRef.current = preview;
     setFillPreview(preview);
   }, []);
 
-  const getCellFromPointerEvent = useCallback((event: ReactPointerEvent<Element>): { col: number; row: number } | null => {
-    const svgElement = svgRef.current;
-    if (!svgElement) {
-      return null;
-    }
+  const getCellFromPointerEvent = useCallback(
+    (event: ReactPointerEvent<Element>): { col: number; row: number } | null => {
+      const svgElement = svgRef.current;
+      if (!svgElement) {
+        return null;
+      }
 
-    const bounds = svgElement.getBoundingClientRect();
-    const gridX = event.clientX - bounds.left - headerColumnWidth + viewportRect.left;
-    const gridY = event.clientY - bounds.top - headerRowHeight + viewportRect.top;
+      const bounds = svgElement.getBoundingClientRect();
+      const gridX = event.clientX - bounds.left - headerColumnWidth + viewportRect.left;
+      const gridY = event.clientY - bounds.top - headerRowHeight + viewportRect.top;
 
-    if (gridX < 0 || gridY < 0) {
-      return null;
-    }
+      if (gridX < 0 || gridY < 0) {
+        return null;
+      }
 
-    const col = findColumnAtPosition(gridX, defaultCellWidth, columnSizes, SAFE_MAX_COLUMNS);
-    const row = findRowAtPosition(gridY, defaultCellHeight, rowSizes, SAFE_MAX_ROWS);
-    return { col, row };
-  }, [headerColumnWidth, headerRowHeight, viewportRect, defaultCellWidth, defaultCellHeight, columnSizes, rowSizes]);
+      const col = findColumnAtPosition(gridX, defaultCellWidth, columnSizes, SAFE_MAX_COLUMNS);
+      const row = findRowAtPosition(gridY, defaultCellHeight, rowSizes, SAFE_MAX_ROWS);
+      return { col, row };
+    },
+    [headerColumnWidth, headerRowHeight, viewportRect, defaultCellWidth, defaultCellHeight, columnSizes, rowSizes],
+  );
 
-  const handleFillPointerDown = useCallback((event: ReactPointerEvent<SVGCircleElement>) => {
-    if (!selectionRange || editingSelection) {
-      return;
-    }
+  const handleFillPointerDown = useCallback(
+    (event: ReactPointerEvent<SVGCircleElement>) => {
+      if (!selectionRange || isInlineEditing) {
+        return;
+      }
 
-    event.stopPropagation();
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    fillDragStateRef.current = {
-      pointerId: event.pointerId,
-      baseRange: selectionRange,
-    };
-    updateFillPreview(null);
-  }, [selectionRange, editingSelection, updateFillPreview]);
-
-  const handleFillPointerMove = useCallback((event: ReactPointerEvent<SVGCircleElement>) => {
-    const dragState = fillDragStateRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const cell = getCellFromPointerEvent(event);
-    if (!cell) {
+      event.stopPropagation();
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      fillDragStateRef.current = {
+        pointerId: event.pointerId,
+        baseRange: selectionRange,
+      };
       updateFillPreview(null);
-      return;
-    }
+    },
+    [selectionRange, isInlineEditing, updateFillPreview],
+  );
 
-    const preview = deriveFillHandlePreview(dragState.baseRange, cell);
-    updateFillPreview(preview);
-  }, [getCellFromPointerEvent, updateFillPreview]);
+  const handleFillPointerMove = useCallback(
+    (event: ReactPointerEvent<SVGCircleElement>) => {
+      const dragState = fillDragStateRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
 
-  const handleFillPointerUp = useCallback((event: ReactPointerEvent<SVGCircleElement>) => {
-    const dragState = fillDragStateRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
+      const cell = getCellFromPointerEvent(event);
+      if (!cell) {
+        updateFillPreview(null);
+        return;
+      }
 
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    fillDragStateRef.current = null;
+      const preview = deriveFillHandlePreview(dragState.baseRange, cell);
+      updateFillPreview(preview);
+    },
+    [getCellFromPointerEvent, updateFillPreview],
+  );
 
-    const preview = fillPreviewRef.current;
-    updateFillPreview(null);
+  const handleFillPointerUp = useCallback(
+    (event: ReactPointerEvent<SVGCircleElement>) => {
+      const dragState = fillDragStateRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
 
-    if (!preview) {
-      return;
-    }
+      event.currentTarget.releasePointerCapture(event.pointerId);
+      fillDragStateRef.current = null;
 
-    const updates = effectiveAutoFillHandler({
-      baseRange: dragState.baseRange,
-      targetRange: preview.range,
-      direction: preview.direction,
-      sheet,
-    });
+      const preview = fillPreviewRef.current;
+      updateFillPreview(null);
 
-    if (updates.length > 0) {
-      onCellsUpdate?.(Array.from(updates));
-    }
+      if (!preview) {
+        return;
+      }
 
-    actions.extendSelectionToCell(preview.targetCell.col, preview.targetCell.row);
-  }, [effectiveAutoFillHandler, sheet, actions, onCellsUpdate, updateFillPreview]);
+      const updates = effectiveAutoFillHandler({
+        baseRange: dragState.baseRange,
+        targetRange: preview.range,
+        direction: preview.direction,
+        sheet,
+      });
+
+      if (updates.length > 0) {
+        onCellsUpdate?.(Array.from(updates));
+      }
+
+      actions.extendSelectionToCell(preview.targetCell.col, preview.targetCell.row);
+    },
+    [effectiveAutoFillHandler, sheet, actions, onCellsUpdate, updateFillPreview],
+  );
 
   return (
     <svg
@@ -350,7 +431,7 @@ export const SelectionHighlight = ({ headerColumnWidth, headerRowHeight, autoFil
       )}
 
       {/* Fill handle */}
-      {!isDragging && visibleSelectionRect && selectionRange && !editingSelection && (
+      {!isDragging && visibleSelectionRect && selectionRange && !isInlineEditing && (
         <circle
           className={styles.fillHandle}
           cx={visibleSelectionRect.x + visibleSelectionRect.width - 1}

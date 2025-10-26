@@ -11,10 +11,8 @@ import type { Rect, Point } from "../../utils/rect";
 import { createRectFromPoints } from "../../utils/rect";
 import type { StyleRegistry } from "./styleResolver";
 import { createStyleRegistry, addStyleRule, removeStyleRule, clearStyleRegistry } from "./styleResolver";
-import { getStyleKey } from "./cellStyle";
 import {
   createCellSelection,
-  createRangeSelection,
   extendSelection,
   clearSelection as clearSelectionState,
   createRangeSelectionWithoutAnchor,
@@ -53,9 +51,10 @@ const createInactiveEditors = (): EditorActivity => ({
 });
 
 const isSingleCellRange = (range: SelectionRange): boolean => {
-  const isSingleColumn = range.endCol - range.startCol === 1;
-  const isSingleRow = range.endRow - range.startRow === 1;
-  return isSingleColumn && isSingleRow;
+  if (range.endCol - range.startCol !== 1) {
+    return false;
+  }
+  return range.endRow - range.startRow === 1;
 };
 
 export const rangeToSelectionTarget = (range: SelectionRange | null): SelectionTarget | null => {
@@ -289,11 +288,9 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
   },
 
   startEditingCell: (state, action) => {
-    const { col, row, initialValue, origin } = action.payload;
-    const editorActivity: EditorActivity = {
-      ...state.editorActivity,
-      [origin]: true,
-    };
+  const { col, row, initialValue, origin } = action.payload;
+    const editorActivity: EditorActivity = createInactiveEditors();
+    editorActivity[origin] = true;
     return {
       ...state,
       selection: {
@@ -313,11 +310,9 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
   },
 
   startEditingRange: (state, action) => {
-    const { range, initialValue, origin } = action.payload;
-    const editorActivity: EditorActivity = {
-      ...state.editorActivity,
-      [origin]: true,
-    };
+  const { range, initialValue, origin } = action.payload;
+    const editorActivity: EditorActivity = createInactiveEditors();
+    editorActivity[origin] = true;
     return {
       ...state,
       selection: rangeToSelectionTarget(range),
