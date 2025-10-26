@@ -11,35 +11,38 @@
 }
 
 .rangeFill {
-  fill: rgba(66, 133, 244, 0.15);
+  fill: var(--color-bg-accent);
+  fill-opacity: 0.18;
 }
 
 .rangeOutline {
   fill: none;
-  stroke: #4285f4;
+  stroke: var(--color-border-focus);
   stroke-width: 2;
   stroke-linejoin: round;
 }
 
 .fillPreviewFill {
-  fill: rgba(66, 133, 244, 0.08);
+  fill: var(--color-bg-accent);
+  fill-opacity: 0.12;
 }
 
 .fillPreviewOutline {
   fill: none;
-  stroke: #4285f4;
+  stroke: var(--color-border-focus);
   stroke-width: 2;
   stroke-dasharray: 4 2;
+  stroke-opacity: 0.7;
 }
 
 .anchorRect {
   fill: none;
-  stroke: #174ea6;
+  stroke: var(--color-bg-accent-hover);
   stroke-width: 2;
 }
 
 .fillHandle {
-  fill: #4285f4;
+  fill: var(--color-border-focus);
   stroke: var(--color-bg-primary);
   stroke-width: 1.5;
   pointer-events: auto;

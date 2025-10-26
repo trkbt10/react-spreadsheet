@@ -74,6 +74,124 @@ const flattenValues = (values: EvalResult[]): FormulaEvaluationResult[] => {
   return values.flatMap((value) => (isArrayResult(value) ? value : [value]));
 };
 
+const COUNTIF_COMPARATORS = ["<>", ">=", "<=", ">", "<", "="] as const;
+
+type CountIfComparator = (typeof COUNTIF_COMPARATORS)[number];
+
+const NUMERIC_CRITERION_PATTERN = /^-?\d+(?:\.\d+)?$/u;
+
+const comparePrimitiveEquality = (left: FormulaEvaluationResult, right: FormulaEvaluationResult): boolean => {
+  if (left === null || right === null) {
+    return left === right;
+  }
+  if (typeof left !== typeof right) {
+    return false;
+  }
+  if (typeof left === "number") {
+    if (Number.isNaN(left) || Number.isNaN(right as number)) {
+      return false;
+    }
+    return Object.is(left, right);
+  }
+  return left === right;
+};
+
+const parseNumericCriterion = (text: string, description: string): number => {
+  const normalized = text.trim();
+  if (!NUMERIC_CRITERION_PATTERN.test(normalized)) {
+    throw new Error(`${description} expects numeric operand`);
+  }
+  return Number.parseFloat(normalized);
+};
+
+const parseCriterionOperand = (text: string): FormulaEvaluationResult => {
+  const normalized = text.trim();
+  if (normalized.length === 0) {
+    return "";
+  }
+  if (NUMERIC_CRITERION_PATTERN.test(normalized)) {
+    return Number.parseFloat(normalized);
+  }
+  const lowerCase = normalized.toLowerCase();
+  if (lowerCase === "true") {
+    return true;
+  }
+  if (lowerCase === "false") {
+    return false;
+  }
+  return normalized;
+};
+
+const compareNumbers = (value: number, operand: number, comparator: CountIfComparator): boolean => {
+  switch (comparator) {
+    case ">":
+      return value > operand;
+    case "<":
+      return value < operand;
+    case ">=":
+      return value >= operand;
+    case "<=":
+      return value <= operand;
+    case "=":
+      return value === operand;
+    case "<>":
+      return value !== operand;
+    default:
+      throw new Error(`Unsupported numeric comparator "${comparator}"`);
+  }
+};
+
+const createCountIfPredicate = (criteria: FormulaEvaluationResult): ((value: FormulaEvaluationResult) => boolean) => {
+  if (criteria === null) {
+    return (value) => value === null;
+  }
+
+  if (criteria === "") {
+    return (value) => comparePrimitiveEquality(value, "");
+  }
+
+  if (typeof criteria === "number" || typeof criteria === "boolean") {
+    return (value) => comparePrimitiveEquality(value, criteria);
+  }
+
+  if (typeof criteria !== "string") {
+    throw new Error("COUNTIF criteria must be string, number, boolean, or null");
+  }
+
+  const trimmed = criteria.trim();
+  const comparator = COUNTIF_COMPARATORS.find((symbol) => trimmed.startsWith(symbol)) ?? null;
+
+  if (!comparator) {
+    const operand = parseCriterionOperand(trimmed);
+    return (value) => comparePrimitiveEquality(value, operand);
+  }
+
+  const operandText = trimmed.slice(comparator.length);
+  if (operandText.length === 0) {
+    throw new Error("COUNTIF comparator requires right-hand operand");
+  }
+
+  if (comparator === ">" || comparator === "<" || comparator === ">=" || comparator === "<=") {
+    const operandNumber = parseNumericCriterion(operandText, "COUNTIF comparator");
+    return (value) => typeof value === "number" && compareNumbers(value, operandNumber, comparator);
+  }
+
+  const operand = parseCriterionOperand(operandText);
+  if (typeof operand === "number") {
+    return (value) => typeof value === "number" && compareNumbers(value, operand, comparator);
+  }
+
+  if (comparator === "=") {
+    return (value) => comparePrimitiveEquality(value, operand);
+  }
+
+  if (comparator === "<>") {
+    return (value) => !comparePrimitiveEquality(value, operand);
+  }
+
+  throw new Error(`Unsupported COUNTIF comparator "${comparator}"`);
+};
+
 const coerceScalar = (result: EvalResult, description: string): FormulaEvaluationResult => {
   if (isArrayResult(result)) {
     if (result.length === 1) {
@@ -219,6 +337,16 @@ const createFunctionEvaluators = (): Record<string, FunctionEvaluator> => ({
   COUNT: (args) => {
     const values = flattenValues(args);
     return values.reduce<number>((count, value) => (typeof value === "number" ? count + 1 : count), 0);
+  },
+  COUNTIF: (args) => {
+    if (args.length !== 2) {
+      throw new Error("COUNTIF expects exactly two arguments");
+    }
+    const [rangeArg, criteriaArg] = args;
+    const values = flattenValues([rangeArg]);
+    const criteria = coerceScalar(criteriaArg, "COUNTIF criteria");
+    const predicate = createCountIfPredicate(criteria);
+    return values.reduce<number>((count, value) => (predicate(value) ? count + 1 : count), 0);
   },
 });
 

@@ -31,9 +31,11 @@ const createTestSpreadsheet = (): SpreadSheet => {
     "0:0": createNumberCell(0, 0, 10),
     "0:1": createNumberCell(0, 1, 5),
     "0:2": createNumberCell(0, 2, 7),
+    "0:3": createNumberCell(0, 3, 12),
     "1:0": createFormulaCell(1, 0, "=A1*2"),
     "1:1": createFormulaCell(1, 1, "=SUM(A2:A3)"),
     "1:2": createFormulaCell(1, 2, "=IF(A1>11, SUM(A2:A3), MIN(A2:A3))"),
+    "1:3": createFormulaCell(1, 3, "=COUNTIF(A1:A4,\">6\")"),
     "2:0": createFormulaCell(2, 0, "=A1 + 'Sheet 2'!A1"),
   };
 
@@ -67,10 +69,12 @@ describe("FormulaEngine", () => {
     const doubled = engine.resolveCellValueByCoords("sheet-1", 1, 0);
     const summed = engine.resolveCellValueByCoords("sheet-1", 1, 1);
     const conditional = engine.resolveCellValueByCoords("sheet-1", 1, 2);
+    const counted = engine.resolveCellValueByCoords("sheet-1", 1, 3);
 
     expect(doubled).toBe(20);
     expect(summed).toBe(12);
     expect(conditional).toBe(5);
+    expect(counted).toBe(3);
   });
 
   it("supports cross-sheet references with quoted names", () => {
