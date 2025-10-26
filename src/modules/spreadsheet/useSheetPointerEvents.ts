@@ -9,6 +9,7 @@ import type { sheetActions } from "./sheetActions";
 import type { Sheet } from "../../types";
 import { findColumnAtPosition, findRowAtPosition } from "./gridLayout";
 import type { ColumnSizeMap, RowSizeMap } from "./gridLayout";
+import type { SelectionTarget } from "./sheetReducer";
 
 export type UseSheetPointerEventsParams = {
   actions: BoundActionCreators<typeof sheetActions>;
@@ -23,6 +24,8 @@ export type UseSheetPointerEventsParams = {
   maxColumns: number;
   maxRows: number;
   sheet: Sheet;
+  selection: SelectionTarget | null;
+  selectionAnchor: { col: number; row: number } | null;
 };
 
 export type UseSheetPointerEventsReturn = {
@@ -50,10 +53,14 @@ export const useSheetPointerEvents = ({
   maxColumns,
   maxRows,
   sheet,
+  selection,
+  selectionAnchor,
 }: UseSheetPointerEventsParams): UseSheetPointerEventsReturn => {
   const isDraggingRef = useRef(false);
   const pointerDownPosRef = useRef<{ x: number; y: number } | null>(null);
   const lastClickRef = useRef<{ col: number; row: number; time: number } | null>(null);
+  const isShiftExtendingRef = useRef(false);
+  const lastExtendedCellRef = useRef<{ col: number; row: number } | null>(null);
 
   const getPositionFromPointer = useCallback(
     (event: PointerEvent<HTMLDivElement>): { x: number; y: number } | null => {
@@ -93,10 +100,22 @@ export const useSheetPointerEvents = ({
 
       pointerDownPosRef.current = pos;
       isDraggingRef.current = false;
+      isShiftExtendingRef.current = false;
+      lastExtendedCellRef.current = null;
 
       event.currentTarget.setPointerCapture(event.pointerId);
+
+      const shiftExtendRequested = event.shiftKey && selection !== null && selectionAnchor !== null;
+      if (shiftExtendRequested) {
+        const cell = getCellAtPosition(pos.x, pos.y);
+        if (cell) {
+          actions.extendSelectionToCell(cell.col, cell.row);
+          lastExtendedCellRef.current = cell;
+          isShiftExtendingRef.current = true;
+        }
+      }
     },
-    [getPositionFromPointer],
+    [getPositionFromPointer, getCellAtPosition, actions, selection, selectionAnchor],
   );
 
   const handlePointerMove = useCallback(
@@ -107,6 +126,25 @@ export const useSheetPointerEvents = ({
 
       const pos = getPositionFromPointer(event);
       if (!pos) {
+        return;
+      }
+
+      if (isShiftExtendingRef.current) {
+        const cell = getCellAtPosition(pos.x, pos.y);
+        if (!cell) {
+          return;
+        }
+
+        if (
+          lastExtendedCellRef.current &&
+          lastExtendedCellRef.current.col === cell.col &&
+          lastExtendedCellRef.current.row === cell.row
+        ) {
+          return;
+        }
+
+        actions.extendSelectionToCell(cell.col, cell.row);
+        lastExtendedCellRef.current = cell;
         return;
       }
 
@@ -134,6 +172,13 @@ export const useSheetPointerEvents = ({
 
       const pos = getPositionFromPointer(event);
       event.currentTarget.releasePointerCapture(event.pointerId);
+
+      if (isShiftExtendingRef.current) {
+        isShiftExtendingRef.current = false;
+        pointerDownPosRef.current = null;
+        lastExtendedCellRef.current = null;
+        return;
+      }
 
       if (isDraggingRef.current) {
         // Was dragging - end selection
@@ -185,3 +230,7 @@ export const useSheetPointerEvents = ({
     handlePointerUp,
   };
 };
+
+// Notes:
+// - Reviewed src/modules/spreadsheet/sheetReducer.ts to ensure shift-extend interactions align with existing selection state transitions.
+// - Reviewed src/components/Sheet.tsx to confirm pointer event hook parameters cover current selection metadata for drag behaviors.

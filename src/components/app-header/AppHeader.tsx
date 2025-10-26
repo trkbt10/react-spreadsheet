@@ -1,14 +1,24 @@
 /**
- * @file AppHeader component for displaying spreadsheet metadata.
+ * @file AppHeader component for displaying spreadsheet metadata and selection.
  */
 
-import type { ReactElement } from "react";
+import type { ReactElement, ChangeEvent } from "react";
+import { Select } from "../inputs/Select";
 import styles from "./AppHeader.module.css";
+
+export type SpreadsheetOption = {
+  id: string;
+  name: string;
+  description?: string;
+};
 
 export type AppHeaderProps = {
   title: string;
   createdAt: string;
   updatedAt: string;
+  spreadsheets: SpreadsheetOption[];
+  currentSpreadsheetId: string;
+  onSpreadsheetChange: (spreadsheetId: string) => void;
 };
 
 /**
@@ -30,10 +40,34 @@ const formatDate = (isoString: string): string => {
  * @param props - Component props
  * @returns AppHeader component
  */
-export const AppHeader = ({ title, createdAt, updatedAt }: AppHeaderProps): ReactElement => {
+export const AppHeader = ({
+  title,
+  createdAt,
+  updatedAt,
+  spreadsheets,
+  currentSpreadsheetId,
+  onSpreadsheetChange,
+}: AppHeaderProps): ReactElement => {
+  const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>): void => {
+    onSpreadsheetChange(event.target.value);
+  };
+
   return (
     <div className={styles.header}>
-      <h1 className={styles.title}>{title}</h1>
+      <div className={styles.titleSection}>
+        <h1 className={styles.title}>{title}</h1>
+        <div className={styles.spreadsheetSelector}>
+          <Select value={currentSpreadsheetId} onChange={handleSelectChange}>
+            {spreadsheets.map((spreadsheet) => {
+              return (
+                <option key={spreadsheet.id} value={spreadsheet.id}>
+                  {spreadsheet.name}
+                </option>
+              );
+            })}
+          </Select>
+        </div>
+      </div>
       <div className={styles.metadata}>
         <div className={styles.metadataItem}>
           <span className={styles.metadataLabel}>Created:</span>

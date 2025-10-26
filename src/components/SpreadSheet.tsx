@@ -7,7 +7,6 @@ import type { CSSProperties, ReactElement } from "react";
 import type { SpreadSheet as SpreadSheetType } from "../types";
 import { Sheet } from "./Sheet";
 import { Tabs } from "./layouts/Tabs";
-import { AppHeader } from "./app-header/AppHeader";
 import { FormulaBar } from "./sheets/FormulaBar";
 import { SheetProvider } from "../modules/spreadsheet/SheetContext";
 import { SpreadSheetProvider, useSpreadSheetContext } from "../modules/spreadsheet/SpreadSheetContext";
@@ -47,13 +46,11 @@ const SpreadSheetContent = ({
   maxColumns = SAFE_MAX_COLUMNS,
   maxRows = SAFE_MAX_ROWS,
 }: Omit<SpreadSheetProps, "spreadsheet">): ReactElement => {
-  const { spreadsheet, activeSheetId, activeSheet, tabs, formulaEngine, handleTabChange } = useSpreadSheetContext();
+  const { activeSheetId, activeSheet, tabs, formulaEngine, handleTabChange } = useSpreadSheetContext();
 
   return (
     <FormulaEngineProvider engine={formulaEngine}>
       <div className={styles.spreadsheet} style={style}>
-        <AppHeader title={spreadsheet.name} createdAt={spreadsheet.createdAt} updatedAt={spreadsheet.updatedAt} />
-
         {/* Active sheet content */}
         <div className={styles.sheetContent}>
           <Activity mode={activeSheet ? "visible" : "hidden"}>

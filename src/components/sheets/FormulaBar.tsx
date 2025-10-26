@@ -44,20 +44,28 @@ export const FormulaBar = (): ReactElement => {
   const inputRef = useRef<HTMLInputElement>(null);
   useFormulaEngine();
 
-  const focusInput = useCallback(() => {
+  const focusInput = useCallback((options?: { selectAll?: boolean }) => {
+    const shouldSelectAll = options?.selectAll ?? true;
     requestAnimationFrame(() => {
       const input = inputRef.current;
-      if (input) {
-        input.focus({ preventScroll: true });
-        input.select();
+      if (!input) {
+        return;
       }
+      input.focus({ preventScroll: true });
+      if (shouldSelectAll) {
+        input.select();
+        return;
+      }
+      const caretPosition = input.value.length;
+      input.setSelectionRange(caretPosition, caretPosition);
     });
   }, []);
 
   useEffect(() => {
-    if (editingSelection && editingSelection.origin === "formulaBar") {
-      focusInput();
+    if (!editingSelection || editingSelection.origin !== "formulaBar") {
+      return;
     }
+    focusInput({ selectAll: !editingSelection.isDirty });
   }, [editingSelection, focusInput]);
 
   const readCellDisplayValue = useCallback(
@@ -175,13 +183,13 @@ export const FormulaBar = (): ReactElement => {
     }
     if (selection.kind === "range") {
       actions.startEditingRange(selectionToRange(selection), "", "formulaBar");
-      focusInput();
+      focusInput({ selectAll: true });
       return;
     }
     const anchor = getSelectionAnchor(selection);
     const initialValue = readCellDisplayValue(anchor.col, anchor.row);
     actions.startEditingCell(anchor.col, anchor.row, initialValue, "formulaBar");
-    focusInput();
+    focusInput({ selectAll: true });
   }, [actions, editingSelection, selection, readCellDisplayValue, focusInput]);
 
   const handleBlur = useCallback(() => {
@@ -223,11 +231,7 @@ export const FormulaBar = (): ReactElement => {
 
   return (
     <div className={styles.formulaBarContainer}>
-      <Toolbar
-        currentStyle={toolbarStyle}
-        onStyleChange={handleStyleChange}
-        isDisabled={isDisabled}
-      />
+      <Toolbar currentStyle={toolbarStyle} onStyleChange={handleStyleChange} isDisabled={isDisabled} />
       <div className={styles.formulaBar}>
         <div className={styles.cellReference}>{displayedReference}</div>
         <div className={styles.inputWrapper}>

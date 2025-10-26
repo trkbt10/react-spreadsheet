@@ -4,7 +4,7 @@
 
 import { defineConfig } from "vite";
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
   const baseConfig = {
     esbuild: {
       jsx: "automatic",
@@ -12,7 +12,8 @@ export default defineConfig(({ command }) => {
     },
   };
 
-  if (command === "build") {
+  // Library build (default)
+  if (command === "build" && mode !== "pages") {
     return {
       ...baseConfig,
       build: {
@@ -28,5 +29,17 @@ export default defineConfig(({ command }) => {
     };
   }
 
+  // GitHub Pages build
+  if (command === "build" && mode === "pages") {
+    return {
+      ...baseConfig,
+      base: "/sheets/",
+      build: {
+        outDir: "dist-pages",
+      },
+    };
+  }
+
+  // Dev mode - use Pages configuration for preview
   return baseConfig;
 });

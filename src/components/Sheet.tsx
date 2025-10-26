@@ -263,7 +263,7 @@ type SheetContentProps = {
 const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): ReactElement => {
   const { scrollLeft, scrollTop, viewportRect } = useVirtualScrollContext();
   const { sheet, state } = useSheetContext();
-  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
+  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, selection, selectionAnchor } = state;
 
   const { handlePointerDown, handlePointerMove, handlePointerUp } = useSheetPointerEvents({
     actions,
@@ -278,6 +278,8 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
     maxColumns,
     maxRows,
     sheet,
+    selection,
+    selectionAnchor,
   });
 
   return (

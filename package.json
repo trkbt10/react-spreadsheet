@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "clean": "rimraf dist",
+    "build:pages": "vite build --mode pages",
+    "preview": "vite preview --mode pages",
+    "clean": "rimraf dist dist-pages",
     "lint": "eslint ./src/**/*.{ts,tsx}",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ./src/**/*.{ts,tsx,json,md}",

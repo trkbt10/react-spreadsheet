@@ -5,32 +5,52 @@
 .header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: var(--spacing-md);
-  background-color: var(--color-bg-primary);
-  border-bottom: var(--border-width) var(--border-style) var(--color-border-primary);
+  background-color: var(--toolbar-bg);
+  border-bottom: var(--border-width) var(--border-style) var(--toolbar-border);
+  gap: var(--spacing-lg);
+  min-height: var(--control-height);
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
   gap: var(--spacing-md);
+  flex: 1;
+  min-width: 0;
 }
 
 .title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spreadsheetSelector {
+  min-width: 200px;
+  max-width: 300px;
 }
 
 .metadata {
   display: flex;
-  gap: var(--spacing-md);
-  margin-left: auto;
+  gap: var(--spacing-lg);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .metadataItem {
   display: flex;
   gap: var(--spacing-xs);
+  align-items: center;
 }
 
 .metadataLabel {
   font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
 }

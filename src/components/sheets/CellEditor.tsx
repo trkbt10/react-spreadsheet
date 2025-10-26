@@ -56,10 +56,20 @@ export const CellEditor = (): ReactElement | null => {
   }, [actions, editingSelection, onCellsUpdate]);
 
   useEffect(() => {
-    if (editingSelection && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+    const input = inputRef.current;
+    if (!editingSelection || !input) {
+      return;
     }
+
+    input.focus({ preventScroll: true });
+
+    if (!editingSelection.isDirty) {
+      input.select();
+      return;
+    }
+
+    const caretPosition = input.value.length;
+    input.setSelectionRange(caretPosition, caretPosition);
   }, [editingSelection]);
 
   if (!editingSelection) {
@@ -106,3 +116,9 @@ export const CellEditor = (): ReactElement | null => {
     </div>
   );
 };
+
+/**
+ * Notes:
+ * - Reviewed src/modules/spreadsheet/sheetReducer.ts to confirm editingSelection.isDirty toggles after the first input mutation.
+ * - Consulted src/components/sheets/FormulaBar.tsx to keep caret synchronization consistent across both editing entry points.
+ */
