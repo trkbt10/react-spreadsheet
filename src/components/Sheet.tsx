@@ -119,19 +119,12 @@ const CellRenderer = (): ReactElement => {
   );
 };
 
-
 /**
  * Renders a spreadsheet sheet with virtual scrolling for performance.
  * @param props - Component props
  * @returns Sheet component
  */
-export const Sheet = (
-  {
-    style,
-    maxColumns = SAFE_MAX_COLUMNS,
-    maxRows = SAFE_MAX_ROWS,
-  }: SheetProps,
-): ReactElement => {
+export const Sheet = ({ style, maxColumns = SAFE_MAX_COLUMNS, maxRows = SAFE_MAX_ROWS }: SheetProps): ReactElement => {
   const { state, actions } = useSheetContext();
   const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
 
@@ -263,7 +256,16 @@ type SheetContentProps = {
 const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): ReactElement => {
   const { scrollLeft, scrollTop, viewportRect } = useVirtualScrollContext();
   const { sheet, state } = useSheetContext();
-  const { columnSizes, rowSizes, defaultCellWidth, defaultCellHeight, selection, selectionAnchor } = state;
+  const {
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    selection,
+    selectionAnchor,
+    editingSelection,
+    editorActivity,
+  } = state;
 
   const { handlePointerDown, handlePointerMove, handlePointerUp } = useSheetPointerEvents({
     actions,
@@ -305,7 +307,7 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
       <CellRenderer />
       <SelectionHighlight headerColumnWidth={HEADER_COLUMN_WIDTH} headerRowHeight={HEADER_ROW_HEIGHT} />
       <VisualElementLayer sheet={sheet} viewport={viewportRect} />
-      <CellEditor />
+      {editorActivity.cellEditor && editingSelection ? <CellEditor /> : null}
     </div>
   );
 };

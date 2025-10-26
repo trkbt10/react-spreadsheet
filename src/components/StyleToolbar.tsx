@@ -91,20 +91,10 @@ export const StyleToolbar = (): ReactElement => {
       </div>
 
       <div className={styles.buttonGroup}>
-        <button
-          className={styles.button}
-          onClick={handleBold}
-          disabled={!hasSelection}
-          title="Bold"
-        >
+        <button className={styles.button} onClick={handleBold} disabled={!hasSelection} title="Bold">
           <strong>B</strong>
         </button>
-        <button
-          className={styles.button}
-          onClick={handleItalic}
-          disabled={!hasSelection}
-          title="Italic"
-        >
+        <button className={styles.button} onClick={handleItalic} disabled={!hasSelection} title="Italic">
           <em>I</em>
         </button>
       </div>

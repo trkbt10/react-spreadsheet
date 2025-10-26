@@ -59,12 +59,7 @@ export const DependencyGraphShowcase = (): ReactElement => {
         <label className={styles.selectLabel} htmlFor="dataset-select">
           モックデータ
         </label>
-        <select
-          id="dataset-select"
-          className={styles.select}
-          value={datasetId}
-          onChange={handleDatasetChange}
-        >
+        <select id="dataset-select" className={styles.select} value={datasetId} onChange={handleDatasetChange}>
           {DATASETS.map((option) => (
             <option key={option.id} value={option.id}>
               {option.label}
@@ -79,4 +74,3 @@ export const DependencyGraphShowcase = (): ReactElement => {
     </div>
   );
 };
-

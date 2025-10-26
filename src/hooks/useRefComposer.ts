@@ -9,9 +9,7 @@ import { useCallback } from "react";
  * @param refs - Array of refs to compose
  * @returns Callback ref that assigns to all provided refs
  */
-export const useRefComposer = <T>(
-  ...refs: Array<React.Ref<T> | undefined>
-): React.RefCallback<T> => {
+export const useRefComposer = <T>(...refs: Array<React.Ref<T> | undefined>): React.RefCallback<T> => {
   return useCallback(
     (node: T | null): void => {
       for (const ref of refs) {

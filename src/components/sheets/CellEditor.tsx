@@ -22,7 +22,6 @@ export const CellEditor = (): ReactElement | null => {
   const { state, actions, onCellsUpdate } = useSheetContext();
   const { editingSelection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
   const inputRef = useRef<HTMLInputElement>(null);
-
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       actions.updateEditingValue(event.target.value);
@@ -32,6 +31,9 @@ export const CellEditor = (): ReactElement | null => {
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
+      if (!editingSelection) {
+        return;
+      }
       if (event.key === "Enter") {
         event.preventDefault();
         if (editingSelection?.isDirty && onCellsUpdate) {
@@ -48,7 +50,10 @@ export const CellEditor = (): ReactElement | null => {
   );
 
   const handleBlur = useCallback(() => {
-    if (editingSelection?.isDirty && onCellsUpdate) {
+    if (!editingSelection) {
+      return;
+    }
+    if (editingSelection.isDirty && onCellsUpdate) {
       const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
       onCellsUpdate(updates);
     }
@@ -121,4 +126,5 @@ export const CellEditor = (): ReactElement | null => {
  * Notes:
  * - Reviewed src/modules/spreadsheet/sheetReducer.ts to confirm editingSelection.isDirty toggles after the first input mutation.
  * - Consulted src/components/sheets/FormulaBar.tsx to keep caret synchronization consistent across both editing entry points.
+ * - Inspected src/components/Sheet.tsx and src/components/SpreadSheet.tsx to verify rendering order and avoid focus contention with the formula bar.
  */

@@ -40,7 +40,7 @@ const getCellReference = (col: number, row: number): string => {
  */
 export const FormulaBar = (): ReactElement => {
   const { sheet, state, actions, onCellsUpdate } = useSheetContext();
-  const { selection, editingSelection } = state;
+  const { selection, editingSelection, editorActivity } = state;
   const inputRef = useRef<HTMLInputElement>(null);
   useFormulaEngine();
 
@@ -62,11 +62,11 @@ export const FormulaBar = (): ReactElement => {
   }, []);
 
   useEffect(() => {
-    if (!editingSelection || editingSelection.origin !== "formulaBar") {
+    if (!editingSelection || !editorActivity.formulaBar) {
       return;
     }
     focusInput({ selectAll: !editingSelection.isDirty });
-  }, [editingSelection, focusInput]);
+  }, [editingSelection, editorActivity.formulaBar, focusInput]);
 
   const readCellDisplayValue = useCallback(
     (col: number, row: number): string => {

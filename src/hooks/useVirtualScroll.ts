@@ -56,10 +56,7 @@ const isWheelEvent = (event: Event): event is globalThis.WheelEvent => {
  * @param options - Configuration options
  * @returns Virtual scroll state and control methods
  */
-export const useVirtualScroll = ({
-  contentWidth,
-  contentHeight,
-}: UseVirtualScrollOptions): UseVirtualScrollReturn => {
+export const useVirtualScroll = ({ contentWidth, contentHeight }: UseVirtualScrollOptions): UseVirtualScrollReturn => {
   const containerRef = useRef<HTMLElement | null>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
