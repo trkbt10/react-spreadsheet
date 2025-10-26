@@ -1,21 +1,21 @@
 /**
- * @file Dependency Graph showcase page.
+ * @file Dependency Graph visx showcase page.
  */
 
 import { useMemo, useState } from "react";
-import type { ReactElement, ChangeEvent } from "react";
+import type { ChangeEvent, ReactElement } from "react";
 import { createDependencyGraphSnapshot } from "../../modules/formula/graphSnapshot";
-import { DependencyVisualizer } from "../components/dependency-visualizer/DependencyVisualizer";
+import { DependencyGraphDiagram } from "../components/dependency-visualizer/DependencyGraphDiagram";
 import { useShowcaseMetadata as useShowcaseMetadataHook } from "../hooks/useShowcaseMetadata";
 import { listMockDatasets, getMockDatasetById } from "../mockDataRegistry";
 import styles from "./DependencyGraphPage.module.css";
 
 const DATASETS = listMockDatasets().filter((dataset) => dataset.id === "basic" || dataset.id === "advanced");
 
-export const DependencyGraphPage = (): ReactElement => {
+export const DependencyGraphVisxPage = (): ReactElement => {
   useShowcaseMetadataHook({
-    title: "Dependency Graph",
-    description: "Formula dependency visualization with interactive dataset selection",
+    title: "Dependency Graph Diagram",
+    description: "visx を利用したグラフ描画で依存構造を可視化するデモ",
   });
 
   const [datasetId, setDatasetId] = useState<string>(DATASETS[0]?.id ?? "basic");
@@ -31,10 +31,15 @@ export const DependencyGraphPage = (): ReactElement => {
   return (
     <>
       <div className={styles.controls}>
-        <label className={styles.selectLabel} htmlFor="dataset-select">
+        <label className={styles.selectLabel} htmlFor="visx-dataset-select">
           モックデータ
         </label>
-        <select id="dataset-select" className={styles.select} value={datasetId} onChange={handleDatasetChange}>
+        <select
+          id="visx-dataset-select"
+          className={styles.select}
+          value={datasetId}
+          onChange={handleDatasetChange}
+        >
           {DATASETS.map((option) => (
             <option key={option.id} value={option.id}>
               {option.name}
@@ -45,7 +50,8 @@ export const DependencyGraphPage = (): ReactElement => {
 
       <p className={styles.description}>{dataset.description}</p>
 
-      <DependencyVisualizer snapshot={snapshot} />
+      <DependencyGraphDiagram snapshot={snapshot} />
     </>
   );
 };
+

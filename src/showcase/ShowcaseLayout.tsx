@@ -2,9 +2,11 @@
  * @file Storybook-style layout component for showcase pages.
  */
 
+import { useState } from "react";
 import type { ReactElement } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { ShowcaseMetadataProvider, useShowcaseMetadataContext } from "./ShowcaseMetadataContext";
+import { listFunctionCategories, getFunctionsByCategory } from "../modules/formula/functionRegistry";
 import styles from "./ShowcaseLayout.module.css";
 
 type NavItem = {
@@ -15,6 +17,22 @@ type NavItem = {
 type NavSection = {
   title: string;
   items: NavItem[];
+  collapsible?: boolean;
+};
+
+const buildFunctionNavSections = (): NavSection[] => {
+  const categories = listFunctionCategories();
+  return categories.map((category) => {
+    const functions = getFunctionsByCategory(category);
+    return {
+      title: category.charAt(0).toUpperCase() + category.slice(1),
+      collapsible: true,
+      items: functions.map((func) => ({
+        path: `/catalog/functions/${category}/${func.name.toLowerCase()}`,
+        label: func.name,
+      })),
+    };
+  });
 };
 
 const NAV_SECTIONS: NavSection[] = [
@@ -29,13 +47,33 @@ const NAV_SECTIONS: NavSection[] = [
     title: "Visualizations",
     items: [
       { path: "/catalog/dependency-graph", label: "Dependency Graph" },
+      { path: "/catalog/dependency-graph-visx", label: "Dependency Graph (visx)" },
     ],
   },
+  {
+    title: "Functions",
+    items: [],
+    collapsible: true,
+  },
+  ...buildFunctionNavSections(),
 ];
 
 const ShowcaseLayoutContent = (): ReactElement => {
   const location = useLocation();
   const { metadata } = useShowcaseMetadataContext();
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = (title: string): void => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) {
+        next.delete(title);
+      } else {
+        next.add(title);
+      }
+      return next;
+    });
+  };
 
   const renderPageHeader = (): ReactElement | null => {
     if (metadata.title === undefined) {
@@ -63,26 +101,66 @@ const ShowcaseLayoutContent = (): ReactElement => {
       <aside className={styles.sidebar}>
         <header className={styles.sidebarHeader}>
           <h1 className={styles.sidebarTitle}>Showcase</h1>
+          <Link to="/" className={styles.homeLink}>
+            ← Back to Home
+          </Link>
         </header>
         <nav className={styles.nav}>
-          {NAV_SECTIONS.map((section) => (
-            <div key={section.title} className={styles.navSection}>
-              <h2 className={styles.navSectionTitle}>{section.title}</h2>
-              <ul className={styles.navList}>
-                {section.items.map((item) => (
-                  <li key={item.path}>
-                    <Link
-                      to={item.path}
-                      className={styles.navLink}
-                      data-is-active={location.pathname === item.path}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {NAV_SECTIONS.map((section) => {
+            if (section.items.length === 0 && !section.collapsible) {
+              return null;
+            }
+
+            const isCollapsed = collapsedSections.has(section.title);
+
+            const renderSectionTitle = (): ReactElement => {
+              if (section.collapsible === true) {
+                return (
+                  <button
+                    className={styles.navSectionTitleButton}
+                    onClick={() => {
+                      toggleSection(section.title);
+                    }}
+                    data-is-collapsed={isCollapsed}
+                  >
+                    <span className={styles.navSectionTitleIcon}>{isCollapsed ? "▶" : "▼"}</span>
+                    <span>{section.title}</span>
+                  </button>
+                );
+              }
+
+              return <h2 className={styles.navSectionTitle}>{section.title}</h2>;
+            };
+
+            const renderNavList = (): ReactElement | null => {
+              if (isCollapsed || section.items.length === 0) {
+                return null;
+              }
+
+              return (
+                <ul className={styles.navList}>
+                  {section.items.map((item) => (
+                    <li key={item.path}>
+                      <Link
+                        to={item.path}
+                        className={styles.navLink}
+                        data-is-active={location.pathname === item.path}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              );
+            };
+
+            return (
+              <div key={section.title} className={styles.navSection}>
+                {renderSectionTitle()}
+                {renderNavList()}
+              </div>
+            );
+          })}
         </nav>
       </aside>
 

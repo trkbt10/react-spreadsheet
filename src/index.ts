@@ -2,7 +2,6 @@
  * @file Main entry point exporting the preview application and shared types.
  */
 
-export { App } from "./App";
 export type { SpreadSheet, Sheet, Cell, CellId, X, Y } from "./types";
 export { VirtualScroll } from "./components/scrollarea/VirtualScroll";
 export { useVirtualScrollContext } from "./components/scrollarea/VirtualScrollContext";

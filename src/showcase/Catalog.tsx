@@ -6,9 +6,9 @@ import { useCallback, useState } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import { FiScissors, FiCopy, FiClipboard, FiTrash2 } from "react-icons/fi";
 import { MdFormatColorText } from "react-icons/md";
-import { ContextMenu } from "./components/layouts/ContextMenu.tsx";
-import type { MenuItem, MenuPosition } from "./components/layouts/ContextMenu.types";
-import { FormulaFunctionInput } from "./components/sheets/FormulaFunctionInput.tsx";
+import { ContextMenu } from "../components/layouts/ContextMenu";
+import type { MenuItem, MenuPosition } from "../components/layouts/ContextMenu.types";
+import { FormulaFunctionInput } from "../components/sheets/FormulaFunctionInput";
 import styles from "./Catalog.module.css";
 
 /**

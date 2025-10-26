@@ -4,7 +4,7 @@
 
 import { useMemo } from "react";
 import type { ReactElement } from "react";
-import type { DependencyGraphSnapshot } from "../../modules/formula/graphSnapshot";
+import type { DependencyGraphSnapshot } from "../../../modules/formula/graphSnapshot";
 import styles from "./DependencyVisualizer.module.css";
 
 export type DependencyVisualizerProps = {
@@ -12,6 +12,13 @@ export type DependencyVisualizerProps = {
 };
 
 const formatCount = (count: number): string => `${count} node${count === 1 ? "" : "s"}`;
+
+const formatExternalDependencyLabel = (count: number): string => {
+  if (count === 0) {
+    return "外部依存なし";
+  }
+  return `${count} external`;
+};
 
 const renderList = (values: string[]): ReactElement => {
   if (values.length === 0) {
@@ -36,10 +43,7 @@ export const DependencyVisualizer = ({ snapshot }: DependencyVisualizerProps): R
         id: component.id,
         sizeLabel: formatCount(component.size),
         externalCount: component.externalDependencies.length,
-        externalLabel:
-          component.externalDependencies.length === 0
-            ? "外部依存なし"
-            : `${component.externalDependencies.length} external`,
+        externalLabel: formatExternalDependencyLabel(component.externalDependencies.length),
       };
     });
   }, [snapshot.components]);

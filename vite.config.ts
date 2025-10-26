@@ -1,45 +1,30 @@
 /**
- * @file Vite build configuration
+ * @file Vite configuration for library builds
  */
 
 import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
-export default defineConfig(({ command, mode }) => {
-  const baseConfig = {
-    esbuild: {
-      jsx: "automatic",
-      jsxImportSource: "react",
+export default defineConfig({
+  esbuild: {
+    jsx: "automatic",
+    jsxImportSource: "react",
+  },
+  plugins: [
+    dts({
+      include: ["src/**/*.ts", "src/**/*.tsx"],
+      exclude: ["src/**/*.spec.ts", "src/**/*.spec.tsx", "src/showcase/**/*"],
+      rollupTypes: true,
+    }),
+  ],
+  build: {
+    outDir: "dist",
+    lib: {
+      entry: "src/index.ts",
+      formats: ["cjs", "es"],
     },
-  };
-
-  // Library build (default)
-  if (command === "build" && mode !== "pages") {
-    return {
-      ...baseConfig,
-      build: {
-        outDir: "dist",
-        lib: {
-          entry: "src/index.ts",
-          formats: ["cjs", "es"],
-        },
-        rollupOptions: {
-          external: [/node:.+/],
-        },
-      },
-    };
-  }
-
-  // GitHub Pages build
-  if (command === "build" && mode === "pages") {
-    return {
-      ...baseConfig,
-      base: "/react-spreadsheet/",
-      build: {
-        outDir: "dist-pages",
-      },
-    };
-  }
-
-  // Dev mode - use Pages configuration for preview
-  return baseConfig;
+    rollupOptions: {
+      external: [/node:.+/],
+    },
+  },
 });

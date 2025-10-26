@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import type { ReactElement, ChangeEvent } from "react";
 import { parseSpreadsheet } from "../modules/spreadsheet/parseSpreadsheet";
 import { createDependencyGraphSnapshot } from "../modules/formula/graphSnapshot";
-import { DependencyVisualizer } from "../components/dependency-visualizer/DependencyVisualizer";
+import { DependencyVisualizer } from "./components/dependency-visualizer/DependencyVisualizer";
 import type { SpreadSheet } from "../types";
 import basicFixture from "../../__mocks__/spreadsheet.basic.json";
 import advancedFixture from "../../__mocks__/spreadsheet.advanced.json";

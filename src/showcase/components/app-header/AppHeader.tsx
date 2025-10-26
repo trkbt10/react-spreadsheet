@@ -3,7 +3,8 @@
  */
 
 import type { ReactElement, ChangeEvent } from "react";
-import { Select } from "../inputs/Select";
+import { Link } from "react-router-dom";
+import { Select } from "../../../components/inputs/Select";
 import styles from "./AppHeader.module.css";
 
 export type SpreadsheetOption = {
@@ -19,6 +20,7 @@ export type AppHeaderProps = {
   spreadsheets: SpreadsheetOption[];
   currentSpreadsheetId: string;
   onSpreadsheetChange: (spreadsheetId: string) => void;
+  showCatalogLink?: boolean;
 };
 
 /**
@@ -47,9 +49,24 @@ export const AppHeader = ({
   spreadsheets,
   currentSpreadsheetId,
   onSpreadsheetChange,
+  showCatalogLink = false,
 }: AppHeaderProps): ReactElement => {
   const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>): void => {
     onSpreadsheetChange(event.target.value);
+  };
+
+  const renderCatalogLink = (): ReactElement | null => {
+    if (!showCatalogLink) {
+      return null;
+    }
+
+    return (
+      <div className={styles.metadataItem}>
+        <Link to="/catalog" className={styles.catalogLink}>
+          Component Catalog
+        </Link>
+      </div>
+    );
   };
 
   return (
@@ -77,6 +94,7 @@ export const AppHeader = ({
           <span className={styles.metadataLabel}>Updated:</span>
           <span>{formatDate(updatedAt)}</span>
         </div>
+        {renderCatalogLink()}
       </div>
     </div>
   );
