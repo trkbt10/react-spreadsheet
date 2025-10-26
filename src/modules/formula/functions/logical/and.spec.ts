@@ -25,9 +25,17 @@ describe("andFunction", () => {
     }).toThrowError("AND expects at least one argument");
   });
 
-  it("throws when encountering non-boolean inputs", () => {
+  it("coerces numeric inputs using zero/non-zero semantics", () => {
+    const allTrue = evaluate(true, 1, [1]);
+    expect(allTrue).toBe(true);
+
+    const containsZero = evaluate([true], 0);
+    expect(containsZero).toBe(false);
+  });
+
+  it("rejects textual inputs", () => {
     expect(() => {
-      evaluate(true, 1);
+      evaluate(true, "unexpected");
     }).toThrowError("AND argument 2 expects logical arguments");
   });
 });

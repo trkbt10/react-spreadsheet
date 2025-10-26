@@ -20,7 +20,7 @@ export const dAverageFunction: FormulaFunctionEagerDefinition = {
   examples: ['DAVERAGE(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DAVERAGE([["Name", "Age"], ["Alice", 25], ["Bob", 30], ["Carol", 35]], "Age", [["Age"], [">25"]])',
+      input: 'DAVERAGE({{"Name", "Age"}; {"Alice", 25}; {"Bob", 30}; {"Carol", 35}}, "Age", {{"Age"}; {">25"}})',
       output: 32.5,
       description: {
         en: "Average age where Age > 25 (30 and 35, average is 32.5)",
@@ -28,7 +28,7 @@ export const dAverageFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DAVERAGE([["Product", "Price"], ["A", 100], ["B", 200], ["C", 150]], "Price", [["Product"], ["A"]])',
+      input: 'DAVERAGE({{"Product", "Price"}; {"A", 100}; {"B", 200}; {"C", 150}}, "Price", {{"Product"}; {"A"}})',
       output: 100,
       description: {
         en: "Average price where Product is A",
@@ -36,7 +36,7 @@ export const dAverageFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DAVERAGE([["Item", "Qty"], ["X", 10], ["Y", 20], ["Z", 30]], "Qty", [["Qty"], [">=20"]])',
+      input: 'DAVERAGE({{"Item", "Qty"}; {"X", 10}; {"Y", 20}; {"Z", 30}}, "Qty", {{"Qty"}; {">=20"}})',
       output: 25,
       description: {
         en: "Average quantity where Qty >= 20 (20 and 30, average is 25)",

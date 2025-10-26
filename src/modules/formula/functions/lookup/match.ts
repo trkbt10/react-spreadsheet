@@ -22,7 +22,7 @@ export const matchFunction: FormulaFunctionEagerDefinition = {
   examples: ['MATCH("Key", A1:A10, 0)', "MATCH(5, A1:A10, 1)"],
   samples: [
     {
-      input: "MATCH(\"B\", [\"A\", \"B\", \"C\"], 0)",
+      input: "MATCH(\"B\", {\"A\", \"B\", \"C\"}, 0)",
       output: 2,
       description: {
         en: "Exact match returns position (1-based index)",
@@ -30,7 +30,7 @@ export const matchFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MATCH(25, [10, 20, 30, 40], 1)",
+      input: "MATCH(25, {10, 20, 30, 40}, 1)",
       output: 2,
       description: {
         en: "Match type 1 finds largest value less than or equal to lookup",
@@ -38,7 +38,7 @@ export const matchFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MATCH(25, [40, 30, 20, 10], -1)",
+      input: "MATCH(25, {40, 30, 20, 10}, -1)",
       output: 3,
       description: {
         en: "Match type -1 finds smallest value greater than or equal to lookup",

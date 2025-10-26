@@ -15,7 +15,7 @@ export const npvFunction: FormulaFunctionEagerDefinition = {
   samples: [
     {
       input: "NPV(0.1, 3000, 4200, 6800)",
-      output: 11188.09,
+      output: 11307.29,
       description: {
         en: "NPV of three positive cash flows at 10% discount rate",
         ja: "割引率10%での3つの正のキャッシュフローのNPV",
@@ -23,7 +23,7 @@ export const npvFunction: FormulaFunctionEagerDefinition = {
     },
     {
       input: "NPV(0.08, -10000, 3000, 4000, 5000)",
-      output: 922.64,
+      output: 163.24,
       description: {
         en: "NPV including initial investment",
         ja: "初期投資を含むNPV",
@@ -31,7 +31,7 @@ export const npvFunction: FormulaFunctionEagerDefinition = {
     },
     {
       input: "NPV(0.15, 1000, 2000, 3000, 4000)",
-      output: 6924.55,
+      output: 6641.41,
       description: {
         en: "NPV at higher discount rate",
         ja: "高い割引率でのNPV",
@@ -55,6 +55,7 @@ export const npvFunction: FormulaFunctionEagerDefinition = {
     if (flattened.length === 0) {
       throw new Error("NPV requires at least one numeric cash flow");
     }
+    // NOTE: ODF 1.3 §6.12.7 discounts each cash flow from period 1 onwards; cash flows at period 0 must be added separately when needed.
     return helpers.computeNPV(rate, flattened);
   },
 };

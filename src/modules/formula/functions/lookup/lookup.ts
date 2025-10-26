@@ -22,7 +22,7 @@ export const lookupFunction: FormulaFunctionEagerDefinition = {
   examples: ["LOOKUP(5, A1:A10, B1:B10)", 'LOOKUP("Key", A1:B2)'],
   samples: [
     {
-      input: 'LOOKUP("B", ["A", "B", "C"], [10, 20, 30])',
+      input: 'LOOKUP("B", {"A", "B", "C"}, {10, 20, 30})',
       output: 20,
       description: {
         en: "Exact match with separate lookup and result vectors",
@@ -30,7 +30,7 @@ export const lookupFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "LOOKUP(2.5, [1, 2, 3], [10, 20, 30])",
+      input: "LOOKUP(2.5, {1, 2, 3}, {10, 20, 30})",
       output: 20,
       description: {
         en: "Approximate match finds largest value <= lookup",
@@ -38,7 +38,7 @@ export const lookupFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'LOOKUP("Cat", [["Apple", 5], ["Cat", 10], ["Dog", 15]])',
+      input: 'LOOKUP("Cat", {{"Apple", 5}; {"Cat", 10}; {"Dog", 15}})',
       output: 10,
       description: {
         en: "Lookup in a 2-column array",

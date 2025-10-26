@@ -20,7 +20,7 @@ export const subtotalFunction: FormulaFunctionEagerDefinition = {
   examples: ["SUBTOTAL(9, A1:A10)", "SUBTOTAL(1, A1:A5, B1:B5)"],
   samples: [
     {
-      input: "SUBTOTAL(9, [10, 20, 30])",
+      input: "SUBTOTAL(9, 10, 20, 30)",
       output: 60,
       description: {
         en: "Sum (function 9) of values",
@@ -28,7 +28,7 @@ export const subtotalFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "SUBTOTAL(1, [5, 10, 15])",
+      input: "SUBTOTAL(1, 5, 10, 15)",
       output: 10,
       description: {
         en: "Average (function 1) of values",
@@ -36,7 +36,7 @@ export const subtotalFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "SUBTOTAL(4, [3, 7, 2, 8])",
+      input: "SUBTOTAL(4, 3, 7, 2, 8)",
       output: 8,
       description: {
         en: "Maximum (function 4) of values",
@@ -59,6 +59,7 @@ export const subtotalFunction: FormulaFunctionEagerDefinition = {
     const rangeValues = rangeArgs.map((rangeArg) => helpers.flattenResult(rangeArg));
 
     const collected = collectValues(rangeValues);
-    return aggregateValues(functionNumber, collected);
+    // NOTE: SUBTOTAL ignores error cells by design (ODF 1.3 §6.10.15), so we always enable error filtering here.
+    return aggregateValues(functionNumber, collected, { ignoreErrors: true });
   },
 };

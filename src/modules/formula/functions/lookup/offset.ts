@@ -44,7 +44,7 @@ export const offsetFunction: FormulaFunctionLazyDefinition = {
   examples: ["OFFSET(A1, 1, 2, 2, 1)", "OFFSET(Table1, 0, 1)"],
   samples: [
     {
-      input: "OFFSET([[10, 20, 30], [40, 50, 60]], 0, 1)",
+      input: "OFFSET({{10, 20, 30}; {40, 50, 60}}, 0, 1)",
       output: [[20, 30], [50, 60]],
       description: {
         en: "Offset by 1 column, same size",
@@ -52,7 +52,7 @@ export const offsetFunction: FormulaFunctionLazyDefinition = {
       },
     },
     {
-      input: "OFFSET([[10, 20], [30, 40], [50, 60]], 1, 0, 2, 2)",
+      input: "OFFSET({{10, 20}; {30, 40}; {50, 60}}, 1, 0, 2, 2)",
       output: [[30, 40], [50, 60]],
       description: {
         en: "Offset by 1 row, specify 2x2 size",
@@ -60,7 +60,7 @@ export const offsetFunction: FormulaFunctionLazyDefinition = {
       },
     },
     {
-      input: "OFFSET([[1, 2, 3], [4, 5, 6]], 0, 1, 1, 2)",
+      input: "OFFSET({{1, 2, 3}; {4, 5, 6}}, 0, 1, 1, 2)",
       output: [[2, 3]],
       description: {
         en: "Offset to get subset of array",

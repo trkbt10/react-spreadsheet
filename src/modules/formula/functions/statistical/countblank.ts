@@ -14,7 +14,7 @@ export const countBlankFunction: FormulaFunctionEagerDefinition = {
   examples: ["COUNTBLANK(A1:A10)", "COUNTBLANK(A1:C3)"],
   samples: [
     {
-      input: 'COUNTBLANK([null, "", 1, 2])',
+      input: 'COUNTBLANK({null, "", 1, 2})',
       output: 2,
       description: {
         en: "Count null and empty string",
@@ -22,7 +22,7 @@ export const countBlankFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "COUNTBLANK([1, 2, 3])",
+      input: "COUNTBLANK({1, 2, 3})",
       output: 0,
       description: {
         en: "No blank values",

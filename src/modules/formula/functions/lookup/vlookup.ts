@@ -15,7 +15,7 @@ export const vlookupFunction: FormulaFunctionEagerDefinition = {
   examples: ["VLOOKUP(A2, Table1, 3, FALSE)", "VLOOKUP(5, A1:B10, 2)"],
   samples: [
     {
-      input: "VLOOKUP(2, [[1, \"A\"], [2, \"B\"], [3, \"C\"]], 2, FALSE)",
+      input: "VLOOKUP(2, {{1, \"A\"}; {2, \"B\"}; {3, \"C\"}}, 2, FALSE)",
       output: "B",
       description: {
         en: "Exact match lookup in a 3x2 table",
@@ -23,7 +23,7 @@ export const vlookupFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "VLOOKUP(2.5, [[1, 10], [2, 20], [3, 30]], 2, TRUE)",
+      input: "VLOOKUP(2.5, {{1, 10}; {2, 20}; {3, 30}}, 2, TRUE)",
       output: 20,
       description: {
         en: "Approximate match returns largest value less than or equal to lookup",
@@ -31,7 +31,7 @@ export const vlookupFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "VLOOKUP(\"Cat\", [[\"Apple\", 5], [\"Cat\", 10], [\"Dog\", 15]], 2, FALSE)",
+      input: "VLOOKUP(\"Cat\", {{\"Apple\", 5}; {\"Cat\", 10}; {\"Dog\", 15}}, 2, FALSE)",
       output: 10,
       description: {
         en: "Text lookup with exact match",

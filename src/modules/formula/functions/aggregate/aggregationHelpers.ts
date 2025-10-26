@@ -7,8 +7,34 @@ import { summarizeNumbers } from "../helpers";
 
 type AggregationKey = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
+type AggregationOptions = {
+  ignoreErrors: boolean;
+};
+
 const getNumericValues = (values: FormulaEvaluationResult[]): number[] => {
   return values.filter((value): value is number => typeof value === "number");
+};
+
+const NUMERIC_AGGREGATIONS: ReadonlySet<AggregationKey> = new Set([1, 4, 5, 6, 7, 8, 9, 10, 11]);
+
+const sanitizeValues = (
+  functionNumber: AggregationKey,
+  values: FormulaEvaluationResult[],
+  options: AggregationOptions,
+): FormulaEvaluationResult[] => {
+  if (!NUMERIC_AGGREGATIONS.has(functionNumber)) {
+    return values;
+  }
+
+  if (options.ignoreErrors) {
+    return values.filter((value) => value === null || typeof value === "number");
+  }
+
+  const invalid = values.find((value) => value !== null && typeof value !== "number");
+  if (invalid !== undefined) {
+    throw new Error("AGGREGATE encountered a non-numeric value that cannot be ignored");
+  }
+  return values;
 };
 
 const computeAverage = (values: FormulaEvaluationResult[]): number => {
@@ -94,6 +120,11 @@ export const isSupportedAggregationFunction = (functionNumber: number): function
   return functionNumber in aggregationMap;
 };
 
-export const aggregateValues = (functionNumber: AggregationKey, values: FormulaEvaluationResult[]): number => {
-  return aggregationMap[functionNumber](values);
+export const aggregateValues = (
+  functionNumber: AggregationKey,
+  values: FormulaEvaluationResult[],
+  options: AggregationOptions,
+): number => {
+  const sanitized = sanitizeValues(functionNumber, values, options);
+  return aggregationMap[functionNumber](sanitized);
 };

@@ -25,7 +25,12 @@ describe("orFunction", () => {
     }).toThrowError("OR expects at least one argument");
   });
 
-  it("throws when encountering non-boolean inputs", () => {
+  it("coerces numeric inputs using zero/non-zero semantics", () => {
+    const result = evaluate(0, [0, 2]);
+    expect(result).toBe(true);
+  });
+
+  it("rejects textual inputs", () => {
     expect(() => {
       evaluate(false, "unexpected");
     }).toThrowError("OR argument 2 expects logical arguments");

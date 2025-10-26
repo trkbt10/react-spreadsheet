@@ -58,7 +58,7 @@ export const dStdevFunction: FormulaFunctionEagerDefinition = {
   examples: ['DSTDEV(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DSTDEV([["Name", "Score"], ["Alice", 80], ["Bob", 90], ["Carol", 100]], "Score", [["Score"], [">=80"]])',
+      input: 'DSTDEV({{"Name", "Score"}; {"Alice", 80}; {"Bob", 90}; {"Carol", 100}}, "Score", {{"Score"}; {">=80"}})',
       output: 10,
       description: {
         en: "Sample standard deviation of scores >= 80 (80, 90, 100)",
@@ -66,7 +66,7 @@ export const dStdevFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DSTDEV([["Product", "Value"], ["A", 10], ["B", 20], ["C", 30]], "Value", [["Value"], [">10"]])',
+      input: 'DSTDEV({{"Product", "Value"}; {"A", 10}; {"B", 20}; {"C", 30}}, "Value", {{"Value"}; {">10"}})',
       output: 7.071,
       description: {
         en: "Sample standard deviation where Value > 10 (20, 30)",
@@ -74,7 +74,7 @@ export const dStdevFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DSTDEV([["Item", "Measure"], ["X", 5], ["Y", 10], ["Z", 15]], "Measure", [["Measure"], [">=5"]])',
+      input: 'DSTDEV({{"Item", "Measure"}; {"X", 5}; {"Y", 10}; {"Z", 15}}, "Measure", {{"Measure"}; {">=5"}})',
       output: 5,
       description: {
         en: "Sample standard deviation of all measures >= 5",
@@ -102,7 +102,7 @@ export const dStdevpFunction: FormulaFunctionEagerDefinition = {
   examples: ['DSTDEVP(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DSTDEVP([["Name", "Score"], ["Alice", 80], ["Bob", 90], ["Carol", 100]], "Score", [["Score"], [">=80"]])',
+      input: 'DSTDEVP({{"Name", "Score"}; {"Alice", 80}; {"Bob", 90}; {"Carol", 100}}, "Score", {{"Score"}; {">=80"}})',
       output: 8.165,
       description: {
         en: "Population standard deviation of scores >= 80 (80, 90, 100)",
@@ -110,7 +110,7 @@ export const dStdevpFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DSTDEVP([["Product", "Value"], ["A", 10], ["B", 20], ["C", 30]], "Value", [["Value"], [">10"]])',
+      input: 'DSTDEVP({{"Product", "Value"}; {"A", 10}; {"B", 20}; {"C", 30}}, "Value", {{"Value"}; {">10"}})',
       output: 5,
       description: {
         en: "Population standard deviation where Value > 10 (20, 30)",
@@ -118,7 +118,7 @@ export const dStdevpFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DSTDEVP([["Item", "Measure"], ["X", 2], ["Y", 4], ["Z", 6]], "Measure", [["Measure"], [">=2"]])',
+      input: 'DSTDEVP({{"Item", "Measure"}; {"X", 2}; {"Y", 4}; {"Z", 6}}, "Measure", {{"Measure"}; {">=2"}})',
       output: 1.633,
       description: {
         en: "Population standard deviation of all measures >= 2",
@@ -146,7 +146,7 @@ export const dVarFunction: FormulaFunctionEagerDefinition = {
   examples: ['DVAR(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DVAR([["Name", "Score"], ["Alice", 80], ["Bob", 90], ["Carol", 100]], "Score", [["Score"], [">=80"]])',
+      input: 'DVAR({{"Name", "Score"}; {"Alice", 80}; {"Bob", 90}; {"Carol", 100}}, "Score", {{"Score"}; {">=80"}})',
       output: 100,
       description: {
         en: "Sample variance of scores >= 80 (80, 90, 100)",
@@ -154,7 +154,7 @@ export const dVarFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DVAR([["Product", "Value"], ["A", 10], ["B", 20], ["C", 30]], "Value", [["Value"], [">10"]])',
+      input: 'DVAR({{"Product", "Value"}; {"A", 10}; {"B", 20}; {"C", 30}}, "Value", {{"Value"}; {">10"}})',
       output: 50,
       description: {
         en: "Sample variance where Value > 10 (20, 30)",
@@ -162,7 +162,7 @@ export const dVarFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DVAR([["Item", "Measure"], ["X", 5], ["Y", 10], ["Z", 15]], "Measure", [["Measure"], [">=5"]])',
+      input: 'DVAR({{"Item", "Measure"}; {"X", 5}; {"Y", 10}; {"Z", 15}}, "Measure", {{"Measure"}; {">=5"}})',
       output: 25,
       description: {
         en: "Sample variance of all measures >= 5 (5, 10, 15)",
@@ -190,7 +190,7 @@ export const dVarpFunction: FormulaFunctionEagerDefinition = {
   examples: ['DVARP(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DVARP([["Name", "Score"], ["Alice", 80], ["Bob", 90], ["Carol", 100]], "Score", [["Score"], [">=80"]])',
+      input: 'DVARP({{"Name", "Score"}; {"Alice", 80}; {"Bob", 90}; {"Carol", 100}}, "Score", {{"Score"}; {">=80"}})',
       output: 66.667,
       description: {
         en: "Population variance of scores >= 80 (80, 90, 100)",
@@ -198,7 +198,7 @@ export const dVarpFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DVARP([["Product", "Value"], ["A", 10], ["B", 20], ["C", 30]], "Value", [["Value"], [">10"]])',
+      input: 'DVARP({{"Product", "Value"}; {"A", 10}; {"B", 20}; {"C", 30}}, "Value", {{"Value"}; {">10"}})',
       output: 25,
       description: {
         en: "Population variance where Value > 10 (20, 30)",
@@ -206,7 +206,7 @@ export const dVarpFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DVARP([["Item", "Measure"], ["X", 2], ["Y", 4], ["Z", 6]], "Measure", [["Measure"], [">=2"]])',
+      input: 'DVARP({{"Item", "Measure"}; {"X", 2}; {"Y", 4}; {"Z", 6}}, "Measure", {{"Measure"}; {">=2"}})',
       output: 2.667,
       description: {
         en: "Population variance of all measures >= 2 (2, 4, 6)",

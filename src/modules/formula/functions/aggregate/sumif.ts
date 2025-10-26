@@ -14,7 +14,7 @@ export const sumIfFunction: FormulaFunctionEagerDefinition = {
   examples: ['SUMIF(A1:A10, ">0")', 'SUMIF(A1:A10, "=East", B1:B10)'],
   samples: [
     {
-      input: "SUMIF([1, 2, 3, 4, 5], \">2\")",
+      input: "SUMIF({1, 2, 3, 4, 5}, \">2\")",
       output: 12,
       description: {
         en: "Sum values greater than 2",
@@ -22,7 +22,7 @@ export const sumIfFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "SUMIF([10, -5, 20, -3], \">=0\")",
+      input: "SUMIF({10, -5, 20, -3}, \">=0\")",
       output: 30,
       description: {
         en: "Sum non-negative values",
@@ -30,7 +30,7 @@ export const sumIfFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "SUMIF([5, 10, 15], \"=10\")",
+      input: "SUMIF({5, 10, 15}, \"=10\")",
       output: 10,
       description: {
         en: "Sum values equal to 10",

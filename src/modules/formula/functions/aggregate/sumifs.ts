@@ -20,7 +20,7 @@ export const sumIfsFunction: FormulaFunctionEagerDefinition = {
   examples: ['SUMIFS(C1:C10, A1:A10, "East", B1:B10, ">=2024")', "SUMIFS(A1:A5, B1:B5, 1)"],
   samples: [
     {
-      input: "SUMIFS([100, 200, 300], [1, 2, 3], \">1\", [10, 20, 30], \">=20\")",
+      input: "SUMIFS({100, 200, 300}, {1, 2, 3}, \">1\", {10, 20, 30}, \">=20\")",
       output: 500,
       description: {
         en: "Sum with multiple criteria",
@@ -28,7 +28,7 @@ export const sumIfsFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "SUMIFS([50, 60, 70], [5, 10, 15], \">=10\")",
+      input: "SUMIFS({50, 60, 70}, {5, 10, 15}, \">=10\")",
       output: 130,
       description: {
         en: "Sum with single criterion",
@@ -36,7 +36,7 @@ export const sumIfsFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "SUMIFS([10, 20, 30, 40], [1, 2, 1, 2], \"=1\", [5, 5, 10, 10], \">=10\")",
+      input: "SUMIFS({10, 20, 30, 40}, {1, 2, 1, 2}, \"=1\", {5, 5, 10, 10}, \">=10\")",
       output: 30,
       description: {
         en: "Sum matching both conditions",

@@ -37,7 +37,7 @@ export const dSumFunction: FormulaFunctionEagerDefinition = {
   examples: ['DSUM(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DSUM([["Name", "Amount"], ["Alice", 100], ["Bob", 200], ["Carol", 150]], "Amount", [["Amount"], [">100"]])',
+      input: 'DSUM({{"Name", "Amount"}; {"Alice", 100}; {"Bob", 200}; {"Carol", 150}}, "Amount", {{"Amount"}; {">100"}})',
       output: 350,
       description: {
         en: "Sum amounts where Amount > 100 (200 + 150 = 350)",
@@ -45,7 +45,7 @@ export const dSumFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DSUM([["Product", "Sales"], ["A", 50], ["B", 100], ["C", 75]], "Sales", [["Sales"], [">=50"]])',
+      input: 'DSUM({{"Product", "Sales"}; {"A", 50}; {"B", 100}; {"C", 75}}, "Sales", {{"Sales"}; {">=50"}})',
       output: 225,
       description: {
         en: "Sum all sales >= 50 (50 + 100 + 75 = 225)",
@@ -53,7 +53,7 @@ export const dSumFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DSUM([["Item", "Price"], ["X", 10], ["Y", 20], ["Z", 30]], "Price", [["Price"], ["<30"]])',
+      input: 'DSUM({{"Item", "Price"}; {"X", 10}; {"Y", 20}; {"Z", 30}}, "Price", {{"Price"}; {"<30"}})',
       output: 30,
       description: {
         en: "Sum prices where Price < 30 (10 + 20 = 30)",
@@ -77,7 +77,7 @@ export const dProductFunction: FormulaFunctionEagerDefinition = {
   examples: ['DPRODUCT(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DPRODUCT([["Name", "Factor"], ["Alice", 2], ["Bob", 3], ["Carol", 4]], "Factor", [["Factor"], [">2"]])',
+      input: 'DPRODUCT({{"Name", "Factor"}; {"Alice", 2}; {"Bob", 3}; {"Carol", 4}}, "Factor", {{"Factor"}; {">2"}})',
       output: 12,
       description: {
         en: "Product of factors where Factor > 2 (3 * 4 = 12)",
@@ -85,7 +85,7 @@ export const dProductFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DPRODUCT([["Product", "Multiplier"], ["A", 2], ["B", 5], ["C", 10]], "Multiplier", [["Multiplier"], ["<=5"]])',
+      input: 'DPRODUCT({{"Product", "Multiplier"}; {"A", 2}; {"B", 5}; {"C", 10}}, "Multiplier", {{"Multiplier"}; {"<=5"}})',
       output: 10,
       description: {
         en: "Product of multipliers <= 5 (2 * 5 = 10)",
@@ -93,7 +93,7 @@ export const dProductFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DPRODUCT([["Item", "Value"], ["X", 1], ["Y", 2], ["Z", 3]], "Value", [["Value"], [">=1"]])',
+      input: 'DPRODUCT({{"Item", "Value"}; {"X", 1}; {"Y", 2}; {"Z", 3}}, "Value", {{"Value"}; {">=1"}})',
       output: 6,
       description: {
         en: "Product of all values >= 1 (1 * 2 * 3 = 6)",

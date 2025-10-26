@@ -20,7 +20,7 @@ export const dCountFunction: FormulaFunctionEagerDefinition = {
   examples: ['DCOUNT(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DCOUNT([["Name", "Age"], ["Alice", 25], ["Bob", 30], ["Carol", 35]], "Age", [["Age"], [">25"]])',
+      input: 'DCOUNT({{"Name", "Age"}; {"Alice", 25}; {"Bob", 30}; {"Carol", 35}}, "Age", {{"Age"}; {">25"}})',
       output: 2,
       description: {
         en: "Count ages greater than 25 (30 and 35, count is 2)",
@@ -28,7 +28,7 @@ export const dCountFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DCOUNT([["Product", "Price"], ["A", 100], ["B", 200], ["C", 150]], "Price", [["Price"], [">=150"]])',
+      input: 'DCOUNT({{"Product", "Price"}; {"A", 100}; {"B", 200}; {"C", 150}}, "Price", {{"Price"}; {">=150"}})',
       output: 2,
       description: {
         en: "Count prices >= 150 (150 and 200, count is 2)",
@@ -36,7 +36,7 @@ export const dCountFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'DCOUNT([["Item", "Qty"], ["X", 10], ["Y", 20], ["Z", 30]], "Qty", [["Qty"], ["<50"]])',
+      input: 'DCOUNT({{"Item", "Qty"}; {"X", 10}; {"Y", 20}; {"Z", 30}}, "Qty", {{"Qty"}; {"<50"}})',
       output: 3,
       description: {
         en: "Count all quantities less than 50 (all 3 match)",

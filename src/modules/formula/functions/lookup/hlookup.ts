@@ -15,7 +15,7 @@ export const hlookupFunction: FormulaFunctionEagerDefinition = {
   examples: ["HLOOKUP(A1, Table1, 2, FALSE)", "HLOOKUP(5, A1:J2, 2)"],
   samples: [
     {
-      input: "HLOOKUP(\"B\", [[\"A\", \"B\", \"C\"], [10, 20, 30]], 2, FALSE)",
+      input: "HLOOKUP(\"B\", {{\"A\", \"B\", \"C\"}; {10, 20, 30}}, 2, FALSE)",
       output: 20,
       description: {
         en: "Exact match in horizontal table",
@@ -23,7 +23,7 @@ export const hlookupFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "HLOOKUP(2.5, [[1, 2, 3], [\"X\", \"Y\", \"Z\"]], 2, TRUE)",
+      input: "HLOOKUP(2.5, {{1, 2, 3}; {\"X\", \"Y\", \"Z\"}}, 2, TRUE)",
       output: "Y",
       description: {
         en: "Approximate match in first row",
@@ -31,7 +31,7 @@ export const hlookupFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "HLOOKUP(\"Cat\", [[\"Apple\", \"Cat\", \"Dog\"], [5, 10, 15]], 2, FALSE)",
+      input: "HLOOKUP(\"Cat\", {{\"Apple\", \"Cat\", \"Dog\"}; {5, 10, 15}}, 2, FALSE)",
       output: 10,
       description: {
         en: "Text lookup in horizontal header",

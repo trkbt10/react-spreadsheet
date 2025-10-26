@@ -92,7 +92,7 @@ export const minverseFunction: FormulaFunctionEagerDefinition = {
   examples: ["MINVERSE({1,2;3,4})", "MINVERSE(A1:C3)"],
   samples: [
     {
-      input: "MINVERSE([[1, 0], [0, 1]])",
+      input: "MINVERSE({{1, 0}; {0, 1}})",
       output: [[1, 0], [0, 1]],
       description: {
         en: "Inverse of identity matrix is itself",
@@ -100,7 +100,7 @@ export const minverseFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MINVERSE([[1, 2], [3, 4]])",
+      input: "MINVERSE({{1, 2}; {3, 4}})",
       output: [[-2, 1], [1.5, -0.5]],
       description: {
         en: "Inverse of a 2x2 matrix",
@@ -108,7 +108,7 @@ export const minverseFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MINVERSE([[2, 0], [0, 2]])",
+      input: "MINVERSE({{2, 0}; {0, 2}})",
       output: [[0.5, 0], [0, 0.5]],
       description: {
         en: "Inverse of a diagonal matrix",

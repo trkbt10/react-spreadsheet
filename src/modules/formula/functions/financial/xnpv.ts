@@ -16,7 +16,7 @@ export const xnpvFunction: FormulaFunctionEagerDefinition = {
   examples: ["XNPV(0.1, values, dates)"],
   samples: [
     {
-      input: "XNPV(0.1, [-10000, 3000, 4200, 6800], [44562, 44652, 44743, 44926])",
+      input: "XNPV(0.1, {-10000, 3000, 4200, 6800}, {44562, 44652, 44743, 44926})",
       output: 2086.65,
       description: {
         en: "NPV for irregular cash flow dates",
@@ -24,7 +24,7 @@ export const xnpvFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "XNPV(0.08, [-50000, 20000, 25000], [45000, 45180, 45365])",
+      input: "XNPV(0.08, {-50000, 20000, 25000}, {45000, 45180, 45365})",
       output: -7574.47,
       description: {
         en: "NPV for investment with irregular returns",

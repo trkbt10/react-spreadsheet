@@ -15,7 +15,7 @@ export const averageIfsFunction: FormulaFunctionEagerDefinition = {
   examples: ['AVERAGEIFS(C1:C10, A1:A10, "East", B1:B10, ">=2024")', "AVERAGEIFS(A1:A5, B1:B5, 1)"],
   samples: [
     {
-      input: 'AVERAGEIFS([10, 20, 30], [1, 2, 3], ">1", [5, 10, 15], ">=10")',
+      input: 'AVERAGEIFS({10, 20, 30}, {1, 2, 3}, ">1", {5, 10, 15}, ">=10")',
       output: 25,
       description: {
         en: "Average with multiple criteria",

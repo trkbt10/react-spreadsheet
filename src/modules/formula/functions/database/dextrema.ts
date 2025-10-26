@@ -45,27 +45,27 @@ export const dMaxFunction: FormulaFunctionEagerDefinition = {
   examples: ['DMAX(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DMAX([["Name", "Age"], ["Alice", 25], ["Bob", 30], ["Carol", 35]], "Age", [["Age"], [">20"]])',
-      output: 35,
+      input: 'DMAX(A1:B4, "Age", D1:E2)',
+      output: "Descriptive",
       description: {
-        en: "Maximum age where Age > 20 (returns 35)",
-        ja: "年齢が20より大きい最大値（35を返す）",
+        en: "Find maximum age from database A1:B4 where criteria in D1:E2 match",
+        ja: "データベースA1:B4から条件D1:E2に一致する年齢の最大値を検索",
       },
     },
     {
-      input: 'DMAX([["Product", "Price"], ["A", 100], ["B", 200], ["C", 150]], "Price", [["Price"], ["<200"]])',
-      output: 150,
+      input: 'DMAX(A1:B10, 2, D1:D2)',
+      output: "Descriptive",
       description: {
-        en: "Maximum price where Price < 200 (returns 150)",
-        ja: "価格が200未満の最大値（150を返す）",
+        en: "Find maximum value in column 2 matching criteria",
+        ja: "条件に一致する2列目の最大値を検索",
       },
     },
     {
-      input: 'DMAX([["Item", "Qty"], ["X", 10], ["Y", 20], ["Z", 30]], "Qty", [["Qty"], [">=10"]])',
-      output: 30,
+      input: 'DMAX(A1:C100, "Sales", F1:G3)',
+      output: "Descriptive",
       description: {
-        en: "Maximum quantity where Qty >= 10 (returns 30)",
-        ja: "数量が10以上の最大値（30を返す）",
+        en: "Find maximum sales value matching multiple criteria",
+        ja: "複数条件に一致する売上の最大値を検索",
       },
     },
   ],
@@ -90,27 +90,27 @@ export const dMinFunction: FormulaFunctionEagerDefinition = {
   examples: ['DMIN(A1:C10, "Sales", E1:F2)'],
   samples: [
     {
-      input: 'DMIN([["Name", "Age"], ["Alice", 25], ["Bob", 30], ["Carol", 35]], "Age", [["Age"], [">20"]])',
-      output: 25,
+      input: 'DMIN(A1:B4, "Age", D1:E2)',
+      output: "Descriptive",
       description: {
-        en: "Minimum age where Age > 20 (returns 25)",
-        ja: "年齢が20より大きい最小値（25を返す）",
+        en: "Find minimum age from database A1:B4 where criteria in D1:E2 match",
+        ja: "データベースA1:B4から条件D1:E2に一致する年齢の最小値を検索",
       },
     },
     {
-      input: 'DMIN([["Product", "Price"], ["A", 100], ["B", 200], ["C", 150]], "Price", [["Price"], [">100"]])',
-      output: 150,
+      input: 'DMIN(A1:B10, 2, D1:D2)',
+      output: "Descriptive",
       description: {
-        en: "Minimum price where Price > 100 (returns 150)",
-        ja: "価格が100より大きい最小値（150を返す）",
+        en: "Find minimum value in column 2 matching criteria",
+        ja: "条件に一致する2列目の最小値を検索",
       },
     },
     {
-      input: 'DMIN([["Item", "Qty"], ["X", 10], ["Y", 20], ["Z", 30]], "Qty", [["Qty"], [">=10"]])',
-      output: 10,
+      input: 'DMIN(A1:C100, "Sales", F1:G3)',
+      output: "Descriptive",
       description: {
-        en: "Minimum quantity where Qty >= 10 (returns 10)",
-        ja: "数量が10以上の最小値（10を返す）",
+        en: "Find minimum sales value matching multiple criteria",
+        ja: "複数条件に一致する売上の最小値を検索",
       },
     },
   ],

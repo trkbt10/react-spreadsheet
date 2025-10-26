@@ -22,7 +22,7 @@ export const aggregateFunction: FormulaFunctionEagerDefinition = {
   examples: ["AGGREGATE(9, 0, A1:A10)", "AGGREGATE(1, 6, A1:A5, B1:B5)"],
   samples: [
     {
-      input: "AGGREGATE(9, 0, [5, 10, 15])",
+      input: "AGGREGATE(9, 0, 5, 10, 15)",
       output: 30,
       description: {
         en: "Sum (function 9) with default options",
@@ -30,7 +30,7 @@ export const aggregateFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "AGGREGATE(1, 6, [2, 4, 6, 8])",
+      input: "AGGREGATE(1, 6, 2, 4, 6, 8)",
       output: 5,
       description: {
         en: "Average (function 1) ignoring errors",
@@ -38,7 +38,7 @@ export const aggregateFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "AGGREGATE(4, 0, [12, 45, 23, 67])",
+      input: "AGGREGATE(4, 0, 12, 45, 23, 67)",
       output: 67,
       description: {
         en: "Maximum (function 4) of values",
@@ -72,6 +72,9 @@ export const aggregateFunction: FormulaFunctionEagerDefinition = {
     const rangeValues = rangeArgs.map((rangeArg) => helpers.flattenResult(rangeArg));
     const collected = collectValues(rangeValues);
 
-    return aggregateValues(fnNumber, collected);
+    const ignoreErrors = options === 6;
+    // NOTE: ODF 1.3 §6.10.1 defines option value 6 as "ignore error values"; other behaviours (hidden rows, nested subtotals)
+    // are handled upstream in the engine, so we only toggle error filtering here.
+    return aggregateValues(fnNumber, collected, { ignoreErrors });
   },
 };

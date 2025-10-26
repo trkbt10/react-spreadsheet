@@ -15,7 +15,7 @@ export const countIfsFunction: FormulaFunctionEagerDefinition = {
   examples: ['COUNTIFS(A1:A10, "East", B1:B10, ">=2024")', "COUNTIFS(A1:A5, B1:B5, 1)"],
   samples: [
     {
-      input: 'COUNTIFS([1, 2, 3, 4], ">1", [10, 20, 30, 40], ">=20")',
+      input: 'COUNTIFS({1, 2, 3, 4}, ">1", {10, 20, 30, 40}, ">=20")',
       output: 2,
       description: {
         en: "Count with multiple criteria",

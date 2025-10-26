@@ -44,7 +44,19 @@ export type FunctionNode = {
   arguments: FormulaAstNode[];
 };
 
-export type FormulaAstNode = LiteralNode | ReferenceNode | RangeNode | UnaryNode | BinaryNode | FunctionNode;
+export type ArrayNode = {
+  type: "Array";
+  elements: FormulaAstNode[][];
+};
+
+export type FormulaAstNode =
+  | LiteralNode
+  | ReferenceNode
+  | RangeNode
+  | UnaryNode
+  | BinaryNode
+  | FunctionNode
+  | ArrayNode;
 
 const expandRangeDependencies = (start: CellAddress, end: CellAddress): Set<CellAddressKey> => {
   if (start.sheetId !== end.sheetId) {
@@ -123,6 +135,14 @@ export const collectDependencies = (node: FormulaAstNode): Set<CellAddressKey> =
     }, new Set<CellAddressKey>());
   }
 
+  if (node.type === "Array") {
+    return node.elements.flat().reduce((accumulator, element) => {
+      const deps = collectDependencies(element);
+      deps.forEach((dependency) => accumulator.add(dependency));
+      return accumulator;
+    }, new Set<CellAddressKey>());
+  }
+
   throw new Error("Unknown AST node");
 };
 
@@ -149,6 +169,10 @@ export const collectDependencyAddresses = (node: FormulaAstNode): CellAddress[] 
 
   if (node.type === "Function") {
     return node.arguments.flatMap((argument) => collectDependencyAddresses(argument));
+  }
+
+  if (node.type === "Array") {
+    return node.elements.flat().flatMap((element) => collectDependencyAddresses(element));
   }
 
   throw new Error("Unknown AST node");

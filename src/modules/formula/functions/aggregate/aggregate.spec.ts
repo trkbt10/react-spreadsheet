@@ -16,6 +16,12 @@ describe("AGGREGATE", () => {
     expect(result).toBe(5);
   });
 
+  it("treats non-numeric values as errors when option 0 is used", () => {
+    expect(() => evaluate(makeEvalArgs(9, 0, [1, "x"]))).toThrowError(
+      "AGGREGATE encountered a non-numeric value that cannot be ignored",
+    );
+  });
+
   it("throws for unsupported options", () => {
     expect(() => evaluate(makeEvalArgs(9, 7, [1, 2]))).toThrowError("AGGREGATE options value is not supported");
   });

@@ -25,7 +25,12 @@ describe("xorFunction", () => {
     }).toThrowError("XOR expects at least one argument");
   });
 
-  it("throws when encountering non-boolean inputs", () => {
+  it("coerces numeric inputs using zero/non-zero semantics", () => {
+    const result = evaluate(1, 0, [3]);
+    expect(result).toBe(false);
+  });
+
+  it("rejects textual inputs", () => {
     expect(() => {
       evaluate([true], "unexpected");
     }).toThrowError("XOR argument 2 expects logical arguments");

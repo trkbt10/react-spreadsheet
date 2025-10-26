@@ -15,7 +15,7 @@ export const countIfFunction: FormulaFunctionEagerDefinition = {
   examples: ['COUNTIF(A1:A10, ">10")', 'COUNTIF(A1:A10, "=Yes")'],
   samples: [
     {
-      input: 'COUNTIF([5, 10, 15, 20], ">10")',
+      input: 'COUNTIF({5, 10, 15, 20}, ">10")',
       output: 2,
       description: {
         en: "Count values greater than 10",
@@ -23,7 +23,7 @@ export const countIfFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'COUNTIF(["Yes", "No", "Yes"], "Yes")',
+      input: 'COUNTIF({"Yes", "No", "Yes"}, "Yes")',
       output: 2,
       description: {
         en: "Count matching text values",
@@ -31,7 +31,7 @@ export const countIfFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'COUNTIF([1, 2, 3, 4, 5], ">=3")',
+      input: 'COUNTIF({1, 2, 3, 4, 5}, ">=3")',
       output: 3,
       description: {
         en: "Count with greater-than-or-equal condition",

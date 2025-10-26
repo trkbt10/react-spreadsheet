@@ -41,7 +41,7 @@ export const mmultFunction: FormulaFunctionEagerDefinition = {
   examples: ["MMULT({1,2;3,4},{5;6})", "MMULT(A1:B2, C1:D2)"],
   samples: [
     {
-      input: "MMULT([[1, 2], [3, 4]], [[5], [6]])",
+      input: "MMULT({{1, 2}; {3, 4}}, {{5}; {6}})",
       output: [[17], [39]],
       description: {
         en: "2x2 matrix multiplied by 2x1 column vector",
@@ -49,7 +49,7 @@ export const mmultFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MMULT([[1, 2]], [[3, 4], [5, 6]])",
+      input: "MMULT({{1, 2}}, {{3, 4}; {5, 6}})",
       output: [[13, 16]],
       description: {
         en: "1x2 row vector multiplied by 2x2 matrix",
@@ -57,7 +57,7 @@ export const mmultFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MMULT([[1, 0], [0, 1]], [[2, 3], [4, 5]])",
+      input: "MMULT({{1, 0}; {0, 1}}, {{2, 3}; {4, 5}})",
       output: [[2, 3], [4, 5]],
       description: {
         en: "Identity matrix multiplied by 2x2 matrix",

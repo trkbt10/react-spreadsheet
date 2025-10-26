@@ -43,8 +43,17 @@ type ParenthesisToken = {
   value: "(" | ")";
 };
 
+type BracketToken = {
+  type: "bracket";
+  value: "{" | "}";
+};
+
 type CommaToken = {
   type: "comma";
+};
+
+type SemicolonToken = {
+  type: "semicolon";
 };
 
 type ColonToken = {
@@ -63,7 +72,9 @@ type Token =
   | IdentifierToken
   | ReferenceToken
   | ParenthesisToken
+  | BracketToken
   | CommaToken
+  | SemicolonToken
   | ColonToken
   | EndToken;
 
@@ -257,6 +268,12 @@ const tokenize = (input: string): Token[] => {
       continue;
     }
 
+    if (char === ";") {
+      tokens.push({ type: "semicolon" });
+      index += 1;
+      continue;
+    }
+
     if (char === ":") {
       tokens.push({ type: "colon" });
       index += 1;
@@ -265,6 +282,12 @@ const tokenize = (input: string): Token[] => {
 
     if (char === "(" || char === ")") {
       tokens.push({ type: "paren", value: char });
+      index += 1;
+      continue;
+    }
+
+    if (char === "{" || char === "}") {
+      tokens.push({ type: "bracket", value: char });
       index += 1;
       continue;
     }
@@ -386,6 +409,43 @@ const parsePrimary = (stream: TokenStream, context: ParseContext): FormulaAstNod
   if (token.type === "string") {
     stream.consume();
     return { type: "Literal", value: token.value };
+  }
+
+  if (token.type === "bracket" && token.value === "{") {
+    stream.consume();
+    const rows: FormulaAstNode[][] = [];
+    let currentRow: FormulaAstNode[] = [];
+
+    const closingToken = stream.peek();
+    if (closingToken.type === "bracket" && closingToken.value === "}") {
+      stream.consume();
+      return { type: "Array", elements: [[]] };
+    }
+
+    while (true) {
+      currentRow.push(parseExpression(stream, context));
+      const separator = stream.peek();
+
+      if (separator.type === "comma") {
+        stream.consume();
+        continue;
+      }
+
+      if (separator.type === "semicolon") {
+        stream.consume();
+        rows.push(currentRow);
+        currentRow = [];
+        continue;
+      }
+
+      if (separator.type === "bracket" && separator.value === "}") {
+        stream.consume();
+        rows.push(currentRow);
+        return { type: "Array", elements: rows };
+      }
+
+      throw new Error(`Unexpected token in array literal: ${separator.type}`);
+    }
   }
 
   if (token.type === "identifier") {

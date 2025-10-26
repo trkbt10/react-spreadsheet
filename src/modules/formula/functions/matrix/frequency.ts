@@ -42,7 +42,7 @@ export const frequencyFunction: FormulaFunctionEagerDefinition = {
   examples: ["FREQUENCY(A1:A10, B1:B3)"],
   samples: [
     {
-      input: "FREQUENCY([1, 2, 3, 4, 5, 6], [2, 4])",
+      input: "FREQUENCY({1, 2, 3, 4, 5, 6}, {2, 4})",
       output: [[2], [2], [2]],
       description: {
         en: "Count values <=2, 2<x<=4, >4 (returns 2, 2, 2)",
@@ -50,7 +50,7 @@ export const frequencyFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "FREQUENCY([10, 20, 30, 40], [15, 25, 35])",
+      input: "FREQUENCY({10, 20, 30, 40}, {15, 25, 35})",
       output: [[1], [1], [1], [1]],
       description: {
         en: "Count data in bins <=15, 15<x<=25, 25<x<=35, >35",
@@ -58,7 +58,7 @@ export const frequencyFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "FREQUENCY([5, 5, 5, 15, 25, 25], [10, 20])",
+      input: "FREQUENCY({5, 5, 5, 15, 25, 25}, {10, 20})",
       output: [[3], [1], [2]],
       description: {
         en: "Count values <=10 (3), 10<x<=20 (1), >20 (2)",

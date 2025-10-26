@@ -16,7 +16,7 @@ export const transposeFunction: FormulaFunctionEagerDefinition = {
   examples: ["TRANSPOSE({1,2,3})", "TRANSPOSE(A1:C2)"],
   samples: [
     {
-      input: "TRANSPOSE([[1, 2, 3]])",
+      input: "TRANSPOSE({{1, 2, 3}})",
       output: [[1], [2], [3]],
       description: {
         en: "Transpose row vector to column vector",
@@ -24,7 +24,7 @@ export const transposeFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "TRANSPOSE([[1, 2], [3, 4]])",
+      input: "TRANSPOSE({{1, 2}; {3, 4}})",
       output: [[1, 3], [2, 4]],
       description: {
         en: "Transpose 2x2 matrix",
@@ -32,7 +32,7 @@ export const transposeFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "TRANSPOSE([[1, 2, 3], [4, 5, 6]])",
+      input: "TRANSPOSE({{1, 2, 3}; {4, 5, 6}})",
       output: [[1, 4], [2, 5], [3, 6]],
       description: {
         en: "Transpose 2x3 to 3x2 matrix",

@@ -99,7 +99,7 @@ export const mdetermFunction: FormulaFunctionEagerDefinition = {
   examples: ["MDETERM({1,2;3,4})", "MDETERM(A1:C3)"],
   samples: [
     {
-      input: "MDETERM([[1, 0], [0, 1]])",
+      input: "MDETERM({{1, 0}; {0, 1}})",
       output: 1,
       description: {
         en: "Determinant of identity matrix is 1",
@@ -107,7 +107,7 @@ export const mdetermFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MDETERM([[1, 2], [3, 4]])",
+      input: "MDETERM({{1, 2}; {3, 4}})",
       output: -2,
       description: {
         en: "Determinant of a 2x2 matrix is (1*4 - 2*3) = -2",
@@ -115,7 +115,7 @@ export const mdetermFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "MDETERM([[2, 0, 0], [0, 3, 0], [0, 0, 4]])",
+      input: "MDETERM({{2, 0, 0}; {0, 3, 0}; {0, 0, 4}})",
       output: 24,
       description: {
         en: "Determinant of diagonal matrix is product of diagonal (2*3*4 = 24)",

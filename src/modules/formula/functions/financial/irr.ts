@@ -39,7 +39,7 @@ export const irrFunction: FormulaFunctionEagerDefinition = {
   examples: ["IRR({-10000,3000,4200,6800})", "IRR(values, guess)"],
   samples: [
     {
-      input: "IRR([-10000, 3000, 4200, 6800])",
+      input: "IRR({-10000, 3000, 4200, 6800})",
       output: 0.2343,
       description: {
         en: "IRR for investment with initial outlay and three returns",
@@ -47,7 +47,7 @@ export const irrFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "IRR([-50000, 10000, 15000, 20000, 25000])",
+      input: "IRR({-50000, 10000, 15000, 20000, 25000})",
       output: 0.1851,
       description: {
         en: "IRR for multi-period investment",
@@ -55,7 +55,7 @@ export const irrFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: "IRR([-100, 50, 60, 70], 0.1)",
+      input: "IRR({-100, 50, 60, 70}, 0.1)",
       output: 0.3425,
       description: {
         en: "IRR with initial guess",

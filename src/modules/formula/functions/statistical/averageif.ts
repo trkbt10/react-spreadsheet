@@ -15,7 +15,7 @@ export const averageIfFunction: FormulaFunctionEagerDefinition = {
   examples: ['AVERAGEIF(A1:A10, ">0")', 'AVERAGEIF(A1:A10, "=East", B1:B10)'],
   samples: [
     {
-      input: 'AVERAGEIF([5, 10, 15, 20], ">10")',
+      input: 'AVERAGEIF({5, 10, 15, 20}, ">10")',
       output: 17.5,
       description: {
         en: "Average of values greater than 10",
@@ -23,7 +23,7 @@ export const averageIfFunction: FormulaFunctionEagerDefinition = {
       },
     },
     {
-      input: 'AVERAGEIF([10, 20, 30, 40], ">=20")',
+      input: 'AVERAGEIF({10, 20, 30, 40}, ">=20")',
       output: 30,
       description: {
         en: "Average with condition",

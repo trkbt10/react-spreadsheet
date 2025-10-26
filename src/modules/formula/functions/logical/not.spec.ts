@@ -25,9 +25,14 @@ describe("notFunction", () => {
     }).toThrowError("NOT expects exactly one argument");
   });
 
-  it("throws when the argument cannot be coerced to boolean", () => {
+  it("coerces numeric arguments using zero/non-zero semantics", () => {
+    expect(evaluate(0)).toBe(true);
+    expect(evaluate(2)).toBe(false);
+  });
+
+  it("rejects textual inputs", () => {
     expect(() => {
-      evaluate(1);
+      evaluate("unexpected");
     }).toThrowError("NOT argument expects logical arguments");
   });
 });
