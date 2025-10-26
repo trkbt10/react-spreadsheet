@@ -2,7 +2,6 @@
  * @file Tests for spreadsheet autofill utilities.
  */
 
-import { describe, expect, it } from "vitest";
 import type { SelectionRange } from "./sheetReducer";
 import type { Sheet } from "../../types";
 import { computeAutofillUpdates, deriveFillHandlePreview } from "./autofill";

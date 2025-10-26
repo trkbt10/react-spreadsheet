@@ -160,12 +160,13 @@ export const useSheetPointerEvents = ({
           return;
         }
 
-        if (
-          lastExtendedCellRef.current &&
-          lastExtendedCellRef.current.col === cell.col &&
-          lastExtendedCellRef.current.row === cell.row
-        ) {
-          return;
+        const lastExtendedCell = lastExtendedCellRef.current;
+        if (lastExtendedCell) {
+          if (lastExtendedCell.col === cell.col) {
+            if (lastExtendedCell.row === cell.row) {
+              return;
+            }
+          }
         }
 
         actions.extendSelectionToCell(cell.col, cell.row);
@@ -177,14 +178,15 @@ export const useSheetPointerEvents = ({
       const dy = Math.abs(pos.y - pointerDownPosRef.current.y);
 
       // Start dragging if moved more than 3px
-      if (!isDraggingRef.current && (dx > 3 || dy > 3)) {
+      if (!isDraggingRef.current) {
+        if (dx <= 3 && dy <= 3) {
+          return;
+        }
         isDraggingRef.current = true;
         actions.startRectSelection(pointerDownPosRef.current.x, pointerDownPosRef.current.y);
       }
 
-      if (isDraggingRef.current) {
-        actions.updateRectSelection(pos.x, pos.y);
-      }
+      actions.updateRectSelection(pos.x, pos.y);
     },
     [getPositionFromPointer, actions],
   );

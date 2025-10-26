@@ -232,6 +232,7 @@ export const sumAdjustmentsBeforeIndex = (cache: AdaptiveAdjustmentCache, index:
 };
 
 export const toSafeNumber = (value: bigint, context: string): number => {
+  void context;
   if (value > MAX_SAFE_BIGINT) {
     return Number.MAX_SAFE_INTEGER;
   }

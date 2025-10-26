@@ -338,18 +338,28 @@ export const computeAutofillUpdates = (request: AutofillRequest): AutofillUpdate
     return [];
   }
 
-  if (
-    isInsideRange(baseRange, targetRange.startCol, targetRange.startRow) &&
-    isInsideRange(baseRange, targetRange.endCol - 1, targetRange.endRow - 1) &&
-    widthOf(baseRange) === widthOf(targetRange) &&
-    heightOf(baseRange) === heightOf(targetRange)
-  ) {
-    return [];
+  const coversStartCell = isInsideRange(baseRange, targetRange.startCol, targetRange.startRow);
+  if (coversStartCell) {
+    const coversEndCell = isInsideRange(baseRange, targetRange.endCol - 1, targetRange.endRow - 1);
+    if (coversEndCell) {
+      const sameWidth = widthOf(baseRange) === widthOf(targetRange);
+      if (sameWidth) {
+        const sameHeight = heightOf(baseRange) === heightOf(targetRange);
+        if (sameHeight) {
+          return [];
+        }
+      }
+    }
   }
 
   const updates: AutofillUpdate[] = [];
 
-  if (direction === "up" || direction === "down") {
+  if (direction === "up") {
+    pushVerticalUpdates(updates, sheet, baseRange, targetRange, direction);
+    return updates;
+  }
+
+  if (direction === "down") {
     pushVerticalUpdates(updates, sheet, baseRange, targetRange, direction);
     return updates;
   }

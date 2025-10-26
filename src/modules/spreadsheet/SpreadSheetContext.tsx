@@ -99,10 +99,22 @@ const cellsEqual = (left: Cell | undefined, right: Cell | undefined): boolean =>
   if (left === right) {
     return true;
   }
-  if (!left || !right) {
+  if (!left) {
     return false;
   }
-  return left.type === right.type && Object.is(left.value, right.value) && left.formula === right.formula;
+  if (!right) {
+    return false;
+  }
+
+  if (left.type !== right.type) {
+    return false;
+  }
+
+  if (!Object.is(left.value, right.value)) {
+    return false;
+  }
+
+  return left.formula === right.formula;
 };
 
 const applyUpdatesToSheet = (sheet: Sheet, updates: ReadonlyArray<CellUpdate>): Sheet => {

@@ -29,7 +29,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const toFiniteNumber = (value: unknown, label: string): number => {
-  if (typeof value !== "number" || Number.isNaN(value) || !Number.isFinite(value)) {
+  if (typeof value !== "number") {
+    throw new Error(`${label} must be a finite number`);
+  }
+  if (Number.isNaN(value)) {
+    throw new Error(`${label} must be a finite number`);
+  }
+  if (!Number.isFinite(value)) {
     throw new Error(`${label} must be a finite number`);
   }
   return value;
@@ -199,14 +205,16 @@ const normalizeVisibility = (visibility: unknown, sheetName: string, elementId: 
     throw new Error(`Visual element "${elementId}" in sheet "${sheetName}" requires hideWhenOutOfBounds boolean`);
   }
 
-  const bounds =
-    visibility.bounds === undefined
-      ? undefined
-      : normalizeGridRange(visibility.bounds, `Visual element "${elementId}" bounds`);
+  const resolveBounds = () => {
+    if (visibility.bounds === undefined) {
+      return undefined;
+    }
+    return normalizeGridRange(visibility.bounds, `Visual element "${elementId}" bounds`);
+  };
 
   return {
     hideWhenOutOfBounds,
-    bounds,
+    bounds: resolveBounds(),
   };
 };
 
