@@ -5,7 +5,7 @@
 import type { FormulaAstNode } from "./ast";
 import { collectDependencies, collectDependencyAddresses } from "./ast";
 import type { ParseCellReferenceDependencies } from "./address";
-import { parseCellReference } from "./address";
+import { parseCellLabel, parseCellReference } from "./address";
 import type { FormulaPrimitiveValue, CellAddressKey } from "./types";
 
 type OperatorToken = {
@@ -419,7 +419,18 @@ const parsePrimary = (stream: TokenStream, context: ParseContext): FormulaAstNod
     if (next.type === "colon") {
       stream.consume();
       const endToken = stream.expect("reference");
-      const endAddress = parseCellReference(endToken.value, context);
+      const endAddress =
+        endToken.value.includes("!")
+          ? parseCellReference(endToken.value, context)
+          : (() => {
+              const coordinate = parseCellLabel(endToken.value);
+              return {
+                sheetId: startAddress.sheetId,
+                sheetName: startAddress.sheetName,
+                row: coordinate.row,
+                column: coordinate.column,
+              };
+            })();
       return {
         type: "Range",
         start: startAddress,

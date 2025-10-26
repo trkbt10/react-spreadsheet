@@ -20,8 +20,16 @@ import type {
   ParsedFormula,
   WorkbookIndex,
 } from "./types";
-import { expandRangeAddresses, type FormulaAstNode, type RangeNode } from "./ast";
+import { type FormulaAstNode, type RangeNode } from "./ast";
 import { parseFormula } from "./parser";
+import { formulaFunctionHelpers, getFormulaFunction } from "./functionRegistry";
+import {
+  coerceScalar,
+  requireBoolean,
+  requireNumber,
+  isArrayResult,
+  type EvalResult,
+} from "./functions/helpers";
 
 type CellState = {
   value: FormulaEvaluationResult;
@@ -42,8 +50,6 @@ type ComponentState = {
   version: number;
   externalDependenciesVersion: Map<CellAddressKey, number>;
 };
-
-type EvalResult = FormulaEvaluationResult | FormulaEvaluationResult[];
 
 type ResolvedDependency = {
   value: FormulaEvaluationResult;
@@ -66,156 +72,6 @@ const toPrimitive = (value: FormulaCellData["value"]): FormulaEvaluationResult =
     return value;
   }
   throw new Error("Unsupported primitive value in cell");
-};
-
-const isArrayResult = (value: EvalResult): value is FormulaEvaluationResult[] => Array.isArray(value);
-
-const flattenValues = (values: EvalResult[]): FormulaEvaluationResult[] => {
-  return values.flatMap((value) => (isArrayResult(value) ? value : [value]));
-};
-
-const COUNTIF_COMPARATORS = ["<>", ">=", "<=", ">", "<", "="] as const;
-
-type CountIfComparator = (typeof COUNTIF_COMPARATORS)[number];
-
-const NUMERIC_CRITERION_PATTERN = /^-?\d+(?:\.\d+)?$/u;
-
-const comparePrimitiveEquality = (left: FormulaEvaluationResult, right: FormulaEvaluationResult): boolean => {
-  if (left === null || right === null) {
-    return left === right;
-  }
-  if (typeof left !== typeof right) {
-    return false;
-  }
-  if (typeof left === "number") {
-    if (Number.isNaN(left) || Number.isNaN(right as number)) {
-      return false;
-    }
-    return Object.is(left, right);
-  }
-  return left === right;
-};
-
-const parseNumericCriterion = (text: string, description: string): number => {
-  const normalized = text.trim();
-  if (!NUMERIC_CRITERION_PATTERN.test(normalized)) {
-    throw new Error(`${description} expects numeric operand`);
-  }
-  return Number.parseFloat(normalized);
-};
-
-const parseCriterionOperand = (text: string): FormulaEvaluationResult => {
-  const normalized = text.trim();
-  if (normalized.length === 0) {
-    return "";
-  }
-  if (NUMERIC_CRITERION_PATTERN.test(normalized)) {
-    return Number.parseFloat(normalized);
-  }
-  const lowerCase = normalized.toLowerCase();
-  if (lowerCase === "true") {
-    return true;
-  }
-  if (lowerCase === "false") {
-    return false;
-  }
-  return normalized;
-};
-
-const compareNumbers = (value: number, operand: number, comparator: CountIfComparator): boolean => {
-  switch (comparator) {
-    case ">":
-      return value > operand;
-    case "<":
-      return value < operand;
-    case ">=":
-      return value >= operand;
-    case "<=":
-      return value <= operand;
-    case "=":
-      return value === operand;
-    case "<>":
-      return value !== operand;
-    default:
-      throw new Error(`Unsupported numeric comparator "${comparator}"`);
-  }
-};
-
-const createCountIfPredicate = (criteria: FormulaEvaluationResult): ((value: FormulaEvaluationResult) => boolean) => {
-  if (criteria === null) {
-    return (value) => value === null;
-  }
-
-  if (criteria === "") {
-    return (value) => comparePrimitiveEquality(value, "");
-  }
-
-  if (typeof criteria === "number" || typeof criteria === "boolean") {
-    return (value) => comparePrimitiveEquality(value, criteria);
-  }
-
-  if (typeof criteria !== "string") {
-    throw new Error("COUNTIF criteria must be string, number, boolean, or null");
-  }
-
-  const trimmed = criteria.trim();
-  const comparator = COUNTIF_COMPARATORS.find((symbol) => trimmed.startsWith(symbol)) ?? null;
-
-  if (!comparator) {
-    const operand = parseCriterionOperand(trimmed);
-    return (value) => comparePrimitiveEquality(value, operand);
-  }
-
-  const operandText = trimmed.slice(comparator.length);
-  if (operandText.length === 0) {
-    throw new Error("COUNTIF comparator requires right-hand operand");
-  }
-
-  if (comparator === ">" || comparator === "<" || comparator === ">=" || comparator === "<=") {
-    const operandNumber = parseNumericCriterion(operandText, "COUNTIF comparator");
-    return (value) => typeof value === "number" && compareNumbers(value, operandNumber, comparator);
-  }
-
-  const operand = parseCriterionOperand(operandText);
-  if (typeof operand === "number") {
-    return (value) => typeof value === "number" && compareNumbers(value, operand, comparator);
-  }
-
-  if (comparator === "=") {
-    return (value) => comparePrimitiveEquality(value, operand);
-  }
-
-  if (comparator === "<>") {
-    return (value) => !comparePrimitiveEquality(value, operand);
-  }
-
-  throw new Error(`Unsupported COUNTIF comparator "${comparator}"`);
-};
-
-const coerceScalar = (result: EvalResult, description: string): FormulaEvaluationResult => {
-  if (isArrayResult(result)) {
-    if (result.length === 1) {
-      return result[0] ?? null;
-    }
-    throw new Error(`Range cannot be coerced to scalar for ${description}`);
-  }
-  return result;
-};
-
-const requireNumber = (result: EvalResult, description: string): number => {
-  const scalar = coerceScalar(result, description);
-  if (typeof scalar !== "number" || Number.isNaN(scalar)) {
-    throw new Error(`Expected number for ${description}`);
-  }
-  return scalar;
-};
-
-const requireBoolean = (result: EvalResult, description: string): boolean => {
-  const scalar = coerceScalar(result, description);
-  if (typeof scalar !== "boolean") {
-    throw new Error(`Expected boolean for ${description}`);
-  }
-  return scalar;
 };
 
 const ensureComparable = (value: FormulaEvaluationResult, comparator: string): string | number | boolean | null => {
@@ -296,61 +152,6 @@ const comparatorFns: Record<string, (left: EvalResult, right: EvalResult) => boo
     return (leftValue as number | string) <= (rightValue as number | string);
   },
 };
-
-type FunctionEvaluator = (args: EvalResult[]) => FormulaEvaluationResult;
-
-const createFunctionEvaluators = (): Record<string, FunctionEvaluator> => ({
-  SUM: (args) => {
-    const values = flattenValues(args);
-    return values.reduce<number>((total, value) => {
-      if (value === null) {
-        return total;
-      }
-      if (typeof value !== "number") {
-        throw new Error("SUM expects numeric arguments");
-      }
-      return total + value;
-    }, 0);
-  },
-  AVERAGE: (args) => {
-    const values = flattenValues(args).filter((value): value is number => typeof value === "number");
-    if (values.length === 0) {
-      throw new Error("AVERAGE expects at least one numeric argument");
-    }
-    const total = values.reduce((sum, value) => sum + value, 0);
-    return total / values.length;
-  },
-  MAX: (args) => {
-    const values = flattenValues(args).filter((value): value is number => typeof value === "number");
-    if (values.length === 0) {
-      throw new Error("MAX expects at least one numeric argument");
-    }
-    return Math.max(...values);
-  },
-  MIN: (args) => {
-    const values = flattenValues(args).filter((value): value is number => typeof value === "number");
-    if (values.length === 0) {
-      throw new Error("MIN expects at least one numeric argument");
-    }
-    return Math.min(...values);
-  },
-  COUNT: (args) => {
-    const values = flattenValues(args);
-    return values.reduce<number>((count, value) => (typeof value === "number" ? count + 1 : count), 0);
-  },
-  COUNTIF: (args) => {
-    if (args.length !== 2) {
-      throw new Error("COUNTIF expects exactly two arguments");
-    }
-    const [rangeArg, criteriaArg] = args;
-    const values = flattenValues([rangeArg]);
-    const criteria = coerceScalar(criteriaArg, "COUNTIF criteria");
-    const predicate = createCountIfPredicate(criteria);
-    return values.reduce<number>((count, value) => (predicate(value) ? count + 1 : count), 0);
-  },
-});
-
-const functionEvaluators = createFunctionEvaluators();
 
 const isComparatorFunction = (name: string): boolean => name.startsWith("COMPARE_");
 
@@ -875,19 +676,43 @@ export class FormulaEngine {
         return comparatorFn(evaluatedArgs[0], evaluatedArgs[1]);
       }
 
-      const evaluator = functionEvaluators[ast.name];
+      const evaluator = getFormulaFunction(ast.name);
       if (!evaluator) {
         throw new Error(`Unknown function "${ast.name}"`);
       }
-      return evaluator(evaluatedArgs);
+      return evaluator.evaluate(evaluatedArgs, formulaFunctionHelpers);
     }
 
     throw new Error("Unsupported formula node");
   }
 
-  private evaluateRange(range: RangeNode, scope: FormulaEvaluationScope): FormulaEvaluationResult[] {
-    const addresses = expandRangeAddresses(range.start, range.end);
-    return addresses.map((address) => scope.resolve(address).value);
+  private evaluateRange(range: RangeNode, scope: FormulaEvaluationScope): EvalResult {
+    if (range.start.sheetId !== range.end.sheetId) {
+      throw new Error("Cross-sheet ranges are not supported");
+    }
+
+    const minRow = Math.min(range.start.row, range.end.row);
+    const maxRow = Math.max(range.start.row, range.end.row);
+    const minColumn = Math.min(range.start.column, range.end.column);
+    const maxColumn = Math.max(range.start.column, range.end.column);
+
+    const rows: FormulaEvaluationResult[][] = [];
+
+    for (let row = minRow; row <= maxRow; row += 1) {
+      const rowValues: FormulaEvaluationResult[] = [];
+      for (let column = minColumn; column <= maxColumn; column += 1) {
+        const address: CellAddress = {
+          sheetId: range.start.sheetId,
+          sheetName: range.start.sheetName,
+          row,
+          column,
+        };
+        rowValues.push(scope.resolve(address).value);
+      }
+      rows.push(rowValues);
+    }
+
+    return rows;
   }
 
   private ensureAddress(address: CellAddress): CellAddress {
