@@ -1,0 +1,100 @@
+/**
+ * @file Styles for UI Components showcase page.
+ */
+
+.section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.demoArea {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: context-menu;
+  box-shadow: var(--shadow-sm);
+}
+
+.instruction {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: #ffffff;
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #ffffff;
+  font-size: var(--font-size-sm);
+  max-width: 500px;
+}
+
+.featureList li {
+  padding: var(--spacing-xs) 0;
+  padding-left: var(--spacing-lg);
+  position: relative;
+}
+
+.featureList li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.formulaDemo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  border: var(--border-width) var(--border-style) var(--color-border-secondary);
+  box-shadow: var(--shadow-xs);
+}
+
+.formulaDescription {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.formulaPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.formulaInput {
+  width: 100%;
+}
+
+.formulaValueLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.formulaValue {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: var(--border-width) var(--border-style) var(--color-border-secondary);
+  align-self: flex-start;
+}

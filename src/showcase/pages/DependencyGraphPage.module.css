@@ -1,0 +1,44 @@
+/**
+ * @file Styles for Dependency Graph showcase page.
+ */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.selectLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.select {
+  min-width: 220px;
+  padding: var(--control-padding-y) var(--control-padding-x);
+  border: var(--control-border);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--control-background);
+  transition: border-color var(--transition-fast);
+}
+
+.select:hover {
+  border: var(--control-border-hover);
+}
+
+.select:focus {
+  outline: none;
+  border: var(--control-border-focus);
+  box-shadow: var(--control-shadow-focus);
+}
+
+.description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  max-width: 720px;
+  margin-bottom: var(--spacing-lg);
+}
