@@ -2,7 +2,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .title {
@@ -60,7 +60,7 @@
 }
 
 .featureList li::before {
-  content: '✓';
+  content: "✓";
   position: absolute;
   left: 0;
   font-weight: bold;

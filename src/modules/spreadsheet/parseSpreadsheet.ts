@@ -21,13 +21,7 @@ import type { GridRange } from "./gridLayout";
 
 const CELL_ID_PATTERN = /^-?\d+:-?\d+$/u;
 
-const CELL_TYPES: ReadonlyArray<Cell["type"]> = [
-  "string",
-  "number",
-  "boolean",
-  "null",
-  "formula",
-];
+const CELL_TYPES: ReadonlyArray<Cell["type"]> = ["string", "number", "boolean", "null", "formula"];
 
 const GRAPH_TYPES: ReadonlyArray<GraphType> = ["line", "bar", "column", "pie", "area", "scatter"];
 
@@ -170,7 +164,12 @@ const normalizeGridRange = (range: unknown, context: string): GridRange => {
   const startRow = toFiniteNumber(range.startRow, `${context} startRow`);
   const endRow = toFiniteNumber(range.endRow, `${context} endRow`);
 
-  if (!Number.isInteger(startCol) || !Number.isInteger(endCol) || !Number.isInteger(startRow) || !Number.isInteger(endRow)) {
+  if (
+    !Number.isInteger(startCol) ||
+    !Number.isInteger(endCol) ||
+    !Number.isInteger(startRow) ||
+    !Number.isInteger(endRow)
+  ) {
     throw new Error(`${context} range indices must be integers`);
   }
 
@@ -200,7 +199,10 @@ const normalizeVisibility = (visibility: unknown, sheetName: string, elementId: 
     throw new Error(`Visual element "${elementId}" in sheet "${sheetName}" requires hideWhenOutOfBounds boolean`);
   }
 
-  const bounds = visibility.bounds === undefined ? undefined : normalizeGridRange(visibility.bounds, `Visual element "${elementId}" bounds`);
+  const bounds =
+    visibility.bounds === undefined
+      ? undefined
+      : normalizeGridRange(visibility.bounds, `Visual element "${elementId}" bounds`);
 
   return {
     hideWhenOutOfBounds,
@@ -266,7 +268,11 @@ const normalizeTransform = (transform: unknown, sheetName: string, elementId: st
   };
 };
 
-const normalizeCellRangeReference = (range: unknown, sheetName: string, elementId: string): { start: CellId; end: CellId } => {
+const normalizeCellRangeReference = (
+  range: unknown,
+  sheetName: string,
+  elementId: string,
+): { start: CellId; end: CellId } => {
   if (!isRecord(range)) {
     throw new Error(`Graph "${elementId}" in sheet "${sheetName}" requires a range object`);
   }
@@ -418,11 +424,7 @@ const normalizeVisualElementBase = (
   return base;
 };
 
-const normalizeVisualElement = (
-  elementId: string,
-  rawElement: unknown,
-  sheetName: string,
-): SheetVisualElement => {
+const normalizeVisualElement = (elementId: string, rawElement: unknown, sheetName: string): SheetVisualElement => {
   if (!isRecord(rawElement)) {
     throw new Error(`Visual element "${elementId}" in sheet "${sheetName}" must be an object`);
   }
@@ -437,7 +439,9 @@ const normalizeVisualElement = (
     return normalizeGraphElement(base, rawElement, sheetName, elementId);
   }
 
-  throw new Error(`Visual element "${elementId}" in sheet "${sheetName}" uses unsupported elementType "${String(elementType)}"`);
+  throw new Error(
+    `Visual element "${elementId}" in sheet "${sheetName}" uses unsupported elementType "${String(elementType)}"`,
+  );
 };
 
 const normalizeVisualElements = (

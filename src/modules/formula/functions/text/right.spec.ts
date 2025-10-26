@@ -15,8 +15,6 @@ describe("RIGHT", () => {
   });
 
   it("throws when the requested number is negative", () => {
-    expect(() => evaluate(makeEvalArgs("Test", -2))).toThrowError(
-      "RIGHT number must be non-negative",
-    );
+    expect(() => evaluate(makeEvalArgs("Test", -2))).toThrowError("RIGHT number must be non-negative");
   });
 });

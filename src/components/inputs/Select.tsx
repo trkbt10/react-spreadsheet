@@ -22,9 +22,15 @@ export const Select = forwardRef(function Select(
         {children}
       </select>
       <svg className={styles.chevron} viewBox="0 0 12 12" aria-hidden="true" focusable="false">
-        <path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M3 4.5 6 7.5 9 4.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </div>
   );
 });
-

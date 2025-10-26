@@ -124,10 +124,7 @@ export const Toolbar = ({ currentStyle, onStyleChange, isDisabled = false }: Too
 
       <ToolbarDivider />
 
-      <FontSizeSelect
-        value={currentStyle.fontSize ?? "14"}
-        onChange={handleFontSizeChange}
-      />
+      <FontSizeSelect value={currentStyle.fontSize ?? "14"} onChange={handleFontSizeChange} />
 
       <FontFamilySelect
         value={currentStyle.fontFamily ?? "var(--font-family-base)"}

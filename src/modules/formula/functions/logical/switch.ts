@@ -17,10 +17,7 @@ export const switchFunction: FormulaFunctionLazyDefinition = {
     }
 
     const expressionResult = context.evaluate(argNodes[0]);
-    const expressionValue = context.helpers.coerceScalar(
-      expressionResult,
-      "SWITCH expression",
-    );
+    const expressionValue = context.helpers.coerceScalar(expressionResult, "SWITCH expression");
 
     const remainingCount = argNodes.length - 1;
     const hasTrailing = remainingCount % 2 === 1;

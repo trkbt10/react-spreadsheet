@@ -22,11 +22,7 @@ export type UseRowResizeReturn = {
  * @param params - Configuration parameters
  * @returns Row resize handlers
  */
-export const useRowResize = ({
-  actions,
-  defaultCellHeight,
-  rowSizes,
-}: UseRowResizeParams): UseRowResizeReturn => {
+export const useRowResize = ({ actions, defaultCellHeight, rowSizes }: UseRowResizeParams): UseRowResizeReturn => {
   const resizeStateRef = useRef<{
     row: number;
     startY: number;

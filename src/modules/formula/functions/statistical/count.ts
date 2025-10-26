@@ -10,7 +10,7 @@ export const countFunction: FormulaFunctionEagerDefinition = {
     en: "Counts numeric values in the arguments, ignoring non-numeric entries.",
     ja: "数値以外を無視して引数内の数値を数えます。",
   },
-  examples: ['COUNT(1, 2, "x")', 'COUNT(A1:A10)'],
+  examples: ['COUNT(1, 2, "x")', "COUNT(A1:A10)"],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
     return values.reduce<number>((count, value) => (typeof value === "number" ? count + 1 : count), 0);

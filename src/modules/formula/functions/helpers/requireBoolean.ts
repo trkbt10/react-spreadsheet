@@ -12,4 +12,3 @@ export const requireBoolean = (result: EvalResult, description: string): boolean
   }
   return scalar;
 };
-

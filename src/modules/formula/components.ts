@@ -2,12 +2,7 @@
  * @file Builds dependency components used for memoised evaluation segments.
  */
 
-import type {
-  CellAddressKey,
-  DependencyTree,
-  DependencyComponent,
-  DependencyComponentIndex,
-} from "./types";
+import type { CellAddressKey, DependencyTree, DependencyComponent, DependencyComponentIndex } from "./types";
 
 type ComponentBuildResult = {
   components: Map<string, DependencyComponent>;
@@ -120,10 +115,7 @@ const computeTopologicalOrder = (nodes: Set<CellAddressKey>, tree: DependencyTre
   return order;
 };
 
-const collectExternalDependencies = (
-  nodes: Set<CellAddressKey>,
-  tree: DependencyTree,
-): Set<CellAddressKey> => {
+const collectExternalDependencies = (nodes: Set<CellAddressKey>, tree: DependencyTree): Set<CellAddressKey> => {
   const external = new Set<CellAddressKey>();
   nodes.forEach((key) => {
     const node = tree.get(key);
@@ -139,9 +131,7 @@ const collectExternalDependencies = (
   return external;
 };
 
-export const buildDependencyComponents = (
-  tree: DependencyTree,
-): ComponentBuildResult => {
+export const buildDependencyComponents = (tree: DependencyTree): ComponentBuildResult => {
   const components = new Map<string, DependencyComponent>();
   const componentIndex: DependencyComponentIndex = new Map();
 

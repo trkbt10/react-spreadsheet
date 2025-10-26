@@ -92,11 +92,7 @@ const clampIndex = (value: number, maxExclusive: number): number => {
  * @param columnSizes - Map of custom column widths
  * @returns X position in pixels
  */
-export const calculateColumnPosition = (
-  col: number,
-  defaultWidth: number,
-  columnSizes: ColumnSizeMap,
-): number => {
+export const calculateColumnPosition = (col: number, defaultWidth: number, columnSizes: ColumnSizeMap): number => {
   const defaultWidthBigInt = ensurePositiveInteger(defaultWidth, "default column width");
   if (col > getMaxRepresentableCount(defaultWidthBigInt)) {
     throw new Error("Column index exceeds representable layout range.");
@@ -112,11 +108,7 @@ export const calculateColumnPosition = (
  * @param rowSizes - Map of custom row heights
  * @returns Y position in pixels
  */
-export const calculateRowPosition = (
-  row: number,
-  defaultHeight: number,
-  rowSizes: RowSizeMap,
-): number => {
+export const calculateRowPosition = (row: number, defaultHeight: number, rowSizes: RowSizeMap): number => {
   const defaultHeightBigInt = ensurePositiveInteger(defaultHeight, "default row height");
   if (row > getMaxRepresentableCount(defaultHeightBigInt)) {
     throw new Error("Row index exceeds representable layout range.");
@@ -132,11 +124,7 @@ export const calculateRowPosition = (
  * @param columnSizes - Map of custom column widths
  * @returns Total width in pixels
  */
-export const calculateTotalWidth = (
-  maxColumns: number,
-  defaultWidth: number,
-  columnSizes: ColumnSizeMap,
-): number => {
+export const calculateTotalWidth = (maxColumns: number, defaultWidth: number, columnSizes: ColumnSizeMap): number => {
   if (maxColumns <= 0) {
     return 0;
   }
@@ -156,11 +144,7 @@ export const calculateTotalWidth = (
  * @param rowSizes - Map of custom row heights
  * @returns Total height in pixels
  */
-export const calculateTotalHeight = (
-  maxRows: number,
-  defaultHeight: number,
-  rowSizes: RowSizeMap,
-): number => {
+export const calculateTotalHeight = (maxRows: number, defaultHeight: number, rowSizes: RowSizeMap): number => {
   if (maxRows <= 0) {
     return 0;
   }
@@ -227,12 +211,7 @@ export const findColumnAtPosition = (
  * @param maxRows - Maximum number of rows
  * @returns Row index
  */
-export const findRowAtPosition = (
-  y: number,
-  defaultHeight: number,
-  rowSizes: RowSizeMap,
-  maxRows: number,
-): number => {
+export const findRowAtPosition = (y: number, defaultHeight: number, rowSizes: RowSizeMap, maxRows: number): number => {
   if (maxRows <= 0) {
     return 0;
   }

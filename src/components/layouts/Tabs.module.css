@@ -21,7 +21,9 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   user-select: none;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 }
 

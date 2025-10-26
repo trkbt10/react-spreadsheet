@@ -22,8 +22,8 @@ describe("SUMIF", () => {
   });
 
   it("throws when range and sum range sizes differ", () => {
-    expect(() =>
-      evaluate(makeEvalArgs([1, 2, 3], ">0", [1, 2])),
-    ).toThrowError("SUMIF sum_range must match criteria range size");
+    expect(() => evaluate(makeEvalArgs([1, 2, 3], ">0", [1, 2]))).toThrowError(
+      "SUMIF sum_range must match criteria range size",
+    );
   });
 });

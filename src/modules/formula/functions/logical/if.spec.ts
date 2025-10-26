@@ -2,11 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { ifFunction } from "./if";
 import type { FormulaFunctionLazyContext } from "../../functionRegistry";
 import type { FormulaAstNode } from "../../ast";
-import {
-  createLiteralNode,
-  defaultLazyEvaluate,
-  invokeLazyFormulaFunction,
-} from "../testHelpers";
+import { createLiteralNode, defaultLazyEvaluate, invokeLazyFormulaFunction } from "../testHelpers";
 
 const evaluateLazy = (
   nodes: Parameters<NonNullable<typeof ifFunction.evaluateLazy>>[0],
@@ -17,20 +13,12 @@ const evaluateLazy = (
 
 describe("ifFunction", () => {
   it("returns the true branch when the condition is truthy", () => {
-    const result = evaluateLazy([
-      createLiteralNode(true),
-      createLiteralNode(1),
-      createLiteralNode(2),
-    ]);
+    const result = evaluateLazy([createLiteralNode(true), createLiteralNode(1), createLiteralNode(2)]);
     expect(result).toBe(1);
   });
 
   it("returns the false branch when provided", () => {
-    const result = evaluateLazy([
-      createLiteralNode(false),
-      createLiteralNode(1),
-      createLiteralNode(2),
-    ]);
+    const result = evaluateLazy([createLiteralNode(false), createLiteralNode(1), createLiteralNode(2)]);
     expect(result).toBe(2);
   });
 
@@ -44,12 +32,7 @@ describe("ifFunction", () => {
       evaluateLazy([createLiteralNode(true)]);
     }).toThrowError("IF expects two or three arguments");
     expect(() => {
-      evaluateLazy([
-        createLiteralNode(true),
-        createLiteralNode(1),
-        createLiteralNode(2),
-        createLiteralNode(3),
-      ]);
+      evaluateLazy([createLiteralNode(true), createLiteralNode(1), createLiteralNode(2), createLiteralNode(3)]);
     }).toThrowError("IF expects two or three arguments");
   });
 

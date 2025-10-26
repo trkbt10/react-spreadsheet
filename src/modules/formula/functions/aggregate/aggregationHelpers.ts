@@ -5,18 +5,7 @@
 import type { FormulaEvaluationResult } from "../../types";
 import { summarizeNumbers } from "../helpers";
 
-type AggregationKey =
-  | 1
-  | 2
-  | 3
-  | 4
-  | 5
-  | 6
-  | 7
-  | 8
-  | 9
-  | 10
-  | 11;
+type AggregationKey = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
 const getNumericValues = (values: FormulaEvaluationResult[]): number[] => {
   return values.filter((value): value is number => typeof value === "number");
@@ -105,9 +94,6 @@ export const isSupportedAggregationFunction = (functionNumber: number): function
   return functionNumber in aggregationMap;
 };
 
-export const aggregateValues = (
-  functionNumber: AggregationKey,
-  values: FormulaEvaluationResult[],
-): number => {
+export const aggregateValues = (functionNumber: AggregationKey, values: FormulaEvaluationResult[]): number => {
   return aggregationMap[functionNumber](values);
 };

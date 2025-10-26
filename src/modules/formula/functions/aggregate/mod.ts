@@ -11,7 +11,7 @@ export const modFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the remainder after division, aligned with the sign of the divisor.",
     ja: "除算の余りを返し、除数の符号に揃えます。",
   },
-  examples: ['MOD(10, 3)', 'MOD(A1, B1)'],
+  examples: ["MOD(10, 3)", "MOD(A1, B1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("MOD expects exactly two arguments");

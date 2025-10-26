@@ -26,18 +26,12 @@ export const averageIfFunction: FormulaFunctionEagerDefinition = {
     }
 
     const criteria = helpers.coerceScalar(criteriaArg, "AVERAGEIF criteria");
-    const predicate = createCriteriaPredicate(
-      criteria,
-      helpers.comparePrimitiveEquality,
-      "AVERAGEIF criteria",
-    );
+    const predicate = createCriteriaPredicate(criteria, helpers.comparePrimitiveEquality, "AVERAGEIF criteria");
 
-    const aggregate = rangeValues.reduce<
-      {
-        sum: number;
-        count: number;
-      }
-    >(
+    const aggregate = rangeValues.reduce<{
+      sum: number;
+      count: number;
+    }>(
       (state, rangeValue, index) => {
         if (!predicate(rangeValue)) {
           return state;

@@ -93,12 +93,7 @@ export type CellStyleTarget = {
 /**
  * Union of all style targets.
  */
-export type StyleTarget =
-  | SheetStyleTarget
-  | RowStyleTarget
-  | ColumnStyleTarget
-  | RangeStyleTarget
-  | CellStyleTarget;
+export type StyleTarget = SheetStyleTarget | RowStyleTarget | ColumnStyleTarget | RangeStyleTarget | CellStyleTarget;
 
 /**
  * Style rule with target and CSS properties.
@@ -216,12 +211,7 @@ export const targetAppliesTo = (target: StyleTarget, col: number, row: number): 
     case "column":
       return target.col === col;
     case "range":
-      return (
-        col >= target.startCol &&
-        col < target.endCol &&
-        row >= target.startRow &&
-        row < target.endRow
-      );
+      return col >= target.startCol && col < target.endCol && row >= target.startRow && row < target.endRow;
     case "cell":
       return target.col === col && target.row === row;
   }

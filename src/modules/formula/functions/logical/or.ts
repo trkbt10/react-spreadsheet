@@ -10,7 +10,7 @@ export const orFunction: FormulaFunctionEagerDefinition = {
     en: "Returns TRUE if any argument evaluates to TRUE; otherwise FALSE.",
     ja: "引数のいずれかがTRUEであればTRUEを返し、それ以外はFALSEを返します。",
   },
-  examples: ['OR(TRUE, FALSE)', 'OR(A1:A3)'],
+  examples: ["OR(TRUE, FALSE)", "OR(A1:A3)"],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
     if (values.length === 0) {

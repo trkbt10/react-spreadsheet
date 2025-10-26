@@ -2,13 +2,13 @@
  * @file Catalog page for demonstrating UI components.
  */
 
-import { useState } from 'react';
-import type { ReactElement } from 'react';
-import { FiScissors, FiCopy, FiClipboard, FiTrash2 } from 'react-icons/fi';
-import { MdFormatColorText } from 'react-icons/md';
-import { ContextMenu } from './components/layouts/ContextMenu.tsx';
-import type { MenuItem, MenuPosition } from './components/layouts/ContextMenu.types';
-import styles from './Catalog.module.css';
+import { useState } from "react";
+import type { ReactElement } from "react";
+import { FiScissors, FiCopy, FiClipboard, FiTrash2 } from "react-icons/fi";
+import { MdFormatColorText } from "react-icons/md";
+import { ContextMenu } from "./components/layouts/ContextMenu.tsx";
+import type { MenuItem, MenuPosition } from "./components/layouts/ContextMenu.types";
+import styles from "./Catalog.module.css";
 
 /**
  * Catalog page component for testing and demonstrating components.
@@ -18,137 +18,137 @@ export function Catalog(): ReactElement {
 
   const contextMenuItems: MenuItem[] = [
     {
-      type: 'action',
-      label: 'Cut',
+      type: "action",
+      label: "Cut",
       icon: <FiScissors />,
-      shortcut: '⌘X',
+      shortcut: "⌘X",
       onClick: () => {
-        console.log('Cut clicked');
+        console.log("Cut clicked");
         setContextMenuPosition(null);
       },
     },
     {
-      type: 'action',
-      label: 'Copy',
+      type: "action",
+      label: "Copy",
       icon: <FiCopy />,
-      shortcut: '⌘C',
+      shortcut: "⌘C",
       onClick: () => {
-        console.log('Copy clicked');
+        console.log("Copy clicked");
         setContextMenuPosition(null);
       },
     },
     {
-      type: 'action',
-      label: 'Paste',
+      type: "action",
+      label: "Paste",
       icon: <FiClipboard />,
-      shortcut: '⌘V',
+      shortcut: "⌘V",
       onClick: () => {
-        console.log('Paste clicked');
+        console.log("Paste clicked");
         setContextMenuPosition(null);
       },
     },
     {
-      type: 'separator',
+      type: "separator",
     },
     {
-      type: 'submenu',
-      label: 'Format',
+      type: "submenu",
+      label: "Format",
       icon: <MdFormatColorText />,
       items: [
         {
-          type: 'action',
-          label: 'Bold',
-          shortcut: '⌘B',
+          type: "action",
+          label: "Bold",
+          shortcut: "⌘B",
           onClick: () => {
-            console.log('Bold clicked');
+            console.log("Bold clicked");
             setContextMenuPosition(null);
           },
         },
         {
-          type: 'action',
-          label: 'Italic',
-          shortcut: '⌘I',
+          type: "action",
+          label: "Italic",
+          shortcut: "⌘I",
           onClick: () => {
-            console.log('Italic clicked');
+            console.log("Italic clicked");
             setContextMenuPosition(null);
           },
         },
         {
-          type: 'separator',
+          type: "separator",
         },
         {
-          type: 'submenu',
-          label: 'Text Color',
+          type: "submenu",
+          label: "Text Color",
           items: [
             {
-              type: 'action',
-              label: 'Red',
+              type: "action",
+              label: "Red",
               onClick: () => {
-                console.log('Red clicked');
+                console.log("Red clicked");
                 setContextMenuPosition(null);
               },
             },
             {
-              type: 'action',
-              label: 'Blue',
+              type: "action",
+              label: "Blue",
               onClick: () => {
-                console.log('Blue clicked');
+                console.log("Blue clicked");
                 setContextMenuPosition(null);
               },
             },
             {
-              type: 'action',
-              label: 'Green',
+              type: "action",
+              label: "Green",
               onClick: () => {
-                console.log('Green clicked');
+                console.log("Green clicked");
                 setContextMenuPosition(null);
               },
             },
             {
-              type: 'submenu',
-              label: 'Custom Colors',
+              type: "submenu",
+              label: "Custom Colors",
               items: [
                 {
-                  type: 'action',
-                  label: 'Orange',
+                  type: "action",
+                  label: "Orange",
                   onClick: () => {
-                    console.log('Orange clicked');
+                    console.log("Orange clicked");
                     setContextMenuPosition(null);
                   },
                 },
                 {
-                  type: 'action',
-                  label: 'Purple',
+                  type: "action",
+                  label: "Purple",
                   onClick: () => {
-                    console.log('Purple clicked');
+                    console.log("Purple clicked");
                     setContextMenuPosition(null);
                   },
                 },
                 {
-                  type: 'submenu',
-                  label: 'Gradients',
+                  type: "submenu",
+                  label: "Gradients",
                   items: [
                     {
-                      type: 'action',
-                      label: 'Sunset',
+                      type: "action",
+                      label: "Sunset",
                       onClick: () => {
-                        console.log('Sunset gradient clicked');
+                        console.log("Sunset gradient clicked");
                         setContextMenuPosition(null);
                       },
                     },
                     {
-                      type: 'action',
-                      label: 'Ocean',
+                      type: "action",
+                      label: "Ocean",
                       onClick: () => {
-                        console.log('Ocean gradient clicked');
+                        console.log("Ocean gradient clicked");
                         setContextMenuPosition(null);
                       },
                     },
                     {
-                      type: 'action',
-                      label: 'Forest',
+                      type: "action",
+                      label: "Forest",
                       onClick: () => {
-                        console.log('Forest gradient clicked');
+                        console.log("Forest gradient clicked");
                         setContextMenuPosition(null);
                       },
                     },
@@ -159,30 +159,30 @@ export function Catalog(): ReactElement {
           ],
         },
         {
-          type: 'submenu',
-          label: 'Background Color',
+          type: "submenu",
+          label: "Background Color",
           items: [
             {
-              type: 'action',
-              label: 'Yellow',
+              type: "action",
+              label: "Yellow",
               onClick: () => {
-                console.log('Yellow background clicked');
+                console.log("Yellow background clicked");
                 setContextMenuPosition(null);
               },
             },
             {
-              type: 'action',
-              label: 'Cyan',
+              type: "action",
+              label: "Cyan",
               onClick: () => {
-                console.log('Cyan background clicked');
+                console.log("Cyan background clicked");
                 setContextMenuPosition(null);
               },
             },
             {
-              type: 'action',
-              label: 'Magenta',
+              type: "action",
+              label: "Magenta",
               onClick: () => {
-                console.log('Magenta background clicked');
+                console.log("Magenta background clicked");
                 setContextMenuPosition(null);
               },
             },
@@ -191,24 +191,24 @@ export function Catalog(): ReactElement {
       ],
     },
     {
-      type: 'separator',
+      type: "separator",
     },
     {
-      type: 'action',
-      label: 'Delete',
+      type: "action",
+      label: "Delete",
       icon: <FiTrash2 />,
-      shortcut: '⌫',
+      shortcut: "⌫",
       onClick: () => {
-        console.log('Delete clicked');
+        console.log("Delete clicked");
         setContextMenuPosition(null);
       },
     },
     {
-      type: 'action',
-      label: 'Disabled Item',
+      type: "action",
+      label: "Disabled Item",
       disabled: true,
       onClick: () => {
-        console.log('This should not be called');
+        console.log("This should not be called");
       },
     },
   ];
@@ -224,13 +224,8 @@ export function Catalog(): ReactElement {
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Context Menu</h2>
-        <div
-          className={styles.demoArea}
-          onContextMenu={handleContextMenu}
-        >
-          <p className={styles.instruction}>
-            Right-click anywhere in this area to open the context menu
-          </p>
+        <div className={styles.demoArea} onContextMenu={handleContextMenu}>
+          <p className={styles.instruction}>Right-click anywhere in this area to open the context menu</p>
           <ul className={styles.featureList}>
             <li>Native-like appearance and behavior</li>
             <li>4-level nested submenu support (Format → Text Color → Custom Colors → Gradients)</li>

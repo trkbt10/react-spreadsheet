@@ -3,8 +3,7 @@ import { formulaFunctionHelpers } from "../../functionRegistry";
 import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import type { EvalResult } from "../helpers";
 
-const evaluate = (args: EvalResult[]) =>
-  invokeFormulaFunction(modFunction, formulaFunctionHelpers, args);
+const evaluate = (args: EvalResult[]) => invokeFormulaFunction(modFunction, formulaFunctionHelpers, args);
 
 describe("MOD", () => {
   it("returns remainders matching the divisor sign", () => {

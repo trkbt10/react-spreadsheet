@@ -24,18 +24,19 @@ export const weekDayFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the day of the week for a date, with configurable numbering schemes.",
     ja: "日付の曜日を取得し、番号付け方式を指定できます。",
   },
-  examples: ['WEEKDAY("2024-01-07")', 'WEEKDAY(A1, 2)'],
+  examples: ['WEEKDAY("2024-01-07")', "WEEKDAY(A1, 2)"],
   evaluate: (args, helpers) => {
     if (args.length < 1 || args.length > 2) {
       throw new Error("WEEKDAY expects one or two arguments");
     }
     const serial = helpers.requireNumber(args[0], "WEEKDAY serial");
-    const returnType = args.length === 2
-      ? helpers.requireInteger(
-          helpers.requireNumber(args[1], "WEEKDAY return_type"),
-          "WEEKDAY return_type must be integer",
-        )
-      : 1;
+    const returnType =
+      args.length === 2
+        ? helpers.requireInteger(
+            helpers.requireNumber(args[1], "WEEKDAY return_type"),
+            "WEEKDAY return_type must be integer",
+          )
+        : 1;
 
     const date = serialToDate(Math.floor(serial));
     const weekday = date.getUTCDay();

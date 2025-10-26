@@ -6,10 +6,7 @@ import type { FormulaEvaluationResult } from "../../types";
 import type { EvalResult } from "./types";
 import { coerceScalar } from "./coerceScalar";
 
-const toBoolean = (
-  value: FormulaEvaluationResult,
-  description: string,
-): boolean => {
+const toBoolean = (value: FormulaEvaluationResult, description: string): boolean => {
   if (value === null) {
     return false;
   }

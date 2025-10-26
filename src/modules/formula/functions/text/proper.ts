@@ -16,7 +16,7 @@ export const properFunction: FormulaFunctionEagerDefinition = {
     en: "Capitalizes the first letter of each word and lowercases the rest.",
     ja: "各単語の先頭文字を大文字にし、残りを小文字に変換します。",
   },
-  examples: ['PROPER("hello WORLD")', 'PROPER(A1)'],
+  examples: ['PROPER("hello WORLD")', "PROPER(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("PROPER expects exactly one argument");

@@ -11,7 +11,7 @@ export const varianceFunction: FormulaFunctionEagerDefinition = {
     en: "Calculates the sample variance of numeric arguments.",
     ja: "数値引数の標本分散を計算します。",
   },
-  examples: ['VAR(1, 3, 5)', 'VAR(A1:A10)'],
+  examples: ["VAR(1, 3, 5)", "VAR(A1:A10)"],
   evaluate: (args, helpers) => {
     const numericValues = collectNumericArguments(args, helpers);
 

@@ -13,10 +13,7 @@ import type {
 import { createCellAddressKey } from "./address";
 import { parseFormula } from "./parser";
 
-const ensureNode = (
-  tree: DependencyTree,
-  address: CellAddress,
-): void => {
+const ensureNode = (tree: DependencyTree, address: CellAddress): void => {
   const key = createCellAddressKey(address);
   if (!tree.has(key)) {
     tree.set(key, {
@@ -69,7 +66,9 @@ export const buildDependencyTree = ({ matrix, index }: BuildDependencyTreeParams
         }
 
         if (typeof cell.formula !== "string" || cell.formula.trim().length === 0) {
-          throw new Error(`Formula cell at "${sheetMatrix.sheetName}" (${columnIndex}, ${rowIndex}) is missing formula content`);
+          throw new Error(
+            `Formula cell at "${sheetMatrix.sheetName}" (${columnIndex}, ${rowIndex}) is missing formula content`,
+          );
         }
 
         const parsed = parseFormula(cell.formula, {

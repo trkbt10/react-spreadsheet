@@ -15,8 +15,6 @@ describe("FIND", () => {
   });
 
   it("throws when the text is not found", () => {
-    expect(() => evaluate(makeEvalArgs("x", "data"))).toThrowError(
-      "FIND could not locate the specified text",
-    );
+    expect(() => evaluate(makeEvalArgs("x", "data"))).toThrowError("FIND could not locate the specified text");
   });
 });

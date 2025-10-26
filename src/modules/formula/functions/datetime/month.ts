@@ -11,7 +11,7 @@ export const monthFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the month number from a serial date (1–12).",
     ja: "シリアル日付から月番号(1〜12)を返します。",
   },
-  examples: ['MONTH("2024-05-10")', 'MONTH(A1)'],
+  examples: ['MONTH("2024-05-10")', "MONTH(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("MONTH expects exactly one argument");

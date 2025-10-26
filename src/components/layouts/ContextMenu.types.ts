@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 export type MenuItemAction = {
-  type: 'action';
+  type: "action";
   label: string;
   icon?: ReactNode;
   disabled?: boolean;
@@ -10,7 +10,7 @@ export type MenuItemAction = {
 };
 
 export type MenuItemSubmenu = {
-  type: 'submenu';
+  type: "submenu";
   label: string;
   icon?: ReactNode;
   disabled?: boolean;
@@ -18,7 +18,7 @@ export type MenuItemSubmenu = {
 };
 
 export type MenuItemSeparator = {
-  type: 'separator';
+  type: "separator";
 };
 
 export type MenuItem = MenuItemAction | MenuItemSubmenu | MenuItemSeparator;

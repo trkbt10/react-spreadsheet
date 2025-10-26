@@ -13,10 +13,7 @@ export type FormulaFunctionHelpers = {
   requireNumber: (result: EvalResult, description: string) => number;
   requireBoolean: (result: EvalResult, description: string) => boolean;
   coerceLogical: (result: EvalResult, description: string) => boolean;
-  comparePrimitiveEquality: (
-    left: FormulaEvaluationResult,
-    right: FormulaEvaluationResult,
-  ) => boolean;
+  comparePrimitiveEquality: (left: FormulaEvaluationResult, right: FormulaEvaluationResult) => boolean;
   requireInteger: (value: number, errorMessage: string) => number;
   computePowerOfTen: (exponent: number, errorMessage: string) => number;
   normalizeZero: (value: number) => number;
@@ -33,4 +30,19 @@ export type FormulaFunctionHelpers = {
     sum: number;
     sumOfSquares: number;
   };
+  validateInterestRate: (rate: number, description: string) => number;
+  pow1p: (rate: number, periods: number) => number;
+  computeNPV: (rate: number, cashflows: number[], initial?: number) => number;
+  discountSeries: (rate: number, cashflows: number[]) => number;
+  calculatePayment: (rate: number, periods: number, presentValue: number, futureValue: number, type: number) => number;
+  calculateInterestPayment: (
+    rate: number,
+    periods: number,
+    payment: number,
+    presentValue: number,
+    futureValue: number,
+    type: number,
+    targetPeriod: number,
+  ) => number;
+  computeXNPV: (rate: number, cashflows: number[], dayDifferences: number[]) => number;
 };

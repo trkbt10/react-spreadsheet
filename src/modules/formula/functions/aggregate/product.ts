@@ -10,7 +10,7 @@ export const productFunction: FormulaFunctionEagerDefinition = {
     en: "Multiplies numeric arguments while skipping empty cells and null values.",
     ja: "空のセルとnullを無視して数値引数を掛け合わせます。",
   },
-  examples: ['PRODUCT(2, 3, 4)', 'PRODUCT(A1:A3)'],
+  examples: ["PRODUCT(2, 3, 4)", "PRODUCT(A1:A3)"],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
     return values.reduce<number>((product, value) => {

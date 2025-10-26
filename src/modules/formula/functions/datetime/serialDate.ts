@@ -30,7 +30,9 @@ export const serialToDate = (serial: number): Date => {
   return new Date(SPREADSHEET_EPOCH_MS + millisecondsOffset);
 };
 
-export const serialToUTCComponents = (serial: number): {
+export const serialToUTCComponents = (
+  serial: number,
+): {
   year: number;
   month: number;
   day: number;
@@ -51,11 +53,7 @@ export const serialToUTCComponents = (serial: number): {
   };
 };
 
-export const normalizeTimeToFraction = (
-  hours: number,
-  minutes: number,
-  seconds: number,
-): number => {
+export const normalizeTimeToFraction = (hours: number, minutes: number, seconds: number): number => {
   const totalSeconds = hours * 3600 + minutes * 60 + seconds;
   if (!Number.isFinite(totalSeconds)) {
     throw new Error("TIME arguments must be finite");

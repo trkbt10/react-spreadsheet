@@ -37,7 +37,10 @@ export {
   getSelectionAnchor,
 } from "./modules/spreadsheet/selectionUtils";
 export { useSheetPointerEvents } from "./modules/spreadsheet/useSheetPointerEvents";
-export type { UseSheetPointerEventsParams, UseSheetPointerEventsReturn } from "./modules/spreadsheet/useSheetPointerEvents";
+export type {
+  UseSheetPointerEventsParams,
+  UseSheetPointerEventsReturn,
+} from "./modules/spreadsheet/useSheetPointerEvents";
 export type { CellPosition, GridRange, ColumnSizeMap, RowSizeMap } from "./modules/spreadsheet/gridLayout";
 export {
   calculateColumnPosition,

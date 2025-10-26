@@ -197,9 +197,7 @@ const pushVerticalUpdates = (
     }
     columns.forEach((col) => {
       const values = getBaseValuesForColumn(sheet, baseRange, col);
-      const numericValues = values.every((value) => typeof value === "number")
-        ? (values as number[])
-        : null;
+      const numericValues = values.every((value) => typeof value === "number") ? (values as number[]) : null;
 
       if (numericValues) {
         const step = computeStepForward(numericValues);
@@ -215,10 +213,12 @@ const pushVerticalUpdates = (
       if (repeatingValues.length === 0) {
         return;
       }
-      Array.from({ length: fillRowCount }, (_, index) => index % repeatingValues.length).forEach((cycleIndex, index) => {
-        const row = baseRange.endRow + index;
-        updates.push({ col, row, value: repeatingValues[cycleIndex] });
-      });
+      Array.from({ length: fillRowCount }, (_, index) => index % repeatingValues.length).forEach(
+        (cycleIndex, index) => {
+          const row = baseRange.endRow + index;
+          updates.push({ col, row, value: repeatingValues[cycleIndex] });
+        },
+      );
     });
     return;
   }
@@ -229,9 +229,7 @@ const pushVerticalUpdates = (
   }
   columns.forEach((col) => {
     const values = getBaseValuesForColumn(sheet, baseRange, col);
-    const numericValues = values.every((value) => typeof value === "number")
-      ? (values as number[])
-      : null;
+    const numericValues = values.every((value) => typeof value === "number") ? (values as number[]) : null;
 
     if (numericValues) {
       const step = computeStepBackward(numericValues);
@@ -270,9 +268,7 @@ const pushHorizontalUpdates = (
     }
     rows.forEach((row) => {
       const values = getBaseValuesForRow(sheet, baseRange, row);
-      const numericValues = values.every((value) => typeof value === "number")
-        ? (values as number[])
-        : null;
+      const numericValues = values.every((value) => typeof value === "number") ? (values as number[]) : null;
 
       if (numericValues) {
         const step = computeStepForward(numericValues);
@@ -288,10 +284,12 @@ const pushHorizontalUpdates = (
       if (repeatingValues.length === 0) {
         return;
       }
-      Array.from({ length: fillColumnCount }, (_, index) => index % repeatingValues.length).forEach((cycleIndex, index) => {
-        const col = baseRange.endCol + index;
-        updates.push({ col, row, value: repeatingValues[cycleIndex] });
-      });
+      Array.from({ length: fillColumnCount }, (_, index) => index % repeatingValues.length).forEach(
+        (cycleIndex, index) => {
+          const col = baseRange.endCol + index;
+          updates.push({ col, row, value: repeatingValues[cycleIndex] });
+        },
+      );
     });
     return;
   }
@@ -302,9 +300,7 @@ const pushHorizontalUpdates = (
   }
   rows.forEach((row) => {
     const values = getBaseValuesForRow(sheet, baseRange, row);
-    const numericValues = values.every((value) => typeof value === "number")
-      ? (values as number[])
-      : null;
+    const numericValues = values.every((value) => typeof value === "number") ? (values as number[]) : null;
 
     if (numericValues) {
       const step = computeStepBackward(numericValues);
@@ -320,11 +316,13 @@ const pushHorizontalUpdates = (
     if (repeatingValues.length === 0) {
       return;
     }
-    Array.from({ length: fillColumnCount }, (_, index) => index % repeatingValues.length).forEach((cycleIndex, index) => {
-      const col = baseRange.startCol - 1 - index;
-      const valueIndex = (repeatingValues.length - 1 - cycleIndex + repeatingValues.length) % repeatingValues.length;
-      updates.push({ col, row, value: repeatingValues[valueIndex] });
-    });
+    Array.from({ length: fillColumnCount }, (_, index) => index % repeatingValues.length).forEach(
+      (cycleIndex, index) => {
+        const col = baseRange.startCol - 1 - index;
+        const valueIndex = (repeatingValues.length - 1 - cycleIndex + repeatingValues.length) % repeatingValues.length;
+        updates.push({ col, row, value: repeatingValues[valueIndex] });
+      },
+    );
   });
 };
 
@@ -336,12 +334,7 @@ const pushHorizontalUpdates = (
 export const computeAutofillUpdates = (request: AutofillRequest): AutofillUpdate[] => {
   const { baseRange, targetRange, direction, sheet } = request;
 
-  if (
-    widthOf(baseRange) <= 0 ||
-    heightOf(baseRange) <= 0 ||
-    widthOf(targetRange) <= 0 ||
-    heightOf(targetRange) <= 0
-  ) {
+  if (widthOf(baseRange) <= 0 || heightOf(baseRange) <= 0 || widthOf(targetRange) <= 0 || heightOf(targetRange) <= 0) {
     return [];
   }
 

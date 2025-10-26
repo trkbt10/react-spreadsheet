@@ -8,9 +8,7 @@
   height: 200px;
   border-radius: 4px;
   cursor: crosshair;
-  background-image:
-    linear-gradient(to top, #000, transparent),
-    linear-gradient(to right, #fff, transparent);
+  background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
   user-select: none;
   touch-action: none;
 }

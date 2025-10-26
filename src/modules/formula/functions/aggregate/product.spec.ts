@@ -3,8 +3,7 @@ import { formulaFunctionHelpers } from "../../functionRegistry";
 import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import type { EvalResult } from "../helpers";
 
-const evaluate = (args: EvalResult[]) =>
-  invokeFormulaFunction(productFunction, formulaFunctionHelpers, args);
+const evaluate = (args: EvalResult[]) => invokeFormulaFunction(productFunction, formulaFunctionHelpers, args);
 
 describe("PRODUCT", () => {
   it("multiplies numeric arguments, ignoring null values", () => {
@@ -18,8 +17,6 @@ describe("PRODUCT", () => {
   });
 
   it("throws when encountering non-numeric values", () => {
-    expect(() => evaluate(makeEvalArgs(2, "text"))).toThrowError(
-      "PRODUCT expects numeric arguments",
-    );
+    expect(() => evaluate(makeEvalArgs(2, "text"))).toThrowError("PRODUCT expects numeric arguments");
   });
 });

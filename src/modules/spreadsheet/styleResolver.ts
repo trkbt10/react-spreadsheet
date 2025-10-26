@@ -55,9 +55,14 @@ export const removeStyleRule = (registry: StyleRegistry, key: StyleKey): StyleRe
  * @param registry - Style registry
  * @returns Cleared registry
  */
-export const clearStyleRegistry = (registry: StyleRegistry): StyleRegistry => ({
-  rules: new Map(),
-});
+export const clearStyleRegistry = (registry: StyleRegistry): StyleRegistry => {
+  if (registry.rules.size === 0) {
+    return registry;
+  }
+  return {
+    rules: new Map(),
+  };
+};
 
 /**
  * Resolve the effective style for a cell by applying all matching rules.

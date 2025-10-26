@@ -10,7 +10,7 @@ export const midFunction: FormulaFunctionEagerDefinition = {
     en: "Returns a substring starting at a given position for a specified length.",
     ja: "指定した位置から指定した長さの部分文字列を返します。",
   },
-  examples: ['MID("Spreadsheet", 2, 5)', 'MID(A1, 3, 4)'],
+  examples: ['MID("Spreadsheet", 2, 5)', "MID(A1, 3, 4)"],
   evaluate: (args, helpers) => {
     if (args.length !== 3) {
       throw new Error("MID expects exactly three arguments");

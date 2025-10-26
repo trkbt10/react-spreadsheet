@@ -58,10 +58,7 @@ const compareNumbers = (value: number, operand: number, comparator: ComparatorSy
 
 export const createCriteriaPredicate = (
   criteria: EvalResult,
-  comparePrimitiveEquality: (
-    left: FormulaEvaluationResult,
-    right: FormulaEvaluationResult,
-  ) => boolean,
+  comparePrimitiveEquality: (left: FormulaEvaluationResult, right: FormulaEvaluationResult) => boolean,
   description: string,
 ): ((value: FormulaEvaluationResult) => boolean) => {
   if (criteria === null) {
@@ -113,4 +110,3 @@ export const createCriteriaPredicate = (
 
   throw new Error(`Unsupported comparator "${comparator}"`);
 };
-

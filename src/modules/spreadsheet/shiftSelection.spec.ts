@@ -1,8 +1,9 @@
+/// <reference types="vitest" />
+
 /**
  * @file Tests for shift-click range selection behavior
  */
 
-import { describe, it, expect } from "vitest";
 import { sheetReducer, initialSheetState } from "./sheetReducer";
 import { sheetActions } from "./sheetActions";
 import type { SheetState, SelectionTarget, RangeSelectionTarget } from "./sheetReducer";
@@ -10,7 +11,7 @@ import type { SheetState, SelectionTarget, RangeSelectionTarget } from "./sheetR
 describe("Shift-click range selection", () => {
   it("should select from anchor to target cell when extending selection", () => {
     // Start with a single cell selected at (2, 3)
-    let state: SheetState = {
+    const initialState: SheetState = {
       ...initialSheetState,
       selection: {
         kind: "cell",
@@ -20,10 +21,9 @@ describe("Shift-click range selection", () => {
       selectionAnchor: { col: 2, row: 3 },
     };
 
-    // Shift+click on cell (5, 7) should create range from (2,3) to (5,7)
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(5, 7));
+    const extendedState = sheetReducer(initialState, sheetActions.extendSelectionToCell(5, 7));
 
-    expect(state.selection).toEqual({
+    expect(extendedState.selection).toEqual({
       kind: "range",
       startCol: 2,
       endCol: 6, // 5 + 1
@@ -34,7 +34,7 @@ describe("Shift-click range selection", () => {
 
   it("should keep the same anchor point for consecutive shift selections", () => {
     // Start with a single cell selected at (2, 3) - this is the anchor
-    let state: SheetState = {
+    const initialState: SheetState = {
       ...initialSheetState,
       selection: {
         kind: "cell",
@@ -45,9 +45,9 @@ describe("Shift-click range selection", () => {
     };
 
     // First shift+click: extend down to (2, 5)
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(2, 5));
+    const firstExtension = sheetReducer(initialState, sheetActions.extendSelectionToCell(2, 5));
 
-    expect(state.selection).toEqual({
+    expect(firstExtension.selection).toEqual({
       kind: "range",
       startCol: 2,
       endCol: 3,
@@ -56,20 +56,20 @@ describe("Shift-click range selection", () => {
     } satisfies RangeSelectionTarget);
 
     // Second shift+click: extend up to (2, 1) - should still use (2, 3) as anchor
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(2, 1));
+    const secondExtension = sheetReducer(firstExtension, sheetActions.extendSelectionToCell(2, 1));
 
-    expect(state.selection).toEqual({
+    expect(secondExtension.selection).toEqual({
       kind: "range",
       startCol: 2,
       endCol: 3,
       startRow: 1, // Now includes row 1
-      endRow: 4,   // Up to row 3 (anchor) + 1
+      endRow: 4, // Up to row 3 (anchor) + 1
     } satisfies RangeSelectionTarget);
   });
 
   it("should maintain anchor when extending selection in different directions", () => {
     // Start with anchor at (5, 5)
-    let state: SheetState = {
+    const initialState: SheetState = {
       ...initialSheetState,
       selection: {
         kind: "cell",
@@ -80,9 +80,9 @@ describe("Shift-click range selection", () => {
     };
 
     // Extend right and down to (8, 8)
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(8, 8));
+    const firstExtension = sheetReducer(initialState, sheetActions.extendSelectionToCell(8, 8));
 
-    expect(state.selection).toEqual({
+    expect(firstExtension.selection).toEqual({
       kind: "range",
       startCol: 5,
       endCol: 9,
@@ -91,9 +91,9 @@ describe("Shift-click range selection", () => {
     } satisfies RangeSelectionTarget);
 
     // Extend left and up to (2, 2) - should still anchor at (5, 5)
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(2, 2));
+    const secondExtension = sheetReducer(firstExtension, sheetActions.extendSelectionToCell(2, 2));
 
-    expect(state.selection).toEqual({
+    expect(secondExtension.selection).toEqual({
       kind: "range",
       startCol: 2,
       endCol: 6, // 5 + 1
@@ -102,9 +102,9 @@ describe("Shift-click range selection", () => {
     } satisfies RangeSelectionTarget);
 
     // Extend to opposite corner (8, 2) - should still anchor at (5, 5)
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(8, 2));
+    const thirdExtension = sheetReducer(secondExtension, sheetActions.extendSelectionToCell(8, 2));
 
-    expect(state.selection).toEqual({
+    expect(thirdExtension.selection).toEqual({
       kind: "range",
       startCol: 5,
       endCol: 9,
@@ -115,7 +115,7 @@ describe("Shift-click range selection", () => {
 
   it("should handle normal click resetting the anchor", () => {
     // Start with range selection
-    let state: SheetState = {
+    const initialState: SheetState = {
       ...initialSheetState,
       selection: {
         kind: "range",
@@ -128,18 +128,18 @@ describe("Shift-click range selection", () => {
     };
 
     // Normal click on (4, 4) should reset anchor
-    state = sheetReducer(state, sheetActions.setActiveCell(4, 4));
+    const afterClick = sheetReducer(initialState, sheetActions.setActiveCell(4, 4));
 
-    expect(state.selection).toEqual({
+    expect(afterClick.selection).toEqual({
       kind: "cell",
       col: 4,
       row: 4,
     } satisfies SelectionTarget);
 
     // Now shift+click should use (4, 4) as the new anchor
-    state = sheetReducer(state, sheetActions.extendSelectionToCell(7, 7));
+    const extendedState = sheetReducer(afterClick, sheetActions.extendSelectionToCell(7, 7));
 
-    expect(state.selection).toEqual({
+    expect(extendedState.selection).toEqual({
       kind: "range",
       startCol: 4,
       endCol: 8,

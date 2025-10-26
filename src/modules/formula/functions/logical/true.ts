@@ -10,7 +10,7 @@ export const trueFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the logical constant TRUE.",
     ja: "論理値TRUEを返します。",
   },
-  examples: ['TRUE()'],
+  examples: ["TRUE()"],
   evaluate: (args) => {
     if (args.length !== 0) {
       throw new Error("TRUE expects no arguments");

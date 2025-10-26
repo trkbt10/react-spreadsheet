@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { formulaFunctionHelpers } from "../../functionRegistry";
-import {
-  invokeFormulaFunction,
-  makeEvalArgs,
-} from "../testHelpers";
+import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import { dateFunction } from "./date";
 import { timeFunction } from "./time";
 import { dateValueFunction } from "./datevalue";
@@ -18,10 +15,8 @@ import { yearFunction } from "./year";
 import { weekDayFunction } from "./weekday";
 import { weekNumFunction } from "./weeknum";
 
-const evaluate = (
-  definition: Parameters<typeof invokeFormulaFunction>[0],
-  ...args: Parameters<typeof makeEvalArgs>
-) => invokeFormulaFunction(definition, formulaFunctionHelpers, makeEvalArgs(...args));
+const evaluate = (definition: Parameters<typeof invokeFormulaFunction>[0], ...args: Parameters<typeof makeEvalArgs>) =>
+  invokeFormulaFunction(definition, formulaFunctionHelpers, makeEvalArgs(...args));
 
 const expectNumberResult = (value: unknown): number => {
   if (typeof value !== "number") {
@@ -71,8 +66,7 @@ describe("datetime functions", () => {
     vi.setSystemTime(fixed);
     const result = expectNumberResult(evaluate(nowFunction));
     const expected =
-      expectNumberResult(evaluate(dateFunction, 2024, 1, 15)) +
-      expectNumberResult(evaluate(timeFunction, 12, 0, 0));
+      expectNumberResult(evaluate(dateFunction, 2024, 1, 15)) + expectNumberResult(evaluate(timeFunction, 12, 0, 0));
     expect(result).toBeCloseTo(expected);
   });
 
@@ -92,8 +86,7 @@ describe("datetime functions", () => {
 
   it("extracts DAY, MONTH, and YEAR", () => {
     const serial =
-      expectNumberResult(evaluate(dateFunction, 2023, 12, 31)) +
-      expectNumberResult(evaluate(timeFunction, 5, 0, 0));
+      expectNumberResult(evaluate(dateFunction, 2023, 12, 31)) + expectNumberResult(evaluate(timeFunction, 5, 0, 0));
     expect(expectNumberResult(evaluate(dayFunction, serial))).toBe(31);
     expect(expectNumberResult(evaluate(monthFunction, serial))).toBe(12);
     expect(expectNumberResult(evaluate(yearFunction, serial))).toBe(2023);

@@ -11,7 +11,7 @@ export const intFunction: FormulaFunctionEagerDefinition = {
     en: "Rounds a number down to the nearest integer less than or equal to it.",
     ja: "数値を超えない最大の整数に切り下げます。",
   },
-  examples: ['INT(5.9)', 'INT(A1)'],
+  examples: ["INT(5.9)", "INT(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("INT expects exactly one argument");

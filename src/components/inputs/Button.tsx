@@ -16,4 +16,3 @@ export const Button = ({ className, variant = "primary", type = "button", ...res
 
   return <button type={type} className={buttonClassName} data-variant={variant} {...rest} />;
 };
-

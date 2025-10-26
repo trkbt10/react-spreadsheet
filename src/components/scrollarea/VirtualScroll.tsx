@@ -21,12 +21,7 @@ export type VirtualScrollProps = UseVirtualScrollOptions & {
  * @param props - Component props
  * @returns VirtualScroll component
  */
-export const VirtualScroll = ({
-  contentWidth,
-  contentHeight,
-  children,
-  style,
-}: VirtualScrollProps): ReactElement => {
+export const VirtualScroll = ({ contentWidth, contentHeight, children, style }: VirtualScrollProps): ReactElement => {
   const virtualScroll = useVirtualScroll({
     contentWidth,
     contentHeight,
@@ -45,17 +40,9 @@ export const VirtualScroll = ({
 
   return (
     <VirtualScrollProvider value={virtualScroll}>
-      <div
-        ref={containerRef}
-        className={styles.scrollContainer}
-        style={style}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
-      >
+      <div ref={containerRef} className={styles.scrollContainer} style={style} onKeyDown={handleKeyDown} tabIndex={0}>
         <div className={styles.viewport}>
-          <div className={styles.content}>
-            {children}
-          </div>
+          <div className={styles.content}>{children}</div>
         </div>
         <Scrollbar
           orientation="vertical"

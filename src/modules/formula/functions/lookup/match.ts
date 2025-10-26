@@ -5,10 +5,7 @@
 import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 import type { FormulaEvaluationResult } from "../../types";
 
-const ensureVector = (
-  values: FormulaEvaluationResult[],
-  description: string,
-): FormulaEvaluationResult[] => {
+const ensureVector = (values: FormulaEvaluationResult[], description: string): FormulaEvaluationResult[] => {
   if (values.length === 0) {
     throw new Error(`${description} vector cannot be empty`);
   }
@@ -21,7 +18,7 @@ export const matchFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the position of a lookup value within a vector, supporting exact or approximate matches.",
     ja: "検索値がベクター内のどこに位置するかを、完全一致または近似一致で返します。",
   },
-  examples: ['MATCH("Key", A1:A10, 0)', 'MATCH(5, A1:A10, 1)'],
+  examples: ['MATCH("Key", A1:A10, 0)', "MATCH(5, A1:A10, 1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2 && args.length !== 3) {
       throw new Error("MATCH expects two or three arguments");
@@ -39,9 +36,7 @@ export const matchFunction: FormulaFunctionEagerDefinition = {
     }
 
     if (matchType === 0) {
-      const index = lookupVector.findIndex((candidate) =>
-        helpers.comparePrimitiveEquality(candidate, lookupValue),
-      );
+      const index = lookupVector.findIndex((candidate) => helpers.comparePrimitiveEquality(candidate, lookupValue));
       if (index === -1) {
         throw new Error("MATCH could not find an exact match");
       }

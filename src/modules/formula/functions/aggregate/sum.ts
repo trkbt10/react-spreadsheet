@@ -10,7 +10,7 @@ export const sumFunction: FormulaFunctionEagerDefinition = {
     en: "Adds all numeric arguments, ignoring empty cells and null values.",
     ja: "空のセルやnullを無視して数値引数を合計します。",
   },
-  examples: ['SUM(1, 2, 3)', 'SUM(A1:A10)'],
+  examples: ["SUM(1, 2, 3)", "SUM(A1:A10)"],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
     return values.reduce<number>((total, value) => {

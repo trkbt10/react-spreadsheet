@@ -36,7 +36,9 @@
 }
 
 .element[data-focused="true"] {
-  box-shadow: var(--shadow-sm), 0 0 0 1px var(--color-border-focus);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 1px var(--color-border-focus);
 }
 
 .element[data-interaction="move"],

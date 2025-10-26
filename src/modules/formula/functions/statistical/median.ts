@@ -10,11 +10,9 @@ export const medianFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the median of numeric arguments, ignoring non-numeric values.",
     ja: "数値以外を無視して引数の中央値を返します。",
   },
-  examples: ['MEDIAN(1, 3, 5)', 'MEDIAN(A1:A9)'],
+  examples: ["MEDIAN(1, 3, 5)", "MEDIAN(A1:A9)"],
   evaluate: (args, helpers) => {
-    const numericValues = helpers
-      .flattenArguments(args)
-      .filter((value): value is number => typeof value === "number");
+    const numericValues = helpers.flattenArguments(args).filter((value): value is number => typeof value === "number");
 
     if (numericValues.length === 0) {
       throw new Error("MEDIAN expects at least one numeric argument");

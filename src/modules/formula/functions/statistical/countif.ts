@@ -19,11 +19,7 @@ export const countIfFunction: FormulaFunctionEagerDefinition = {
     const [rangeArg, criteriaArg] = args;
     const values = helpers.flattenResult(rangeArg);
     const criteria = helpers.coerceScalar(criteriaArg, "COUNTIF criteria");
-    const predicate = createCriteriaPredicate(
-      criteria,
-      helpers.comparePrimitiveEquality,
-      "COUNTIF criteria",
-    );
+    const predicate = createCriteriaPredicate(criteria, helpers.comparePrimitiveEquality, "COUNTIF criteria");
     return values.reduce<number>((count, value) => (predicate(value) ? count + 1 : count), 0);
   },
 };

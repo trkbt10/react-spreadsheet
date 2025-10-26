@@ -11,7 +11,7 @@ export const concatFunction: FormulaFunctionEagerDefinition = {
     en: "Concatenates text values, numbers, and booleans into a single string.",
     ja: "文字列や数値、真偽値を連結して1つの文字列にします。",
   },
-  examples: ['CONCAT("Hello", " ", "World")', 'CONCAT(A1:A3)'],
+  examples: ['CONCAT("Hello", " ", "World")', "CONCAT(A1:A3)"],
   evaluate: (args, helpers) => {
     if (args.length === 0) {
       return "";

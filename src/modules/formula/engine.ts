@@ -373,10 +373,12 @@ export class FormulaEngine {
       const intersectsChange = Array.from(component.nodes).some((nodeKey) => changedKeys.has(nodeKey));
       const shouldMarkDirty = intersectsChange || !existingState;
 
-      const externalVersions = shouldMarkDirty ? new Map<CellAddressKey, number>() : new Map(existingState?.externalDependenciesVersion ?? []);
+      const externalVersions = shouldMarkDirty
+        ? new Map<CellAddressKey, number>()
+        : new Map(existingState?.externalDependenciesVersion ?? []);
 
       const componentState: ComponentState = {
-        dirty: shouldMarkDirty ? true : existingState?.dirty ?? true,
+        dirty: shouldMarkDirty ? true : (existingState?.dirty ?? true),
         version: existingState?.version ?? 0,
         externalDependenciesVersion: externalVersions,
       };
@@ -441,17 +443,21 @@ export class FormulaEngine {
       }
       const dependencyVersionMap = new Map<CellAddressKey, number>();
       const originAddress = this.keyToAddress(key);
-      const result = this.evaluateFormula(parsed.ast, {
-        resolve: (address) => {
-          const dependencyKey = createCellAddressKey(address);
-          const dependencyState = this.evaluateCellInternal(dependencyKey, stack);
-          dependencyVersionMap.set(dependencyKey, dependencyState.version);
-          return {
-            value: dependencyState.value,
-            version: dependencyState.version,
-          };
+      const result = this.evaluateFormula(
+        parsed.ast,
+        {
+          resolve: (address) => {
+            const dependencyKey = createCellAddressKey(address);
+            const dependencyState = this.evaluateCellInternal(dependencyKey, stack);
+            dependencyVersionMap.set(dependencyKey, dependencyState.version);
+            return {
+              value: dependencyState.value,
+              version: dependencyState.version,
+            };
+          },
         },
-      }, originAddress);
+        originAddress,
+      );
       if (isArrayResult(result)) {
         throw new Error("Formula cannot resolve directly to a range");
       }
@@ -561,14 +567,18 @@ export class FormulaEngine {
         }
         const dependencyVersionMap = new Map<CellAddressKey, number>();
         const originAddress = this.keyToAddress(nodeKey);
-        const result = this.evaluateFormula(parsed.ast, {
-          resolve: (address) => {
-            const resolved = resolveDependency(address);
-            const dependencyId = createCellAddressKey(address);
-            dependencyVersionMap.set(dependencyId, resolved.version);
-            return resolved;
+        const result = this.evaluateFormula(
+          parsed.ast,
+          {
+            resolve: (address) => {
+              const resolved = resolveDependency(address);
+              const dependencyId = createCellAddressKey(address);
+              dependencyVersionMap.set(dependencyId, resolved.version);
+              return resolved;
+            },
           },
-        }, originAddress);
+          originAddress,
+        );
 
         if (isArrayResult(result)) {
           throw new Error("Formula cannot resolve directly to a range");
@@ -595,11 +605,7 @@ export class FormulaEngine {
     this.componentStates.set(component.id, componentState);
   }
 
-  private evaluateFormula(
-    ast: FormulaAstNode,
-    scope: FormulaEvaluationScope,
-    origin: CellAddress,
-  ): EvalResult {
+  private evaluateFormula(ast: FormulaAstNode, scope: FormulaEvaluationScope, origin: CellAddress): EvalResult {
     if (ast.type === "Literal") {
       return ast.value;
     }
@@ -648,9 +654,7 @@ export class FormulaEngine {
 
     if (ast.type === "Function") {
       if (isComparatorFunction(ast.name)) {
-        const evaluatedArgs = ast.arguments.map((argument) =>
-          this.evaluateFormula(argument, scope, origin),
-        );
+        const evaluatedArgs = ast.arguments.map((argument) => this.evaluateFormula(argument, scope, origin));
         const comparator = ast.name.slice("COMPARE_".length);
         const comparatorFn = comparatorFns[comparator];
         if (!comparatorFn) {
@@ -685,9 +689,7 @@ export class FormulaEngine {
         throw new Error(`Formula function "${ast.name}" must provide an eager evaluator`);
       }
 
-      const evaluatedArgs = ast.arguments.map((argument) =>
-        this.evaluateFormula(argument, scope, origin),
-      );
+      const evaluatedArgs = ast.arguments.map((argument) => this.evaluateFormula(argument, scope, origin));
       return definition.evaluate(evaluatedArgs, formulaFunctionHelpers);
     }
 

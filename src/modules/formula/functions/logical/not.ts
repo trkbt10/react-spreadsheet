@@ -10,7 +10,7 @@ export const notFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the logical negation of a boolean value.",
     ja: "真偽値を反転させた結果を返します。",
   },
-  examples: ['NOT(TRUE)', 'NOT(A1)'],
+  examples: ["NOT(TRUE)", "NOT(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("NOT expects exactly one argument");

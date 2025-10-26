@@ -16,7 +16,7 @@ export const sumIfsFunction: FormulaFunctionEagerDefinition = {
     en: "Sums values that satisfy multiple range/criteria pairs.",
     ja: "複数の範囲と条件をすべて満たす値を合計します。",
   },
-  examples: ['SUMIFS(C1:C10, A1:A10, "East", B1:B10, ">=2024")', 'SUMIFS(A1:A5, B1:B5, 1)'],
+  examples: ['SUMIFS(C1:C10, A1:A10, "East", B1:B10, ">=2024")', "SUMIFS(A1:A5, B1:B5, 1)"],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length % 2 === 0) {
       throw new Error("SUMIFS expects a sum range followed by range/criteria pairs");
@@ -35,10 +35,7 @@ export const sumIfsFunction: FormulaFunctionEagerDefinition = {
       if (rangeValues.length !== sumValues.length) {
         throw new Error("SUMIFS criteria ranges must match the sum range size");
       }
-      const criteriaValue = helpers.coerceScalar(
-        criteriaArg,
-        `SUMIFS criteria ${index / 2 + 1}`,
-      );
+      const criteriaValue = helpers.coerceScalar(criteriaArg, `SUMIFS criteria ${index / 2 + 1}`);
       const predicate = helpers.createCriteriaPredicate(
         criteriaValue,
         helpers.comparePrimitiveEquality,

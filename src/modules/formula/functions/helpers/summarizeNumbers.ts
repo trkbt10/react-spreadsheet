@@ -29,4 +29,3 @@ export const summarizeNumbers = (
     sumOfSquares: summary.sumOfSquares,
   };
 };
-

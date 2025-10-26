@@ -5,10 +5,7 @@
 import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 import type { FormulaEvaluationResult } from "../../types";
 
-const ensureVector = (
-  values: FormulaEvaluationResult[],
-  description: string,
-): FormulaEvaluationResult[] => {
+const ensureVector = (values: FormulaEvaluationResult[], description: string): FormulaEvaluationResult[] => {
   if (values.length === 0) {
     throw new Error(`${description} vector cannot be empty`);
   }
@@ -21,7 +18,7 @@ export const lookupFunction: FormulaFunctionEagerDefinition = {
     en: "Searches for a value in a vector or array and returns the corresponding result.",
     ja: "ベクターまたは配列から値を検索し、対応する結果を返します。",
   },
-  examples: ['LOOKUP(5, A1:A10, B1:B10)', 'LOOKUP("Key", A1:B2)'],
+  examples: ["LOOKUP(5, A1:A10, B1:B10)", 'LOOKUP("Key", A1:B2)'],
   evaluate: (args, helpers) => {
     if (args.length !== 2 && args.length !== 3) {
       throw new Error("LOOKUP expects two or three arguments");
@@ -36,9 +33,7 @@ export const lookupFunction: FormulaFunctionEagerDefinition = {
     const resultVector =
       args.length === 3
         ? ensureVector(
-            helpers
-              .flattenResult(args[2])
-              .map((value) => (value ?? null) as FormulaEvaluationResult),
+            helpers.flattenResult(args[2]).map((value) => (value ?? null) as FormulaEvaluationResult),
             "LOOKUP result",
           )
         : lookupVector;
@@ -47,9 +42,7 @@ export const lookupFunction: FormulaFunctionEagerDefinition = {
       throw new Error("LOOKUP result vector must match lookup vector length");
     }
 
-    const exactIndex = lookupVector.findIndex((candidate) =>
-      helpers.comparePrimitiveEquality(candidate, lookupValue),
-    );
+    const exactIndex = lookupVector.findIndex((candidate) => helpers.comparePrimitiveEquality(candidate, lookupValue));
     if (exactIndex !== -1) {
       return resultVector[exactIndex] ?? null;
     }

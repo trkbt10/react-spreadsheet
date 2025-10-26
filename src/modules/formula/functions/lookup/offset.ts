@@ -49,20 +49,11 @@ export const offsetFunction: FormulaFunctionLazyDefinition = {
     const [referenceNode, rowsNode, columnsNode, heightNode, widthNode] = args;
     const bounds = resolveReferenceBounds(referenceNode, "OFFSET");
 
-    const rowOffsetValue = context.helpers.requireNumber(
-      context.evaluate(rowsNode),
-      "OFFSET rows",
-    );
-    const columnOffsetValue = context.helpers.requireNumber(
-      context.evaluate(columnsNode),
-      "OFFSET columns",
-    );
+    const rowOffsetValue = context.helpers.requireNumber(context.evaluate(rowsNode), "OFFSET rows");
+    const columnOffsetValue = context.helpers.requireNumber(context.evaluate(columnsNode), "OFFSET columns");
 
     const rowOffset = context.helpers.requireInteger(rowOffsetValue, "OFFSET rows must be an integer");
-    const columnOffset = context.helpers.requireInteger(
-      columnOffsetValue,
-      "OFFSET columns must be an integer",
-    );
+    const columnOffset = context.helpers.requireInteger(columnOffsetValue, "OFFSET columns must be an integer");
 
     const heightValue = heightNode
       ? context.helpers.requireNumber(context.evaluate(heightNode), "OFFSET height")
@@ -90,15 +81,8 @@ export const offsetFunction: FormulaFunctionLazyDefinition = {
     for (let rowIndex = 0; rowIndex < height; rowIndex += 1) {
       const rowValues: FormulaEvaluationResult[] = [];
       for (let columnIndex = 0; columnIndex < width; columnIndex += 1) {
-        const reference = createReferenceNode(
-          referenceNode,
-          startRow + rowIndex,
-          startColumn + columnIndex,
-        );
-        const cellValue = context.helpers.coerceScalar(
-          context.evaluate(reference),
-          "OFFSET result",
-        );
+        const reference = createReferenceNode(referenceNode, startRow + rowIndex, startColumn + columnIndex);
+        const cellValue = context.helpers.coerceScalar(context.evaluate(reference), "OFFSET result");
         rowValues.push(cellValue);
       }
       result.push(rowValues);

@@ -10,7 +10,7 @@ export const lenFunction: FormulaFunctionEagerDefinition = {
     en: "Counts the number of Unicode characters in a text value.",
     ja: "文字列内のUnicode文字数を返します。",
   },
-  examples: ['LEN("Spreadsheet")', 'LEN(A1)'],
+  examples: ['LEN("Spreadsheet")', "LEN(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("LEN expects exactly one argument");

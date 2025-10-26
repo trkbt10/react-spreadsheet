@@ -44,4 +44,3 @@ export const parseTimeText = (text: string, description: string): number => {
   }
   return normalizeTimeToFraction(hours, minutes, seconds);
 };
-

@@ -10,7 +10,7 @@ export const rightFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the rightmost characters from a text value.",
     ja: "文字列の右端から指定した文字数を返します。",
   },
-  examples: ['RIGHT("Spreadsheet", 4)', 'RIGHT(A1, 2)'],
+  examples: ['RIGHT("Spreadsheet", 4)', "RIGHT(A1, 2)"],
   evaluate: (args, helpers) => {
     if (args.length === 0 || args.length > 2) {
       throw new Error("RIGHT expects one or two arguments");

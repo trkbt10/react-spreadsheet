@@ -9,4 +9,3 @@ import { flattenResult } from "./flattenResult";
 export const flattenArguments = (args: EvalResult[]): FormulaEvaluationResult[] => {
   return args.flatMap((arg) => flattenResult(arg));
 };
-

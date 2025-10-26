@@ -93,7 +93,9 @@ const computeGraphDataPoints = (sheet: Sheet, element: SheetGraphElement): Graph
     const labelCell = labelColumn !== undefined ? sheet.cells[makeCellKey(labelColumn, row)] : undefined;
     const fallbackLabelIndex = points.length + 1;
     const label =
-      typeof labelCell?.value === "string" && labelCell.value.length > 0 ? labelCell.value : `Row ${fallbackLabelIndex}`;
+      typeof labelCell?.value === "string" && labelCell.value.length > 0
+        ? labelCell.value
+        : `Row ${fallbackLabelIndex}`;
 
     points.push({ label, value: valueCell.value });
   }
@@ -123,10 +125,7 @@ const withinBounds = (element: SheetVisualElement, coordinates: { col: number; r
 
   const { startCol, endCol, startRow, endRow } = bounds;
   return (
-    coordinates.col >= startCol &&
-    coordinates.col < endCol &&
-    coordinates.row >= startRow &&
-    coordinates.row < endRow
+    coordinates.col >= startCol && coordinates.col < endCol && coordinates.row >= startRow && coordinates.row < endRow
   );
 };
 
@@ -394,10 +393,7 @@ const InteractiveVisualElement = ({
         const sin = Math.sin(active.angleRadians);
 
         const pointerDistance = Math.hypot(event.clientX - active.centerX, event.clientY - active.centerY);
-        if (
-          active.mode === "resize" &&
-          pointerDistance > active.startPointerDistance + ROTATION_DISTANCE_DELTA
-        ) {
+        if (active.mode === "resize" && pointerDistance > active.startPointerDistance + ROTATION_DISTANCE_DELTA) {
           active.mode = "rotate";
           active.initialElement = cloneVisualElement(latestElementRef.current);
           active.startPointerAngle = Math.atan2(event.clientY - active.centerY, event.clientX - active.centerX);
@@ -475,18 +471,15 @@ const InteractiveVisualElement = ({
     [finishInteraction],
   );
 
-  const startInteraction = useCallback(
-    (interaction: InteractionState, event: React.PointerEvent<HTMLElement>) => {
-      interactionRef.current = interaction;
-      if (interaction.type === "corner") {
-        setInteractionKind(interaction.mode);
-      } else {
-        setInteractionKind("move");
-      }
-      event.currentTarget.setPointerCapture(event.pointerId);
-    },
-    [],
-  );
+  const startInteraction = useCallback((interaction: InteractionState, event: React.PointerEvent<HTMLElement>) => {
+    interactionRef.current = interaction;
+    if (interaction.type === "corner") {
+      setInteractionKind(interaction.mode);
+    } else {
+      setInteractionKind("move");
+    }
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }, []);
 
   const handleMovePointerDown = useCallback(
     (event: React.PointerEvent<HTMLElement>) => {
@@ -603,7 +596,9 @@ export type VisualElementLayerProps = {
  */
 export const VisualElementLayer = ({ sheet, viewport }: VisualElementLayerProps): ReactElement | null => {
   const layerRef = useRef<HTMLDivElement | null>(null);
-  const [elementStates, setElementStates] = useState<SheetVisualElementRegistry>(() => cloneRegistry(sheet.visualElements));
+  const [elementStates, setElementStates] = useState<SheetVisualElementRegistry>(() =>
+    cloneRegistry(sheet.visualElements),
+  );
   const [focusedElementId, setFocusedElementId] = useState<string | null>(null);
 
   useEffect(() => {

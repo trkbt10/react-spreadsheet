@@ -35,7 +35,7 @@ const createTestSpreadsheet = (): SpreadSheet => {
     "1:0": createFormulaCell(1, 0, "=A1*2"),
     "1:1": createFormulaCell(1, 1, "=SUM(A2:A3)"),
     "1:2": createFormulaCell(1, 2, "=IF(A1>11, SUM(A2:A3), MIN(A2:A3))"),
-    "1:3": createFormulaCell(1, 3, "=COUNTIF(A1:A4,\">6\")"),
+    "1:3": createFormulaCell(1, 3, '=COUNTIF(A1:A4,">6")'),
     "2:1": createFormulaCell(2, 1, "=VLOOKUP(A2,'Sheet 2'!A2:B3,2,FALSE)", 500),
     "2:2": createFormulaCell(2, 2, "=VLOOKUP(6,'Sheet 2'!A2:B3,2)", 500),
     "2:0": createFormulaCell(2, 0, "=A1 + 'Sheet 2'!A1"),

@@ -11,7 +11,7 @@ export const vlookupFunction: FormulaFunctionEagerDefinition = {
     en: "Searches the first column of a table for a value and returns data from another column.",
     ja: "表の最初の列で値を検索し、別の列のデータを返します。",
   },
-  examples: ['VLOOKUP(A2, Table1, 3, FALSE)', 'VLOOKUP(5, A1:B10, 2)'],
+  examples: ["VLOOKUP(A2, Table1, 3, FALSE)", "VLOOKUP(5, A1:B10, 2)"],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length > 4) {
       throw new Error("VLOOKUP expects three or four arguments");

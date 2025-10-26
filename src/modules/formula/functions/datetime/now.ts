@@ -11,7 +11,7 @@ export const nowFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the current date and time as a serial number.",
     ja: "現在の日付と時刻をシリアル値で返します。",
   },
-  examples: ['NOW()'],
+  examples: ["NOW()"],
   evaluate: (args) => {
     if (args.length !== 0) {
       throw new Error("NOW expects no arguments");

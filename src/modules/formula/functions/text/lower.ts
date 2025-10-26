@@ -10,7 +10,7 @@ export const lowerFunction: FormulaFunctionEagerDefinition = {
     en: "Converts text to lowercase using locale-aware rules.",
     ja: "ロケールに応じた規則で文字列を小文字に変換します。",
   },
-  examples: ['LOWER("SpreadSheet")', 'LOWER(A1)'],
+  examples: ['LOWER("SpreadSheet")', "LOWER(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("LOWER expects exactly one argument");

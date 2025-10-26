@@ -20,10 +20,7 @@ export const ifsFunction: FormulaFunctionLazyDefinition = {
       const conditionNode = argNodes[index];
       const valueNode = argNodes[index + 1];
       const conditionResult = context.evaluate(conditionNode);
-      const condition = context.helpers.requireBoolean(
-        conditionResult,
-        `IFS condition ${index / 2 + 1}`,
-      );
+      const condition = context.helpers.requireBoolean(conditionResult, `IFS condition ${index / 2 + 1}`);
       if (condition) {
         return context.evaluate(valueNode);
       }

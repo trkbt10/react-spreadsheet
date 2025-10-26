@@ -73,7 +73,11 @@ const isWhitespace = (character: string): boolean => /\s/u.test(character);
 
 const NUMBER_PATTERN = /^[0-9]+(\.[0-9]+)?$/u;
 
-const readWhile = (input: string, start: number, condition: (char: string) => boolean): { value: string; next: number } => {
+const readWhile = (
+  input: string,
+  start: number,
+  condition: (char: string) => boolean,
+): { value: string; next: number } => {
   let index = start;
   let result = "";
 
@@ -170,7 +174,11 @@ const readQuotedSheetReference = (input: string, start: number): { reference: st
   throw new Error("Unterminated quoted sheet reference");
 };
 
-const readReferenceAfterIdentifier = (input: string, start: number, sheetName: string): { reference: string; next: number } => {
+const readReferenceAfterIdentifier = (
+  input: string,
+  start: number,
+  sheetName: string,
+): { reference: string; next: number } => {
   if (input[start] !== "!") {
     throw new Error("Expected '!' in sheet-qualified reference");
   }
@@ -182,7 +190,10 @@ const readReferenceAfterIdentifier = (input: string, start: number, sheetName: s
   };
 };
 
-const readIdentifierOrReferenceToken = (input: string, start: number): { token: IdentifierToken | ReferenceToken; next: number } => {
+const readIdentifierOrReferenceToken = (
+  input: string,
+  start: number,
+): { token: IdentifierToken | ReferenceToken; next: number } => {
   const { value: identifier, next } = readWhile(input, start, (char) => isLetter(char));
   const upcoming = input[next] ?? "";
 
@@ -419,21 +430,20 @@ const parsePrimary = (stream: TokenStream, context: ParseContext): FormulaAstNod
     if (next.type === "colon") {
       stream.consume();
       const endToken = stream.expect("reference");
-      const endAddress =
-        endToken.value.includes("!")
-          ? parseCellReference(endToken.value, context)
-          : (() => {
-              // NOTE: Excel-style ranges such as 'Sheet 2'!A2:B3 inherit the sheet from
-              // the leading reference, so we reuse the start address metadata when the
-              // trailing endpoint omits an explicit sheet qualifier.
-              const coordinate = parseCellLabel(endToken.value);
-              return {
-                sheetId: startAddress.sheetId,
-                sheetName: startAddress.sheetName,
-                row: coordinate.row,
-                column: coordinate.column,
-              };
-            })();
+      const endAddress = endToken.value.includes("!")
+        ? parseCellReference(endToken.value, context)
+        : (() => {
+            // NOTE: Excel-style ranges such as 'Sheet 2'!A2:B3 inherit the sheet from
+            // the leading reference, so we reuse the start address metadata when the
+            // trailing endpoint omits an explicit sheet qualifier.
+            const coordinate = parseCellLabel(endToken.value);
+            return {
+              sheetId: startAddress.sheetId,
+              sheetName: startAddress.sheetName,
+              row: coordinate.row,
+              column: coordinate.column,
+            };
+          })();
       return {
         type: "Range",
         start: startAddress,
@@ -554,10 +564,7 @@ export type ParseFormulaResult = {
   dependencyAddresses: ReturnType<typeof collectDependencyAddresses>;
 };
 
-export const parseFormula = (
-  formula: string,
-  context: ParseContext,
-): ParseFormulaResult => {
+export const parseFormula = (formula: string, context: ParseContext): ParseFormulaResult => {
   const trimmed = formula.trim();
   const normalized = trimmed.startsWith("=") ? trimmed.slice(1) : trimmed;
   if (normalized.length === 0) {

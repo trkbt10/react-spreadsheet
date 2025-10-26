@@ -10,7 +10,7 @@ export const xorFunction: FormulaFunctionEagerDefinition = {
     en: "Returns TRUE when an odd number of arguments evaluate to TRUE.",
     ja: "TRUEとなる引数の数が奇数の場合にTRUEを返します。",
   },
-  examples: ['XOR(TRUE, FALSE, TRUE)', 'XOR(A1:A4)'],
+  examples: ["XOR(TRUE, FALSE, TRUE)", "XOR(A1:A4)"],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
     if (values.length === 0) {

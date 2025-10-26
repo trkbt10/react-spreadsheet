@@ -5,11 +5,9 @@ import { formulaFunctionHelpers } from "../../functionRegistry";
 import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import type { EvalResult } from "../helpers";
 
-const evaluateRound = (args: EvalResult[]) =>
-  invokeFormulaFunction(roundFunction, formulaFunctionHelpers, args);
+const evaluateRound = (args: EvalResult[]) => invokeFormulaFunction(roundFunction, formulaFunctionHelpers, args);
 
-const evaluateRoundUp = (args: EvalResult[]) =>
-  invokeFormulaFunction(roundUpFunction, formulaFunctionHelpers, args);
+const evaluateRoundUp = (args: EvalResult[]) => invokeFormulaFunction(roundUpFunction, formulaFunctionHelpers, args);
 
 const evaluateRoundDown = (args: EvalResult[]) =>
   invokeFormulaFunction(roundDownFunction, formulaFunctionHelpers, args);
@@ -31,15 +29,11 @@ describe("ROUND", () => {
   });
 
   it("rejects non-integer digit counts", () => {
-    expect(() => evaluateRound(makeEvalArgs(1.23, 1.5))).toThrowError(
-      "ROUND digits must be an integer",
-    );
+    expect(() => evaluateRound(makeEvalArgs(1.23, 1.5))).toThrowError("ROUND digits must be an integer");
   });
 
   it("rejects an invalid number of arguments", () => {
-    expect(() => evaluateRound(makeEvalArgs(1.5))).toThrowError(
-      "ROUND expects exactly two arguments",
-    );
+    expect(() => evaluateRound(makeEvalArgs(1.5))).toThrowError("ROUND expects exactly two arguments");
   });
 });
 
@@ -57,15 +51,11 @@ describe("ROUNDUP", () => {
   });
 
   it("rejects non-integer digit counts", () => {
-    expect(() => evaluateRoundUp(makeEvalArgs(1.23, 0.2))).toThrowError(
-      "ROUNDUP digits must be an integer",
-    );
+    expect(() => evaluateRoundUp(makeEvalArgs(1.23, 0.2))).toThrowError("ROUNDUP digits must be an integer");
   });
 
   it("rejects an invalid number of arguments", () => {
-    expect(() => evaluateRoundUp(makeEvalArgs(1.2))).toThrowError(
-      "ROUNDUP expects exactly two arguments",
-    );
+    expect(() => evaluateRoundUp(makeEvalArgs(1.2))).toThrowError("ROUNDUP expects exactly two arguments");
   });
 });
 
@@ -83,14 +73,10 @@ describe("ROUNDDOWN", () => {
   });
 
   it("rejects non-integer digit counts", () => {
-    expect(() => evaluateRoundDown(makeEvalArgs(1.23, 0.3))).toThrowError(
-      "ROUNDDOWN digits must be an integer",
-    );
+    expect(() => evaluateRoundDown(makeEvalArgs(1.23, 0.3))).toThrowError("ROUNDDOWN digits must be an integer");
   });
 
   it("rejects an invalid number of arguments", () => {
-    expect(() => evaluateRoundDown(makeEvalArgs(1.2))).toThrowError(
-      "ROUNDDOWN expects exactly two arguments",
-    );
+    expect(() => evaluateRoundDown(makeEvalArgs(1.2))).toThrowError("ROUNDDOWN expects exactly two arguments");
   });
 });

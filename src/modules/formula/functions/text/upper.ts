@@ -10,7 +10,7 @@ export const upperFunction: FormulaFunctionEagerDefinition = {
     en: "Converts text to uppercase using locale-aware rules.",
     ja: "ロケールに応じた規則で文字列を大文字に変換します。",
   },
-  examples: ['UPPER("Spreadsheet")', 'UPPER(A1)'],
+  examples: ['UPPER("Spreadsheet")', "UPPER(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("UPPER expects exactly one argument");

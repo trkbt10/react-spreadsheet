@@ -29,8 +29,10 @@
   /* Windows 98 3D borders */
   --shadow-xs: inset -1px -1px 0 #000000, inset 1px 1px 0 #ffffff;
   --shadow-sm: inset -2px -2px 0 #000000, inset 2px 2px 0 #ffffff;
-  --shadow-raised: inset -1px -1px 0 #000000, inset 1px 1px 0 #dfdfdf, inset -2px -2px 0 #808080, inset 2px 2px 0 #ffffff;
-  --shadow-sunken: inset 1px 1px 0 #000000, inset -1px -1px 0 #dfdfdf, inset 2px 2px 0 #808080, inset -2px -2px 0 #ffffff;
+  --shadow-raised:
+    inset -1px -1px 0 #000000, inset 1px 1px 0 #dfdfdf, inset -2px -2px 0 #808080, inset 2px 2px 0 #ffffff;
+  --shadow-sunken:
+    inset 1px 1px 0 #000000, inset -1px -1px 0 #dfdfdf, inset 2px 2px 0 #808080, inset -2px -2px 0 #ffffff;
 
   /* Spacing */
   --spacing-2xs: 2px;

@@ -18,4 +18,3 @@ export const Input = forwardRef(function Input(
 
   return <input ref={ref} className={inputClassName} data-invalid={invalid} {...rest} />;
 });
-

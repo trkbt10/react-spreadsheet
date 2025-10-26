@@ -11,7 +11,7 @@ export const todayFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the current date as a serial number without a time component.",
     ja: "現在の日付を時間成分なしのシリアル値で返します。",
   },
-  examples: ['TODAY()'],
+  examples: ["TODAY()"],
   evaluate: (args) => {
     if (args.length !== 0) {
       throw new Error("TODAY expects no arguments");

@@ -10,7 +10,7 @@ export const chooseFunction: FormulaFunctionEagerDefinition = {
     en: "Returns a value from a list by index.",
     ja: "インデックスで指定したリストの値を返します。",
   },
-  examples: ["CHOOSE(2, \"A\", \"B\", \"C\")", "CHOOSE(A1, B1:B3)"],
+  examples: ['CHOOSE(2, "A", "B", "C")', "CHOOSE(A1, B1:B3)"],
   evaluate: (args, helpers) => {
     if (args.length < 2) {
       throw new Error("CHOOSE expects at least two arguments");

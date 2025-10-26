@@ -17,14 +17,10 @@ describe("AGGREGATE", () => {
   });
 
   it("throws for unsupported options", () => {
-    expect(() => evaluate(makeEvalArgs(9, 7, [1, 2]))).toThrowError(
-      "AGGREGATE options value is not supported",
-    );
+    expect(() => evaluate(makeEvalArgs(9, 7, [1, 2]))).toThrowError("AGGREGATE options value is not supported");
   });
 
   it("throws for unsupported function numbers", () => {
-    expect(() => evaluate(makeEvalArgs(99, 0, [1, 2]))).toThrowError(
-      "AGGREGATE function number is not supported",
-    );
+    expect(() => evaluate(makeEvalArgs(99, 0, [1, 2]))).toThrowError("AGGREGATE function number is not supported");
   });
 });

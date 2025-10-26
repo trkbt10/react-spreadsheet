@@ -6,9 +6,7 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 import type { FormulaEvaluationResult } from "../../types";
 import { aggregateValues, isSupportedAggregationFunction } from "./aggregationHelpers";
 
-const collectValues = (
-  args: FormulaEvaluationResult[][],
-): FormulaEvaluationResult[] => {
+const collectValues = (args: FormulaEvaluationResult[][]): FormulaEvaluationResult[] => {
   return args.flat();
 };
 
@@ -20,7 +18,7 @@ export const aggregateFunction: FormulaFunctionEagerDefinition = {
     en: "Performs a selected aggregation with options for skipping hidden or error cells.",
     ja: "非表示セルやエラーを除外するオプション付きで集計を実行します。",
   },
-  examples: ['AGGREGATE(9, 0, A1:A10)', 'AGGREGATE(1, 6, A1:A5, B1:B5)'],
+  examples: ["AGGREGATE(9, 0, A1:A10)", "AGGREGATE(1, 6, A1:A5, B1:B5)"],
   evaluate: (args, helpers) => {
     if (args.length < 3) {
       throw new Error("AGGREGATE expects a function number, options, and at least one range");
@@ -28,10 +26,7 @@ export const aggregateFunction: FormulaFunctionEagerDefinition = {
 
     const [functionNumberArg, optionsArg, ...rangeArgs] = args;
     const fnNumberValue = helpers.requireNumber(functionNumberArg, "AGGREGATE function number");
-    const fnNumber = helpers.requireInteger(
-      fnNumberValue,
-      "AGGREGATE function number must be an integer",
-    );
+    const fnNumber = helpers.requireInteger(fnNumberValue, "AGGREGATE function number must be an integer");
 
     if (!isSupportedAggregationFunction(fnNumber)) {
       throw new Error("AGGREGATE function number is not supported");

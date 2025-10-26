@@ -18,4 +18,3 @@ export const TextArea = forwardRef(function TextArea(
 
   return <textarea ref={ref} className={textareaClassName} data-invalid={invalid} {...rest} />;
 });
-

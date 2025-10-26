@@ -21,24 +21,12 @@ const evaluate = (definition: FormulaFunctionDefinition, ...values: EvalResult[]
 
 describe("statistical functions", () => {
   it("evaluates AVERAGEIF over matching numeric values", () => {
-    const result = evaluate(
-      averageIfFunction,
-      [1, 2, 3, 4, null],
-      ">2",
-      [10, 20, 30, 40, 50],
-    );
+    const result = evaluate(averageIfFunction, [1, 2, 3, 4, null], ">2", [10, 20, 30, 40, 50]);
     expect(result).toBe(35);
   });
 
   it("throws when AVERAGEIF finds no numeric matches", () => {
-    expect(() =>
-      evaluate(
-        averageIfFunction,
-        [1, 2, 3],
-        ">5",
-        [10, 20, 30],
-      ),
-    ).toThrowError(
+    expect(() => evaluate(averageIfFunction, [1, 2, 3], ">5", [10, 20, 30])).toThrowError(
       /AVERAGEIF found no numeric values matching criteria/u,
     );
   });

@@ -5,4 +5,3 @@
 import type { EvalResult } from "./types";
 
 export const isArrayResult = (value: EvalResult): value is EvalResult[] => Array.isArray(value);
-

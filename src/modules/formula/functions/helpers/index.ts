@@ -21,6 +21,17 @@ import {
 } from "./numeric";
 import { coerceText as coerceTextInternal, valueToText as valueToTextInternal } from "./text";
 import { coerceLogical as coerceLogicalInternal } from "./coerceLogical";
+import {
+  FINANCIAL_EPSILON,
+  FINANCIAL_MAX_ITERATIONS,
+  validateInterestRate as validateInterestRateInternal,
+  pow1p as pow1pInternal,
+  computeNPV as computeNPVInternal,
+  discountSeries as discountSeriesInternal,
+  calculatePayment as calculatePaymentInternal,
+  calculateInterestPayment as calculateInterestPaymentInternal,
+  computeXNPV as computeXNPVInternal,
+} from "./finance";
 
 export type { EvalResult, FormulaFunctionHelpers } from "./types";
 
@@ -48,10 +59,7 @@ export const requireBoolean = (result: EvalResult, description: string): boolean
   return requireBooleanInternal(result, description);
 };
 
-export const comparePrimitiveEquality = (
-  left: FormulaEvaluationResult,
-  right: FormulaEvaluationResult,
-): boolean => {
+export const comparePrimitiveEquality = (left: FormulaEvaluationResult, right: FormulaEvaluationResult): boolean => {
   return comparePrimitiveEqualityInternal(left, right);
 };
 
@@ -95,6 +103,51 @@ export const summarizeNumbers = (values: ReadonlyArray<number>) => {
   return summarizeNumbersInternal(values);
 };
 
+export const validateInterestRate = (rate: number, description: string): number => {
+  return validateInterestRateInternal(rate, description);
+};
+
+export const pow1p = (rate: number, periods: number): number => {
+  return pow1pInternal(rate, periods);
+};
+
+export const computeNPV = (rate: number, cashflows: number[], initial: number = 0): number => {
+  return computeNPVInternal(rate, cashflows, initial);
+};
+
+export const FINANCE_EPSILON = FINANCIAL_EPSILON;
+export const FINANCE_MAX_ITERATIONS = FINANCIAL_MAX_ITERATIONS;
+
+export const computeXNPV = (rate: number, cashflows: number[], dayDifferences: number[]): number => {
+  return computeXNPVInternal(rate, cashflows, dayDifferences);
+};
+
+export const discountSeries = (rate: number, cashflows: number[]): number => {
+  return discountSeriesInternal(rate, cashflows);
+};
+
+export const calculatePayment = (
+  rate: number,
+  periods: number,
+  presentValue: number,
+  futureValue: number,
+  type: number,
+): number => {
+  return calculatePaymentInternal(rate, periods, presentValue, futureValue, type);
+};
+
+export const calculateInterestPayment = (
+  rate: number,
+  periods: number,
+  payment: number,
+  presentValue: number,
+  futureValue: number,
+  type: number,
+  targetPeriod: number,
+): number => {
+  return calculateInterestPaymentInternal(rate, periods, payment, presentValue, futureValue, type, targetPeriod);
+};
+
 export const formulaFunctionHelpers: FormulaFunctionHelpers = {
   flattenArguments,
   flattenResult,
@@ -111,4 +164,11 @@ export const formulaFunctionHelpers: FormulaFunctionHelpers = {
   createCriteriaPredicate,
   collectNumericArguments,
   summarizeNumbers,
+  validateInterestRate,
+  pow1p,
+  computeNPV,
+  discountSeries,
+  calculatePayment,
+  calculateInterestPayment,
+  computeXNPV,
 };

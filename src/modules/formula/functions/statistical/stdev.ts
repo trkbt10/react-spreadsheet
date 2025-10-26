@@ -11,7 +11,7 @@ export const standardDeviationFunction: FormulaFunctionEagerDefinition = {
     en: "Calculates the sample standard deviation of numeric arguments.",
     ja: "数値引数の標本標準偏差を計算します。",
   },
-  examples: ['STDEV(1, 3, 5)', 'STDEV(A1:A10)'],
+  examples: ["STDEV(1, 3, 5)", "STDEV(A1:A10)"],
   evaluate: (args, helpers) => {
     const numericValues = collectNumericArguments(args, helpers);
 

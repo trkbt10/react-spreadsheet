@@ -10,7 +10,7 @@ export const falseFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the logical constant FALSE.",
     ja: "論理値FALSEを返します。",
   },
-  examples: ['FALSE()'],
+  examples: ["FALSE()"],
   evaluate: (args) => {
     if (args.length !== 0) {
       throw new Error("FALSE expects no arguments");

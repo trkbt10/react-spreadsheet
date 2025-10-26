@@ -54,20 +54,20 @@ export const FontSizeSelect = ({ value, onChange }: FontSizeSelectProps): ReactE
   return (
     <Popover isOpen={isOpen} onClose={closeDropdown} trigger={trigger}>
       <div className={styles.content}>
-          {FONT_SIZES.map((size) => (
-            <button
-              key={size}
-              type="button"
-              className={styles.option}
-              onClick={() => {
-                handleSizeSelect(size);
-              }}
-              data-is-selected={value === size}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
+        {FONT_SIZES.map((size) => (
+          <button
+            key={size}
+            type="button"
+            className={styles.option}
+            onClick={() => {
+              handleSizeSelect(size);
+            }}
+            data-is-selected={value === size}
+          >
+            {size}
+          </button>
+        ))}
+      </div>
     </Popover>
   );
 };

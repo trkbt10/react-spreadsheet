@@ -2,11 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { switchFunction } from "./switch";
 import type { FormulaFunctionLazyContext } from "../../functionRegistry";
 import type { FormulaAstNode } from "../../ast";
-import {
-  createLiteralNode,
-  defaultLazyEvaluate,
-  invokeLazyFormulaFunction,
-} from "../testHelpers";
+import { createLiteralNode, defaultLazyEvaluate, invokeLazyFormulaFunction } from "../testHelpers";
 
 const evaluateLazy = (
   nodes: Parameters<NonNullable<typeof switchFunction.evaluateLazy>>[0],
@@ -70,13 +66,7 @@ describe("switchFunction", () => {
       return defaultLazyEvaluate(node);
     });
     const result = evaluateLazy(
-      [
-        createLiteralNode("A"),
-        createLiteralNode("A"),
-        createLiteralNode(1),
-        createLiteralNode("B"),
-        sentinel,
-      ],
+      [createLiteralNode("A"), createLiteralNode("A"), createLiteralNode(1), createLiteralNode("B"), sentinel],
       { evaluate: evaluateSpy },
     );
     expect(result).toBe(1);

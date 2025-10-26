@@ -15,8 +15,6 @@ describe("SUBSTITUTE", () => {
   });
 
   it("throws when old_text is empty", () => {
-    expect(() => evaluate(makeEvalArgs("data", "", "x"))).toThrowError(
-      "SUBSTITUTE old_text must be non-empty",
-    );
+    expect(() => evaluate(makeEvalArgs("data", "", "x"))).toThrowError("SUBSTITUTE old_text must be non-empty");
   });
 });

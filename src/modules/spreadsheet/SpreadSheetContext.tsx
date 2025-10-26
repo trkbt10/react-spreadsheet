@@ -174,33 +174,36 @@ export const SpreadSheetProvider = ({ spreadsheet, children }: SpreadSheetProvid
     setActiveSheetId(tabId);
   }, []);
 
-  const handleCellsUpdate = useCallback((updates: Array<CellUpdate>) => {
-    if (updates.length === 0) {
-      return;
-    }
-
-    setDocumentState((current) => {
-      const sheetIndex = current.sheets.findIndex((sheet) => sheet.id === activeSheetId);
-      if (sheetIndex === -1) {
-        return current;
+  const handleCellsUpdate = useCallback(
+    (updates: Array<CellUpdate>) => {
+      if (updates.length === 0) {
+        return;
       }
 
-      const targetSheet = current.sheets[sheetIndex];
-      const updatedSheet = applyUpdatesToSheet(targetSheet, updates);
-      if (updatedSheet === targetSheet) {
-        return current;
-      }
+      setDocumentState((current) => {
+        const sheetIndex = current.sheets.findIndex((sheet) => sheet.id === activeSheetId);
+        if (sheetIndex === -1) {
+          return current;
+        }
 
-      const nextSheets = [...current.sheets];
-      nextSheets[sheetIndex] = updatedSheet;
+        const targetSheet = current.sheets[sheetIndex];
+        const updatedSheet = applyUpdatesToSheet(targetSheet, updates);
+        if (updatedSheet === targetSheet) {
+          return current;
+        }
 
-      return {
-        ...current,
-        sheets: nextSheets,
-        updatedAt: new Date().toISOString(),
-      } satisfies SpreadSheet;
-    });
-  }, [activeSheetId]);
+        const nextSheets = [...current.sheets];
+        nextSheets[sheetIndex] = updatedSheet;
+
+        return {
+          ...current,
+          sheets: nextSheets,
+          updatedAt: new Date().toISOString(),
+        } satisfies SpreadSheet;
+      });
+    },
+    [activeSheetId],
+  );
 
   const formulaEngine = useFormulaEngineWithSpreadsheet(documentState);
 

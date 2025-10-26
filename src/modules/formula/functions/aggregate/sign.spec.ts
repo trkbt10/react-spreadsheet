@@ -3,8 +3,7 @@ import { formulaFunctionHelpers } from "../../functionRegistry";
 import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import type { EvalResult } from "../helpers";
 
-const evaluate = (args: EvalResult[]) =>
-  invokeFormulaFunction(signFunction, formulaFunctionHelpers, args);
+const evaluate = (args: EvalResult[]) => invokeFormulaFunction(signFunction, formulaFunctionHelpers, args);
 
 describe("SIGN", () => {
   it("returns 1 for positive numbers", () => {

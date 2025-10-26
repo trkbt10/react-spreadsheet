@@ -18,11 +18,7 @@ export const sumIfFunction: FormulaFunctionEagerDefinition = {
     const [rangeArg, criteriaArg, sumRangeArg] = args;
     const rangeValues = helpers.flattenResult(rangeArg);
     const criteria = helpers.coerceScalar(criteriaArg, "SUMIF criteria");
-    const predicate = helpers.createCriteriaPredicate(
-      criteria,
-      helpers.comparePrimitiveEquality,
-      "SUMIF criteria",
-    );
+    const predicate = helpers.createCriteriaPredicate(criteria, helpers.comparePrimitiveEquality, "SUMIF criteria");
 
     const sumValues = sumRangeArg === undefined ? rangeValues : helpers.flattenResult(sumRangeArg);
     if (sumRangeArg !== undefined && sumValues.length !== rangeValues.length) {

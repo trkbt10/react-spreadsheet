@@ -36,9 +36,10 @@ export const DependencyVisualizer = ({ snapshot }: DependencyVisualizerProps): R
         id: component.id,
         sizeLabel: formatCount(component.size),
         externalCount: component.externalDependencies.length,
-        externalLabel: component.externalDependencies.length === 0
-          ? "外部依存なし"
-          : `${component.externalDependencies.length} external`,
+        externalLabel:
+          component.externalDependencies.length === 0
+            ? "外部依存なし"
+            : `${component.externalDependencies.length} external`,
       };
     });
   }, [snapshot.components]);

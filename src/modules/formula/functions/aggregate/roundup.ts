@@ -30,7 +30,7 @@ export const roundUpFunction: FormulaFunctionEagerDefinition = {
     en: "Rounds a number away from zero to the specified number of digits.",
     ja: "数値をゼロから遠ざかる方向に指定桁へ切り上げます。",
   },
-  examples: ['ROUNDUP(1.21, 1)', 'ROUNDUP(A1, -2)'],
+  examples: ["ROUNDUP(1.21, 1)", "ROUNDUP(A1, -2)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("ROUNDUP expects exactly two arguments");

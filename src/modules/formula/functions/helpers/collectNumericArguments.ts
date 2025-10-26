@@ -4,12 +4,6 @@
 
 import type { EvalResult, FormulaFunctionHelpers } from "./types";
 
-export const collectNumericArguments = (
-  args: EvalResult[],
-  helpers: FormulaFunctionHelpers,
-): number[] => {
-  return helpers
-    .flattenArguments(args)
-    .filter((value): value is number => typeof value === "number");
+export const collectNumericArguments = (args: EvalResult[], helpers: FormulaFunctionHelpers): number[] => {
+  return helpers.flattenArguments(args).filter((value): value is number => typeof value === "number");
 };
-

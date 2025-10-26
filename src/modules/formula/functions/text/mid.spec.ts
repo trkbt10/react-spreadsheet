@@ -15,8 +15,6 @@ describe("MID", () => {
   });
 
   it("throws when start is less than 1", () => {
-    expect(() => evaluate(makeEvalArgs("Test", 0, 1))).toThrowError(
-      "MID start must be greater than or equal to 1",
-    );
+    expect(() => evaluate(makeEvalArgs("Test", 0, 1))).toThrowError("MID start must be greater than or equal to 1");
   });
 });

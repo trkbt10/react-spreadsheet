@@ -100,7 +100,7 @@ export const SelectionHighlight = ({
     isDragging,
   } = state;
 
-  const isInlineEditing = Boolean(editorActivity.cellEditor && editingSelection);
+  const isInlineEditing = editorActivity.cellEditor ? editingSelection !== null : false;
 
   const selectionRange = selection ? selectionToRange(selection) : null;
   const effectiveAutoFillHandler = autoFillHandler ?? computeAutofillUpdates;

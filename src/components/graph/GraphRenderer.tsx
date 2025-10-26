@@ -380,10 +380,7 @@ const PieChart = ({ element, data, width, height, colorScale }: PieChartProps): 
   );
 };
 
-const createPieLegend = (
-  colorScale: OrdinalScale,
-  data: GraphDataPoint[],
-): ReactElement | null => {
+const createPieLegend = (colorScale: OrdinalScale, data: GraphDataPoint[]): ReactElement | null => {
   if (data.length <= 1) {
     return null;
   }

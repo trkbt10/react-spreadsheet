@@ -39,18 +39,27 @@ export type SheetProviderProps = {
  * @param props - Provider props
  * @returns SheetProvider component
  */
-export const SheetProvider = ({ sheet, name, id, children, onCellsUpdate: externalOnCellsUpdate }: SheetProviderProps): ReactElement => {
+export const SheetProvider = ({
+  sheet,
+  name,
+  id,
+  children,
+  onCellsUpdate: externalOnCellsUpdate,
+}: SheetProviderProps): ReactElement => {
   const [state, dispatch] = useReducer(sheetReducer, initialSheetState);
 
   const actions = useMemo(() => bindActionCreators(sheetActions, dispatch), []);
 
   // TODO: Implement actual cell update logic here
   // For now, just log the updates
-  const handleCellsUpdate = useCallback((updates: Array<{ col: number; row: number; value: string }>) => {
-    if (externalOnCellsUpdate) {
-      externalOnCellsUpdate(updates);
-    }
-  }, [externalOnCellsUpdate]);
+  const handleCellsUpdate = useCallback(
+    (updates: Array<{ col: number; row: number; value: string }>) => {
+      if (externalOnCellsUpdate) {
+        externalOnCellsUpdate(updates);
+      }
+    },
+    [externalOnCellsUpdate],
+  );
 
   const value = useMemo(
     (): SheetContextValue => ({

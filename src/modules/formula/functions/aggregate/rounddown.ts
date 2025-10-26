@@ -30,7 +30,7 @@ export const roundDownFunction: FormulaFunctionEagerDefinition = {
     en: "Rounds a number toward zero to the specified number of digits.",
     ja: "数値をゼロ方向へ切り下げて指定桁に揃えます。",
   },
-  examples: ['ROUNDDOWN(1.29, 1)', 'ROUNDDOWN(A1, -1)'],
+  examples: ["ROUNDDOWN(1.29, 1)", "ROUNDDOWN(A1, -1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("ROUNDDOWN expects exactly two arguments");

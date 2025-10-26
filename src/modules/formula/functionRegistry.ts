@@ -4,11 +4,7 @@
 
 import type { FormulaAstNode } from "./ast";
 import type { CellAddress } from "./types";
-import {
-  formulaFunctionHelpers,
-  type EvalResult,
-  type FormulaFunctionHelpers,
-} from "./functions/helpers";
+import { formulaFunctionHelpers, type EvalResult, type FormulaFunctionHelpers } from "./functions/helpers";
 import { sumFunction } from "./functions/aggregate/sum";
 import { productFunction } from "./functions/aggregate/product";
 import { powerFunction } from "./functions/aggregate/power";
@@ -37,6 +33,16 @@ import { monthFunction } from "./functions/datetime/month";
 import { yearFunction } from "./functions/datetime/year";
 import { weekDayFunction } from "./functions/datetime/weekday";
 import { weekNumFunction } from "./functions/datetime/weeknum";
+import { pmtFunction } from "./functions/financial/pmt";
+import { ipmtFunction } from "./functions/financial/ipmt";
+import { ppmtFunction } from "./functions/financial/ppmt";
+import { pvFunction } from "./functions/financial/pv";
+import { fvFunction } from "./functions/financial/fv";
+import { npvFunction } from "./functions/financial/npv";
+import { irrFunction } from "./functions/financial/irr";
+import { xnpvFunction } from "./functions/financial/xnpv";
+import { xirrFunction } from "./functions/financial/xirr";
+import { rateFunction } from "./functions/financial/rate";
 import { averageFunction } from "./functions/statistical/average";
 import { averageIfFunction } from "./functions/statistical/averageif";
 import { averageIfsFunction } from "./functions/statistical/averageifs";
@@ -85,10 +91,7 @@ import { substituteFunction } from "./functions/text/substitute";
 import { findFunction } from "./functions/text/find";
 import { searchFunction } from "./functions/text/search";
 
-export type FormulaFunctionEvaluator = (
-  args: EvalResult[],
-  helpers: FormulaFunctionHelpers,
-) => EvalResult;
+export type FormulaFunctionEvaluator = (args: EvalResult[], helpers: FormulaFunctionHelpers) => EvalResult;
 
 export type FormulaFunctionLazyContext = {
   evaluate: (node: FormulaAstNode) => EvalResult;
@@ -97,10 +100,7 @@ export type FormulaFunctionLazyContext = {
   origin: CellAddress;
 };
 
-export type FormulaFunctionLazyEvaluator = (
-  args: FormulaAstNode[],
-  context: FormulaFunctionLazyContext,
-) => EvalResult;
+export type FormulaFunctionLazyEvaluator = (args: FormulaAstNode[], context: FormulaFunctionLazyContext) => EvalResult;
 
 export type FormulaFunctionDescription = {
   en: string;
@@ -123,9 +123,7 @@ export type FormulaFunctionLazyDefinition = {
   evaluate?: undefined;
 };
 
-export type FormulaFunctionDefinition =
-  | FormulaFunctionEagerDefinition
-  | FormulaFunctionLazyDefinition;
+export type FormulaFunctionDefinition = FormulaFunctionEagerDefinition | FormulaFunctionLazyDefinition;
 
 const registry = new Map<string, FormulaFunctionDefinition>();
 
@@ -144,6 +142,10 @@ export const registerFormulaFunction = (definition: FormulaFunctionDefinition): 
 
 export const getFormulaFunction = (name: string): FormulaFunctionDefinition | undefined => {
   return registry.get(name.toUpperCase());
+};
+
+export const listFormulaFunctions = (): FormulaFunctionDefinition[] => {
+  return Array.from(registry.values());
 };
 
 export { registeredHelpers as formulaFunctionHelpers };
@@ -177,6 +179,16 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
   yearFunction,
   weekDayFunction,
   weekNumFunction,
+  pmtFunction,
+  ipmtFunction,
+  ppmtFunction,
+  pvFunction,
+  fvFunction,
+  npvFunction,
+  irrFunction,
+  xnpvFunction,
+  xirrFunction,
+  rateFunction,
   averageFunction,
   averageIfFunction,
   averageIfsFunction,
@@ -227,3 +239,8 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
 ];
 
 builtInFunctions.forEach(registerFormulaFunction);
+
+/**
+ * Notes:
+ * - Added listFormulaFunctions to expose registered definitions for the formula suggestion UI.
+ */

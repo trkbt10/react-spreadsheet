@@ -44,13 +44,7 @@ export type FunctionNode = {
   arguments: FormulaAstNode[];
 };
 
-export type FormulaAstNode =
-  | LiteralNode
-  | ReferenceNode
-  | RangeNode
-  | UnaryNode
-  | BinaryNode
-  | FunctionNode;
+export type FormulaAstNode = LiteralNode | ReferenceNode | RangeNode | UnaryNode | BinaryNode | FunctionNode;
 
 const expandRangeDependencies = (start: CellAddress, end: CellAddress): Set<CellAddressKey> => {
   if (start.sheetId !== end.sheetId) {
@@ -150,10 +144,7 @@ export const collectDependencyAddresses = (node: FormulaAstNode): CellAddress[] 
   }
 
   if (node.type === "Binary") {
-    return [
-      ...collectDependencyAddresses(node.left),
-      ...collectDependencyAddresses(node.right),
-    ];
+    return [...collectDependencyAddresses(node.left), ...collectDependencyAddresses(node.right)];
   }
 
   if (node.type === "Function") {

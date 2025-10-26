@@ -16,7 +16,7 @@ export const quotientFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the integer portion of a division, truncating toward zero.",
     ja: "除算の結果をゼロ方向に切り捨てた整数部分を返します。",
   },
-  examples: ['QUOTIENT(10, 3)', 'QUOTIENT(A1, B1)'],
+  examples: ["QUOTIENT(10, 3)", "QUOTIENT(A1, B1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("QUOTIENT expects exactly two arguments");

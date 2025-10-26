@@ -1,8 +1,8 @@
+/// <reference types="vitest" />
+
 /**
  * @file Tests for grid layout utilities.
  */
-
-import { describe, expect, it } from "vitest";
 import { calculateRowPosition } from "./gridLayout";
 
 describe("calculateRowPosition", () => {

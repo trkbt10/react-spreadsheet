@@ -6,12 +6,7 @@ import type { SpreadSheet } from "../../types";
 import { buildWorkbookMatrix } from "./matrix";
 import { buildDependencyTree } from "./dependencyTree";
 import { buildDependencyComponents } from "./components";
-import type {
-  CellAddressKey,
-  DependencyComponent,
-  DependencyTree,
-  FormulaCellData,
-} from "./types";
+import type { CellAddressKey, DependencyComponent, DependencyTree, FormulaCellData } from "./types";
 import { createCellAddressKey, indexToColumnLabel } from "./address";
 
 export type DependencyGraphNode = {

@@ -12,4 +12,3 @@ export const flattenResult = (result: EvalResult): FormulaEvaluationResult[] => 
   }
   return result.flatMap((value) => flattenResult(value));
 };
-

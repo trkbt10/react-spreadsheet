@@ -11,7 +11,7 @@ export const hlookupFunction: FormulaFunctionEagerDefinition = {
     en: "Searches the first row of a table for a value and returns data from another row.",
     ja: "表の最初の行で値を検索し、別の行のデータを返します。",
   },
-  examples: ['HLOOKUP(A1, Table1, 2, FALSE)', 'HLOOKUP(5, A1:J2, 2)'],
+  examples: ["HLOOKUP(A1, Table1, 2, FALSE)", "HLOOKUP(5, A1:J2, 2)"],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length > 4) {
       throw new Error("HLOOKUP expects three or four arguments");
@@ -42,10 +42,7 @@ export const hlookupFunction: FormulaFunctionEagerDefinition = {
 
     if (!approximateMatch) {
       const columnIndex = table[0].findIndex((_, column) =>
-        helpers.comparePrimitiveEquality(
-          readTableCell(table, 0, column, "HLOOKUP"),
-          lookupValue,
-        ),
+        helpers.comparePrimitiveEquality(readTableCell(table, 0, column, "HLOOKUP"), lookupValue),
       );
       if (columnIndex === -1) {
         throw new Error("HLOOKUP could not find an exact match");

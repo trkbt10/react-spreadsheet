@@ -21,14 +21,12 @@ const SPREADSHEET_CONFIGS = {
 
 type SpreadsheetId = keyof typeof SPREADSHEET_CONFIGS;
 
-const SPREADSHEET_OPTIONS: SpreadsheetOption[] = Object.values(SPREADSHEET_CONFIGS).map(
-  (config) => {
-    return {
-      id: config.id,
-      name: config.name,
-    };
-  },
-);
+const SPREADSHEET_OPTIONS: SpreadsheetOption[] = Object.values(SPREADSHEET_CONFIGS).map((config) => {
+  return {
+    id: config.id,
+    name: config.name,
+  };
+});
 
 /**
  * Minimal spreadsheet preview component.

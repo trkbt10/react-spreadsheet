@@ -11,7 +11,7 @@ export const standardDeviationPopulationFunction: FormulaFunctionEagerDefinition
     en: "Calculates the population standard deviation of numeric arguments.",
     ja: "数値引数の母標準偏差を計算します。",
   },
-  examples: ['STDEVP(1, 3, 5)', 'STDEVP(A1:A10)'],
+  examples: ["STDEVP(1, 3, 5)", "STDEVP(A1:A10)"],
   evaluate: (args, helpers) => {
     const numericValues = collectNumericArguments(args, helpers);
 

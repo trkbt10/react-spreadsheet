@@ -107,9 +107,7 @@ export const createCellAddressKey = ({ sheetId, column, row }: CellAddress): Cel
   return `${sheetId}|${column}:${row}`;
 };
 
-export const parseCellAddressKeyParts = (
-  key: CellAddressKey,
-): { sheetId: string; column: number; row: number } => {
+export const parseCellAddressKeyParts = (key: CellAddressKey): { sheetId: string; column: number; row: number } => {
   const [sheetPart, coordinatePart] = key.split("|");
   if (!sheetPart || !coordinatePart) {
     throw new Error(`Invalid cell address key "${key}"`);

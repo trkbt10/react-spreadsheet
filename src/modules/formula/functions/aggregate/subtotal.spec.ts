@@ -27,8 +27,6 @@ describe("SUBTOTAL", () => {
   });
 
   it("throws for unsupported function numbers", () => {
-    expect(() => evaluate(makeEvalArgs(99, [1, 2]))).toThrowError(
-      "SUBTOTAL function number is not supported",
-    );
+    expect(() => evaluate(makeEvalArgs(99, [1, 2]))).toThrowError("SUBTOTAL function number is not supported");
   });
 });

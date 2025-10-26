@@ -11,7 +11,7 @@ export const timeValueFunction: FormulaFunctionEagerDefinition = {
     en: "Converts a time string or serial into the fractional-day time component.",
     ja: "時間文字列またはシリアル値を日内時間の小数部に変換します。",
   },
-  examples: ['TIMEVALUE("12:30:00")', 'TIMEVALUE(A1)'],
+  examples: ['TIMEVALUE("12:30:00")', "TIMEVALUE(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("TIMEVALUE expects exactly one argument");

@@ -8,14 +8,18 @@
   appearance: none;
   width: 100%;
   height: var(--control-height);
-  padding: var(--control-padding-y) calc(var(--control-padding-x) * 1.8) var(--control-padding-y) var(--control-padding-x);
+  padding: var(--control-padding-y) calc(var(--control-padding-x) * 1.8) var(--control-padding-y)
+    var(--control-padding-x);
   border-radius: var(--control-radius);
   border: var(--control-border);
   background: var(--control-background);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   line-height: 1.4;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .select:hover {

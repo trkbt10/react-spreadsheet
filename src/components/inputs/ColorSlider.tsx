@@ -114,10 +114,7 @@ export const ColorSlider = ({ value, onChange, type, currentColor }: ColorSlider
       onTouchEnd={handleTouchEnd}
       data-type={type}
     >
-      <div
-        className={styles.cursor}
-        style={{ left: `${cursorPosition}%` }}
-      />
+      <div className={styles.cursor} style={{ left: `${cursorPosition}%` }} />
     </div>
   );
 };

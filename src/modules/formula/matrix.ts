@@ -13,7 +13,9 @@ import type {
 
 const normalizeSheetKey = (value: string): string => value.trim().toUpperCase();
 
-const populateRows = (sheet: Sheet): {
+const populateRows = (
+  sheet: Sheet,
+): {
   rows: Map<number, Map<number, FormulaCellData>>;
   maxColumn: number;
   maxRow: number;
@@ -86,7 +88,9 @@ const buildWorkbookIndex = (sheets: ReadonlyArray<Sheet>): WorkbookIndex => {
   };
 };
 
-export const buildWorkbookMatrix = (spreadsheet: SpreadSheet): {
+export const buildWorkbookMatrix = (
+  spreadsheet: SpreadSheet,
+): {
   matrix: FormulaWorkbookGrid;
   index: WorkbookIndex;
 } => {

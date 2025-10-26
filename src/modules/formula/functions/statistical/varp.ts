@@ -11,7 +11,7 @@ export const variancePopulationFunction: FormulaFunctionEagerDefinition = {
     en: "Calculates the population variance of numeric arguments.",
     ja: "数値引数の母分散を計算します。",
   },
-  examples: ['VARP(1, 3, 5)', 'VARP(A1:A10)'],
+  examples: ["VARP(1, 3, 5)", "VARP(A1:A10)"],
   evaluate: (args, helpers) => {
     const numericValues = collectNumericArguments(args, helpers);
 

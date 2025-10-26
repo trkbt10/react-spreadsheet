@@ -51,7 +51,8 @@ const createInactiveEditors = (): EditorActivity => ({
 });
 
 const isSingleCellRange = (range: SelectionRange): boolean => {
-  if (range.endCol - range.startCol !== 1) {
+  const isSingleColumn = range.endCol - range.startCol === 1;
+  if (!isSingleColumn) {
     return false;
   }
   return range.endRow - range.startRow === 1;
@@ -288,7 +289,7 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
   },
 
   startEditingCell: (state, action) => {
-  const { col, row, initialValue, origin } = action.payload;
+    const { col, row, initialValue, origin } = action.payload;
     const editorActivity: EditorActivity = createInactiveEditors();
     editorActivity[origin] = true;
     return {
@@ -310,7 +311,7 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
   },
 
   startEditingRange: (state, action) => {
-  const { range, initialValue, origin } = action.payload;
+    const { range, initialValue, origin } = action.payload;
     const editorActivity: EditorActivity = createInactiveEditors();
     editorActivity[origin] = true;
     return {
@@ -346,7 +347,7 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
     };
   },
 
-  commitEdit: (state, action) => {
+  commitEdit: (state) => {
     // TODO: Apply the edit value to the actual cell data
     // For now, we just clear the editing state
     // The actual implementation should update sheet.cells based on:

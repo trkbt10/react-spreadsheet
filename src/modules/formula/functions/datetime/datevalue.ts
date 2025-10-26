@@ -11,7 +11,7 @@ export const dateValueFunction: FormulaFunctionEagerDefinition = {
     en: "Converts a date string or serial into a serial number representing the date.",
     ja: "日付文字列またはシリアル値を日付シリアルに変換します。",
   },
-  examples: ['DATEVALUE("2024-05-10")', 'DATEVALUE(A1)'],
+  examples: ['DATEVALUE("2024-05-10")', "DATEVALUE(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("DATEVALUE expects exactly one argument");

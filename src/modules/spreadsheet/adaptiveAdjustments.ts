@@ -28,10 +28,7 @@ export type AdaptiveAdjustmentCache = {
   root: AdaptiveStructure | null;
 };
 
-const buildAdaptiveStructure = (
-  entries: Array<[number, bigint]>,
-  windowSize: number,
-): AdaptiveStructure => {
+const buildAdaptiveStructure = (entries: Array<[number, bigint]>, windowSize: number): AdaptiveStructure => {
   if (entries.length === 1) {
     const [index, delta] = entries[0];
     return {
@@ -52,14 +49,11 @@ const buildAdaptiveStructure = (
       runningTotal += delta;
       blockIds.push(index);
       prefixTotals.push(runningTotal);
-      children.set(
+      children.set(index, {
+        kind: "leaf",
         index,
-        {
-          kind: "leaf",
-          index,
-          delta,
-        },
-      );
+        delta,
+      });
     }
 
     return {
@@ -178,11 +172,7 @@ export const getAdaptiveCache = (
   defaultSizeBigInt: bigint,
 ): AdaptiveAdjustmentCache => {
   const cached = cacheMap.get(sizes);
-  if (
-    cached !== undefined &&
-    cached.defaultSize === defaultSize &&
-    cached.defaultSizeBigInt === defaultSizeBigInt
-  ) {
+  if (cached !== undefined && cached.defaultSize === defaultSize && cached.defaultSizeBigInt === defaultSizeBigInt) {
     return cached;
   }
 
@@ -213,10 +203,7 @@ const findLastIndexLessThan = (values: number[], target: number): number => {
   return resultIndex;
 };
 
-const sumAdjustmentsBeforeIndexInternal = (
-  root: AdaptiveStructure | null,
-  index: number,
-): bigint => {
+const sumAdjustmentsBeforeIndexInternal = (root: AdaptiveStructure | null, index: number): bigint => {
   if (root === null) {
     return 0n;
   }
@@ -240,10 +227,7 @@ const sumAdjustmentsBeforeIndexInternal = (
 /**
  * Sum all adjustments before the provided index.
  */
-export const sumAdjustmentsBeforeIndex = (
-  cache: AdaptiveAdjustmentCache,
-  index: number,
-): bigint => {
+export const sumAdjustmentsBeforeIndex = (cache: AdaptiveAdjustmentCache, index: number): bigint => {
   return sumAdjustmentsBeforeIndexInternal(cache.root, index);
 };
 

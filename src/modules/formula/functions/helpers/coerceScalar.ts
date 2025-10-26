@@ -16,4 +16,3 @@ export const coerceScalar = (result: EvalResult, description: string): FormulaEv
   }
   throw new Error(`Range cannot be coerced to scalar for ${description}`);
 };
-

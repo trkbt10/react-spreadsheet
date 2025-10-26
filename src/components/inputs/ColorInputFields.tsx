@@ -23,7 +23,14 @@ type ColorMode = "hex" | "rgb" | "hsl";
  * @param props - ColorInputFields props
  * @returns ColorInputFields component
  */
-export const ColorInputFields = ({ rgb, hsl, hex, onRgbChange, onHslChange, onHexChange }: ColorInputFieldsProps): ReactElement => {
+export const ColorInputFields = ({
+  rgb,
+  hsl,
+  hex,
+  onRgbChange,
+  onHslChange,
+  onHexChange,
+}: ColorInputFieldsProps): ReactElement => {
   const [mode, setMode] = useState<ColorMode>("hex");
 
   const handleModeChange = useCallback((newMode: ColorMode) => {
@@ -104,13 +111,7 @@ export const ColorInputFields = ({ rgb, hsl, hex, onRgbChange, onHslChange, onHe
         <div className={styles.inputGroup}>
           <label className={styles.inputLabel}>
             <span className={styles.labelText}>HEX</span>
-            <input
-              type="text"
-              className={styles.input}
-              value={hex}
-              onChange={handleHexChange}
-              placeholder="#000000"
-            />
+            <input type="text" className={styles.input} value={hex} onChange={handleHexChange} placeholder="#000000" />
           </label>
         </div>
       ) : null}

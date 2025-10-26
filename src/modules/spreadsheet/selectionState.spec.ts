@@ -1,8 +1,9 @@
+/// <reference types="vitest" />
+
 /**
  * @file Tests for selection state helper functions
  */
 
-import { describe, it, expect } from "vitest";
 import {
   createCellSelection,
   createRangeSelection,
@@ -57,16 +58,13 @@ describe("Selection state helpers", () => {
     });
 
     it("should maintain anchor when extending multiple times", () => {
-      let state = createCellSelection(5, 5);
+      const initialState = createCellSelection(5, 5);
+      const firstExtension = extendSelection(initialState, 8, 8);
+      expect(firstExtension.anchor).toEqual({ col: 5, row: 5 });
 
-      // First extension
-      state = extendSelection(state, 8, 8);
-      expect(state.anchor).toEqual({ col: 5, row: 5 });
-
-      // Second extension in different direction
-      state = extendSelection(state, 2, 2);
-      expect(state.anchor).toEqual({ col: 5, row: 5 });
-      expect(state.selection).toEqual({
+      const secondExtension = extendSelection(firstExtension, 2, 2);
+      expect(secondExtension.anchor).toEqual({ col: 5, row: 5 });
+      expect(secondExtension.selection).toEqual({
         kind: "range",
         startCol: 2,
         endCol: 6,

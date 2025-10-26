@@ -1,3 +1,7 @@
+/**
+ * @file Helpers for working with spreadsheet selections and update generation.
+ */
+
 import type { SelectionRange, SelectionTarget, EditingSelection } from "./sheetReducer";
 import { selectionToRange } from "./sheetReducer";
 

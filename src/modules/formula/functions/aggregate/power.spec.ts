@@ -3,8 +3,7 @@ import { formulaFunctionHelpers } from "../../functionRegistry";
 import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import type { EvalResult } from "../helpers";
 
-const evaluate = (args: EvalResult[]) =>
-  invokeFormulaFunction(powerFunction, formulaFunctionHelpers, args);
+const evaluate = (args: EvalResult[]) => invokeFormulaFunction(powerFunction, formulaFunctionHelpers, args);
 
 describe("POWER", () => {
   it("raises the base to the given exponent", () => {

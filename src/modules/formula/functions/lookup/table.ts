@@ -60,11 +60,7 @@ export const readTableCell = (
   return value;
 };
 
-export const readTableRow = (
-  table: LookupTable,
-  rowIndex: number,
-  description: string,
-): FormulaEvaluationResult[] => {
+export const readTableRow = (table: LookupTable, rowIndex: number, description: string): FormulaEvaluationResult[] => {
   const row = table[rowIndex];
   if (!row) {
     throw new Error(`${description} failed: row index ${rowIndex + 1} is out of range`);
@@ -80,13 +76,10 @@ export const readTableColumn = (
   return table.map((row, rowIndex) => {
     const value = row[columnIndex];
     if (value === undefined) {
-      throw new Error(
-        `${description} failed: column index ${columnIndex + 1} is out of range for row ${rowIndex + 1}`,
-      );
+      throw new Error(`${description} failed: column index ${columnIndex + 1} is out of range for row ${rowIndex + 1}`);
     }
     return value;
   });
 };
 
 // NOTE: Based on VLOOKUP normalization rules in src/modules/formula/functions/lookup/vlookup.ts.
-

@@ -10,7 +10,7 @@ export const ifFunction: FormulaFunctionLazyDefinition = {
     en: "Evaluates a condition and returns one value if TRUE, another if FALSE.",
     ja: "条件を評価してTRUEなら1つの値、FALSEなら別の値を返します。",
   },
-  examples: ['IF(A1>0, "Positive", "Negative")', 'IF(ISBLANK(A1), 0, A1)'],
+  examples: ['IF(A1>0, "Positive", "Negative")', "IF(ISBLANK(A1), 0, A1)"],
   evaluateLazy: (argNodes, context) => {
     if (argNodes.length < 2 || argNodes.length > 3) {
       throw new Error("IF expects two or three arguments");

@@ -62,6 +62,24 @@ export const useSheetPointerEvents = ({
   const isShiftExtendingRef = useRef(false);
   const lastExtendedCellRef = useRef<{ col: number; row: number } | null>(null);
 
+  const resolveInitialValue = useCallback(
+    (col: number, row: number): string => {
+      const cellId = `${col}:${row}` as const;
+      const cellData = sheet.cells[cellId];
+      if (!cellData) {
+        return "";
+      }
+      if (cellData.type === "formula" && cellData.formula) {
+        return `=${cellData.formula}`;
+      }
+      if (cellData.value === null || cellData.value === undefined) {
+        return "";
+      }
+      return String(cellData.value);
+    },
+    [sheet.cells],
+  );
+
   const getPositionFromPointer = useCallback(
     (event: PointerEvent<HTMLDivElement>): { x: number; y: number } | null => {
       const rect = event.currentTarget.getBoundingClientRect();
@@ -105,14 +123,21 @@ export const useSheetPointerEvents = ({
 
       event.currentTarget.setPointerCapture(event.pointerId);
 
-      const shiftExtendRequested = event.shiftKey && selection !== null && selectionAnchor !== null;
-      if (shiftExtendRequested) {
+      if (event.shiftKey) {
+        if (selection === null) {
+          return;
+        }
+        if (selectionAnchor === null) {
+          return;
+        }
+
         const cell = getCellAtPosition(pos.x, pos.y);
         if (cell) {
           actions.extendSelectionToCell(cell.col, cell.row);
           lastExtendedCellRef.current = cell;
           isShiftExtendingRef.current = true;
         }
+        return;
       }
     },
     [getPositionFromPointer, getCellAtPosition, actions, selection, selectionAnchor],
@@ -200,16 +225,7 @@ export const useSheetPointerEvents = ({
             actions.extendSelectionToCell(cell.col, cell.row);
             lastClickRef.current = null;
           } else if (isDoubleClick) {
-            const cellId = `${cell.col}:${cell.row}` as const;
-            const cellData = sheet.cells[cellId];
-            const initialValue = cellData
-              ? cellData.type === "formula" && cellData.formula
-                ? `=${cellData.formula}`
-                : cellData.value === null
-                  ? ""
-                  : String(cellData.value)
-              : "";
-
+            const initialValue = resolveInitialValue(cell.col, cell.row);
             actions.startEditingCell(cell.col, cell.row, initialValue, "cellEditor");
             lastClickRef.current = null;
           } else {
@@ -221,7 +237,7 @@ export const useSheetPointerEvents = ({
 
       pointerDownPosRef.current = null;
     },
-    [getPositionFromPointer, getCellAtPosition, actions, sheet.cells],
+    [getPositionFromPointer, getCellAtPosition, actions, resolveInitialValue],
   );
 
   return {

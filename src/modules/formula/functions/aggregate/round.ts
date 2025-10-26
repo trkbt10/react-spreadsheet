@@ -33,7 +33,7 @@ export const roundFunction: FormulaFunctionEagerDefinition = {
     en: "Rounds a number to a specified number of digits using half-away-from-zero rounding.",
     ja: "数値を指定した桁数に、ゼロから離れる丸め規則で丸めます。",
   },
-  examples: ['ROUND(1.235, 2)', 'ROUND(A1, -1)'],
+  examples: ["ROUND(1.235, 2)", "ROUND(A1, -1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("ROUND expects exactly two arguments");

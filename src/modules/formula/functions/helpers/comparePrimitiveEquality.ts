@@ -4,10 +4,7 @@
 
 import type { FormulaEvaluationResult } from "../../types";
 
-export const comparePrimitiveEquality = (
-  left: FormulaEvaluationResult,
-  right: FormulaEvaluationResult,
-): boolean => {
+export const comparePrimitiveEquality = (left: FormulaEvaluationResult, right: FormulaEvaluationResult): boolean => {
   if (left === null || right === null) {
     return left === right;
   }
@@ -22,4 +19,3 @@ export const comparePrimitiveEquality = (
   }
   return left === right;
 };
-

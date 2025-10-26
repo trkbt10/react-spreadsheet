@@ -48,13 +48,7 @@ type ActionsRef = {
   current: BoundActionCreators<typeof sheetActions> | null;
 };
 
-const ContextCapture = ({
-  actionsRef,
-  children,
-}: {
-  actionsRef: ActionsRef;
-  children: ReactNode;
-}): ReactElement => {
+const ContextCapture = ({ actionsRef, children }: { actionsRef: ActionsRef; children: ReactNode }): ReactElement => {
   const { actions } = useSheetContext();
 
   useLayoutEffect(() => {

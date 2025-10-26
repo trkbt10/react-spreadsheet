@@ -10,11 +10,9 @@ export const averageFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the arithmetic mean of numeric arguments, ignoring non-numeric values.",
     ja: "数値以外を無視して引数の算術平均を返します。",
   },
-  examples: ['AVERAGE(1, 2, 3)', 'AVERAGE(A1:A10)'],
+  examples: ["AVERAGE(1, 2, 3)", "AVERAGE(A1:A10)"],
   evaluate: (args, helpers) => {
-    const values = helpers.flattenArguments(args).filter(
-      (value): value is number => typeof value === "number",
-    );
+    const values = helpers.flattenArguments(args).filter((value): value is number => typeof value === "number");
     if (values.length === 0) {
       throw new Error("AVERAGE expects at least one numeric argument");
     }

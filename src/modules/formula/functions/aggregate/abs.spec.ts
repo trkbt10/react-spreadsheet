@@ -3,8 +3,7 @@ import { formulaFunctionHelpers } from "../../functionRegistry";
 import { invokeFormulaFunction, makeEvalArgs } from "../testHelpers";
 import type { EvalResult } from "../helpers";
 
-const evaluate = (args: EvalResult[]) =>
-  invokeFormulaFunction(absFunction, formulaFunctionHelpers, args);
+const evaluate = (args: EvalResult[]) => invokeFormulaFunction(absFunction, formulaFunctionHelpers, args);
 
 describe("ABS", () => {
   it("returns absolute values", () => {
@@ -18,8 +17,6 @@ describe("ABS", () => {
   });
 
   it("throws when called with an invalid number of arguments", () => {
-    expect(() => evaluate(makeEvalArgs())).toThrowError(
-      "ABS expects exactly one argument",
-    );
+    expect(() => evaluate(makeEvalArgs())).toThrowError("ABS expects exactly one argument");
   });
 });

@@ -10,7 +10,7 @@ export const powerFunction: FormulaFunctionEagerDefinition = {
     en: "Raises a base number to a given exponent.",
     ja: "指定した指数で底となる数値をべき乗します。",
   },
-  examples: ['POWER(2, 3)', 'POWER(A1, 0.5)'],
+  examples: ["POWER(2, 3)", "POWER(A1, 0.5)"],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("POWER expects exactly two arguments");

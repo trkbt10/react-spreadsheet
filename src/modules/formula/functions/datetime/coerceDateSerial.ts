@@ -5,11 +5,7 @@
 import type { FormulaFunctionHelpers, EvalResult } from "../helpers";
 import { parseDateText } from "./parseDateText";
 
-export const coerceDateSerial = (
-  value: EvalResult,
-  helpers: FormulaFunctionHelpers,
-  description: string,
-): number => {
+export const coerceDateSerial = (value: EvalResult, helpers: FormulaFunctionHelpers, description: string): number => {
   if (Array.isArray(value)) {
     const scalar = helpers.coerceScalar(value, description);
     return coerceDateSerial(scalar, helpers, description);

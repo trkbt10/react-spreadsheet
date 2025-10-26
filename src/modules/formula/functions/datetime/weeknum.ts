@@ -35,18 +35,19 @@ export const weekNumFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the week number of a date using Sunday or Monday as the first day of the week.",
     ja: "週の開始曜日(日曜または月曜)を指定して日付の週番号を返します。",
   },
-  examples: ['WEEKNUM("2024-01-06")', 'WEEKNUM(A1, 2)'],
+  examples: ['WEEKNUM("2024-01-06")', "WEEKNUM(A1, 2)"],
   evaluate: (args, helpers) => {
     if (args.length < 1 || args.length > 2) {
       throw new Error("WEEKNUM expects one or two arguments");
     }
     const serial = helpers.requireNumber(args[0], "WEEKNUM serial");
-    const returnType = args.length === 2
-      ? helpers.requireInteger(
-          helpers.requireNumber(args[1], "WEEKNUM return_type"),
-          "WEEKNUM return_type must be integer",
-        )
-      : 1;
+    const returnType =
+      args.length === 2
+        ? helpers.requireInteger(
+            helpers.requireNumber(args[1], "WEEKNUM return_type"),
+            "WEEKNUM return_type must be integer",
+          )
+        : 1;
     return computeWeekNumber(serial, returnType);
   },
 };

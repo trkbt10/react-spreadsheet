@@ -2,11 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { ifsFunction } from "./ifs";
 import type { FormulaFunctionLazyContext } from "../../functionRegistry";
 import type { FormulaAstNode } from "../../ast";
-import {
-  createLiteralNode,
-  defaultLazyEvaluate,
-  invokeLazyFormulaFunction,
-} from "../testHelpers";
+import { createLiteralNode, defaultLazyEvaluate, invokeLazyFormulaFunction } from "../testHelpers";
 
 const evaluateLazy = (
   nodes: Parameters<NonNullable<typeof ifsFunction.evaluateLazy>>[0],
@@ -30,22 +26,13 @@ describe("ifsFunction", () => {
 
   it("throws when no condition evaluates to true", () => {
     expect(() => {
-      evaluateLazy([
-        createLiteralNode(false),
-        createLiteralNode(1),
-        createLiteralNode(false),
-        createLiteralNode(2),
-      ]);
+      evaluateLazy([createLiteralNode(false), createLiteralNode(1), createLiteralNode(false), createLiteralNode(2)]);
     }).toThrowError("IFS requires at least one matching condition");
   });
 
   it("throws when pairs are missing", () => {
     expect(() => {
-      evaluateLazy([
-        createLiteralNode(true),
-        createLiteralNode(1),
-        createLiteralNode(false),
-      ]);
+      evaluateLazy([createLiteralNode(true), createLiteralNode(1), createLiteralNode(false)]);
     }).toThrowError("IFS expects condition/value pairs");
   });
 

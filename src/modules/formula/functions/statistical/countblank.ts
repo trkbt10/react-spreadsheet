@@ -10,13 +10,10 @@ export const countBlankFunction: FormulaFunctionEagerDefinition = {
     en: "Counts empty cells within the provided ranges.",
     ja: "指定した範囲内の空セルを数えます。",
   },
-  examples: ['COUNTBLANK(A1:A10)', 'COUNTBLANK(A1:C3)'],
+  examples: ["COUNTBLANK(A1:A10)", "COUNTBLANK(A1:C3)"],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
-    return values.reduce<number>(
-      (count, value) => (value === null || value === "" ? count + 1 : count),
-      0,
-    );
+    return values.reduce<number>((count, value) => (value === null || value === "" ? count + 1 : count), 0);
   },
 };
 

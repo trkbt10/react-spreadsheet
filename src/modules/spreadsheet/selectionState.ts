@@ -64,11 +64,7 @@ export const createRangeSelection = (
  * @param targetRow - Target row index
  * @returns New selection state with extended range
  */
-export const extendSelection = (
-  currentState: SelectionState,
-  targetCol: number,
-  targetRow: number,
-): SelectionState => {
+export const extendSelection = (currentState: SelectionState, targetCol: number, targetRow: number): SelectionState => {
   // If no anchor exists, create a new cell selection
   if (!currentState.anchor) {
     return createCellSelection(targetCol, targetRow);

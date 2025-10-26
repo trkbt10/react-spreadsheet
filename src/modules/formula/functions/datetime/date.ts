@@ -11,7 +11,7 @@ export const dateFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the serial number for a specific date, normalising overflowed months and days.",
     ja: "月や日がオーバーフローしていても正規化した日付のシリアル値を返します。",
   },
-  examples: ['DATE(2024, 1, 31)', 'DATE(A1, B1, C1)'],
+  examples: ["DATE(2024, 1, 31)", "DATE(A1, B1, C1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 3) {
       throw new Error("DATE expects exactly three arguments");

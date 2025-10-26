@@ -10,7 +10,7 @@ export const leftFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the leftmost characters from a text value.",
     ja: "文字列の左端から指定した文字数を返します。",
   },
-  examples: ['LEFT("Spreadsheet", 5)', 'LEFT(A1)'],
+  examples: ['LEFT("Spreadsheet", 5)', "LEFT(A1)"],
   evaluate: (args, helpers) => {
     if (args.length === 0 || args.length > 2) {
       throw new Error("LEFT expects one or two arguments");

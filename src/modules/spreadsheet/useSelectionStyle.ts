@@ -20,12 +20,7 @@ export type SelectionType = "none" | "range" | "row" | "column" | "sheet";
  */
 export const useSelectionStyle = () => {
   const { state } = useSheetContext();
-  const {
-    applySheetStyle,
-    applyRowStyle,
-    applyColumnStyle,
-    applyRangeStyle,
-  } = useSheetStyles();
+  const { applySheetStyle, applyRowStyle, applyColumnStyle, applyRangeStyle } = useSheetStyles();
 
   const { selectionRect, selection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
   const selectionRange = selection ? selectionToRange(selection) : null;

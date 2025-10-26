@@ -12,4 +12,3 @@ export const requireNumber = (result: EvalResult, description: string): number =
   }
   return scalar;
 };
-

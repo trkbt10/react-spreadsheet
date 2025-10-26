@@ -53,12 +53,7 @@ describe("lookup functions", () => {
 
   describe("LOOKUP", () => {
     it("returns the corresponding value from the result vector", () => {
-      const value = evaluateFunction(
-        lookupFunction,
-        "b",
-        ["a", "b", "c"],
-        [1, 2, 3],
-      );
+      const value = evaluateFunction(lookupFunction, "b", ["a", "b", "c"], [1, 2, 3]);
       expect(value).toBe(2);
     });
 
@@ -135,25 +130,17 @@ describe("lookup functions", () => {
 
       const result = invokeLazyFormulaFunction(
         offsetFunction,
-        [
-          rangeNode,
-          createLiteralNode(1),
-          createLiteralNode(1),
-          createLiteralNode(2),
-          createLiteralNode(2),
-        ],
+        [rangeNode, createLiteralNode(1), createLiteralNode(1), createLiteralNode(2), createLiteralNode(2)],
         {
           evaluate: evaluateNode,
           origin,
         },
       );
 
-      expect(result).toEqual(
-        [
-          [5, 6],
-          [8, 9],
-        ],
-      );
+      expect(result).toEqual([
+        [5, 6],
+        [8, 9],
+      ]);
     });
   });
 
@@ -225,34 +212,24 @@ describe("lookup functions", () => {
     };
 
     it("resolves a single-cell reference", () => {
-      const result = invokeLazyFormulaFunction(
-        indirectFunction,
-        [createLiteralNode("B2"), createLiteralNode(true)],
-        {
-          evaluate: evaluateNode,
-          origin,
-          parseReference,
-        },
-      );
+      const result = invokeLazyFormulaFunction(indirectFunction, [createLiteralNode("B2"), createLiteralNode(true)], {
+        evaluate: evaluateNode,
+        origin,
+        parseReference,
+      });
       expect(result).toBe(5);
     });
 
     it("resolves a range reference", () => {
-      const result = invokeLazyFormulaFunction(
-        indirectFunction,
-        [createLiteralNode("A1:B2")],
-        {
-          evaluate: evaluateNode,
-          origin,
-          parseReference,
-        },
-      );
-      expect(result).toEqual(
-        [
-          [1, 2],
-          [4, 5],
-        ],
-      );
+      const result = invokeLazyFormulaFunction(indirectFunction, [createLiteralNode("A1:B2")], {
+        evaluate: evaluateNode,
+        origin,
+        parseReference,
+      });
+      expect(result).toEqual([
+        [1, 2],
+        [4, 5],
+      ]);
     });
   });
 });

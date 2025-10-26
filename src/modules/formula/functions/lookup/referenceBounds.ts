@@ -44,4 +44,3 @@ export const resolveReferenceBounds = (node: FormulaAstNode, description: string
 };
 
 // NOTE: Consumed by OFFSET for coordinate calculations.
-

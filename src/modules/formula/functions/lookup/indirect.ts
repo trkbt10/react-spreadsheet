@@ -54,11 +54,7 @@ const resolveReferenceText = (
     return start.slice(0, marker + 1);
   })();
 
-  const endReferenceText = end.includes("!")
-    ? end
-    : sheetPrefix
-      ? `${sheetPrefix}${end}`
-      : end;
+  const endReferenceText = end.includes("!") ? end : sheetPrefix ? `${sheetPrefix}${end}` : end;
 
   return {
     type: "Range" as const,
@@ -73,16 +69,13 @@ export const indirectFunction: FormulaFunctionLazyDefinition = {
     en: "Returns a reference specified by text, allowing dynamic ranges.",
     ja: "文字列で指定した参照を返し、動的な範囲指定を可能にします。",
   },
-  examples: ["INDIRECT(\"A1\")", "INDIRECT(\"Sheet2!B3\")"],
+  examples: ['INDIRECT("A1")', 'INDIRECT("Sheet2!B3")'],
   evaluateLazy: (args, context) => {
     if (args.length !== 1 && args.length !== 2) {
       throw new Error("INDIRECT expects one or two arguments");
     }
 
-    const referenceValue = context.helpers.coerceScalar(
-      context.evaluate(args[0]),
-      "INDIRECT reference_text",
-    );
+    const referenceValue = context.helpers.coerceScalar(context.evaluate(args[0]), "INDIRECT reference_text");
 
     if (typeof referenceValue !== "string") {
       throw new Error("INDIRECT reference_text must be a string");

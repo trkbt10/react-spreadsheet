@@ -98,12 +98,7 @@ export const Scrollbar = ({
   }
 
   return (
-    <div
-      ref={trackRef}
-      className={styles.scrollbar}
-      data-orientation={orientation}
-      onClick={handleTrackClick}
-    >
+    <div ref={trackRef} className={styles.scrollbar} data-orientation={orientation} onClick={handleTrackClick}>
       <div
         className={styles.thumb}
         style={{

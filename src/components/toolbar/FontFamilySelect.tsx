@@ -70,21 +70,21 @@ export const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps): Re
   return (
     <Popover isOpen={isOpen} onClose={closeDropdown} trigger={trigger}>
       <div className={styles.content}>
-          {FONT_FAMILIES.map((font) => (
-            <button
-              key={font.value}
-              type="button"
-              className={styles.option}
-              style={{ fontFamily: font.value }}
-              onClick={() => {
-                handleFamilySelect(font.value);
-              }}
-              data-is-selected={value === font.value}
-            >
-              {font.name}
-            </button>
-          ))}
-        </div>
+        {FONT_FAMILIES.map((font) => (
+          <button
+            key={font.value}
+            type="button"
+            className={styles.option}
+            style={{ fontFamily: font.value }}
+            onClick={() => {
+              handleFamilySelect(font.value);
+            }}
+            data-is-selected={value === font.value}
+          >
+            {font.name}
+          </button>
+        ))}
+      </div>
     </Popover>
   );
 };

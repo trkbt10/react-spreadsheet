@@ -11,7 +11,7 @@ export const countIfsFunction: FormulaFunctionEagerDefinition = {
     en: "Counts values that satisfy multiple range/criteria pairs.",
     ja: "複数の範囲と条件をすべて満たす件数を数えます。",
   },
-  examples: ['COUNTIFS(A1:A10, "East", B1:B10, ">=2024")', 'COUNTIFS(A1:A5, B1:B5, 1)'],
+  examples: ['COUNTIFS(A1:A10, "East", B1:B10, ">=2024")', "COUNTIFS(A1:A5, B1:B5, 1)"],
   evaluate: (args, helpers) => {
     if (args.length < 2 || args.length % 2 !== 0) {
       throw new Error("COUNTIFS expects range/criteria pairs");
@@ -35,17 +35,13 @@ export const countIfsFunction: FormulaFunctionEagerDefinition = {
     });
 
     const referenceLength = pairs[0]?.rangeValues.length ?? 0;
-    if (
-      pairs.some(({ rangeValues }) => rangeValues.length !== referenceLength)
-    ) {
+    if (pairs.some(({ rangeValues }) => rangeValues.length !== referenceLength)) {
       throw new Error("COUNTIFS requires all ranges to be the same size");
     }
 
     return Array.from({ length: referenceLength }, (_, index) => index).reduce<number>(
       (count, index) =>
-        pairs.every(({ rangeValues, predicate }) => predicate(rangeValues[index]))
-          ? count + 1
-          : count,
+        pairs.every(({ rangeValues, predicate }) => predicate(rangeValues[index])) ? count + 1 : count,
       0,
     );
   },

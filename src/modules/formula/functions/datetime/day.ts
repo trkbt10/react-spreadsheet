@@ -11,7 +11,7 @@ export const dayFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the day of the month from a serial date.",
     ja: "シリアル日付から月内の日を返します。",
   },
-  examples: ['DAY("2024-05-10")', 'DAY(A1)'],
+  examples: ['DAY("2024-05-10")', "DAY(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("DAY expects exactly one argument");

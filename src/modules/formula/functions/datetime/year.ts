@@ -11,7 +11,7 @@ export const yearFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the year component from a serial date.",
     ja: "シリアル日付から年を返します。",
   },
-  examples: ['YEAR("2024-05-10")', 'YEAR(A1)'],
+  examples: ['YEAR("2024-05-10")', "YEAR(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("YEAR expects exactly one argument");

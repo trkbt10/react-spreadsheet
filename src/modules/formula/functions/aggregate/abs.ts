@@ -11,7 +11,7 @@ export const absFunction: FormulaFunctionEagerDefinition = {
     en: "Returns the absolute value of a number.",
     ja: "数値の絶対値を返します。",
   },
-  examples: ['ABS(-5)', 'ABS(A1)'],
+  examples: ["ABS(-5)", "ABS(A1)"],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("ABS expects exactly one argument");
