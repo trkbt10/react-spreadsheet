@@ -2,7 +2,6 @@
  * @file Tests for style resolution logic.
  */
 
-import { describe, it, expect } from "bun:test";
 import {
   createStyleRegistry,
   addStyleRule,
@@ -18,7 +17,6 @@ import {
   createColumnTarget,
   createRangeTarget,
   createCellTarget,
-  getStyleKey,
 } from "./cellStyle";
 import type { StyleRule } from "./cellStyle";
 

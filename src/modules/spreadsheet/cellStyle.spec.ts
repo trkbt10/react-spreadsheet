@@ -2,7 +2,6 @@
  * @file Tests for cell styling system.
  */
 
-import { describe, it, expect } from "bun:test";
 import {
   StyleSpecificity,
   createSheetTarget,
