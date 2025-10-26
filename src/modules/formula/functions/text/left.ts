@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const leftFunction: FormulaFunctionEagerDefinition = {
   name: "LEFT",
+  category: "text",
   description: {
     en: "Returns the leftmost characters from a text value.",
     ja: "文字列の左端から指定した文字数を返します。",
   },
   examples: ['LEFT("Spreadsheet", 5)', "LEFT(A1)"],
+  samples: [
+    {
+      input: 'LEFT("Spreadsheet", 6)',
+      output: "Spread",
+      description: {
+        en: "Extracts first 6 characters from the left",
+        ja: "左から最初の6文字を抽出",
+      },
+    },
+    {
+      input: 'LEFT("Hello World", 5)',
+      output: "Hello",
+      description: {
+        en: "Extracts first 5 characters",
+        ja: "最初の5文字を抽出",
+      },
+    },
+    {
+      input: 'LEFT("Data")',
+      output: "D",
+      description: {
+        en: "Defaults to 1 character when count is omitted",
+        ja: "文字数省略時は1文字を返す",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length === 0 || args.length > 2) {
       throw new Error("LEFT expects one or two arguments");

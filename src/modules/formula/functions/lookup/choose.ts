@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const chooseFunction: FormulaFunctionEagerDefinition = {
   name: "CHOOSE",
+  category: "lookup",
   description: {
     en: "Returns a value from a list by index.",
     ja: "インデックスで指定したリストの値を返します。",
   },
   examples: ['CHOOSE(2, "A", "B", "C")', "CHOOSE(A1, B1:B3)"],
+  samples: [
+    {
+      input: 'CHOOSE(2, "Apple", "Banana", "Cherry")',
+      output: "Banana",
+      description: {
+        en: "Returns the second value from the list",
+        ja: "リストから2番目の値を返す",
+      },
+    },
+    {
+      input: "CHOOSE(1, 100, 200, 300)",
+      output: 100,
+      description: {
+        en: "Returns the first numeric value",
+        ja: "最初の数値を返す",
+      },
+    },
+    {
+      input: 'CHOOSE(3, "X", "Y", "Z")',
+      output: "Z",
+      description: {
+        en: "Returns the third and last value",
+        ja: "3番目の最後の値を返す",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 2) {
       throw new Error("CHOOSE expects at least two arguments");

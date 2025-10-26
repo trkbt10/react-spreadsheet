@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const replaceFunction: FormulaFunctionEagerDefinition = {
   name: "REPLACE",
+  category: "text",
   description: {
     en: "Replaces part of a text string with new text based on position and length.",
     ja: "文字列の指定位置と長さに基づいて新しい文字列に置き換えます。",
   },
   examples: ['REPLACE("Spreadsheet", 7, 4, "book")', 'REPLACE(A1, 1, 2, "X")'],
+  samples: [
+    {
+      input: 'REPLACE("Spreadsheet", 7, 5, "book")',
+      output: "Spreadbook",
+      description: {
+        en: "Replaces 5 characters at position 7 with 'book'",
+        ja: "7文字目から5文字を'book'に置換",
+      },
+    },
+    {
+      input: 'REPLACE("2024-01-15", 6, 2, "12")',
+      output: "2024-12-15",
+      description: {
+        en: "Replaces month in date string",
+        ja: "日付文字列の月部分を置換",
+      },
+    },
+    {
+      input: 'REPLACE("Hello World", 1, 5, "Hi")',
+      output: "Hi World",
+      description: {
+        en: "Replaces first word with shorter text",
+        ja: "最初の単語をより短いテキストに置換",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 4) {
       throw new Error("REPLACE expects exactly four arguments");

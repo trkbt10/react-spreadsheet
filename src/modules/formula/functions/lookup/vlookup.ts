@@ -7,11 +7,38 @@ import { toLookupTable, readTableCell } from "./table";
 
 export const vlookupFunction: FormulaFunctionEagerDefinition = {
   name: "VLOOKUP",
+  category: "lookup",
   description: {
     en: "Searches the first column of a table for a value and returns data from another column.",
     ja: "表の最初の列で値を検索し、別の列のデータを返します。",
   },
   examples: ["VLOOKUP(A2, Table1, 3, FALSE)", "VLOOKUP(5, A1:B10, 2)"],
+  samples: [
+    {
+      input: "VLOOKUP(2, [[1, \"A\"], [2, \"B\"], [3, \"C\"]], 2, FALSE)",
+      output: "B",
+      description: {
+        en: "Exact match lookup in a 3x2 table",
+        ja: "3x2テーブルでの完全一致検索",
+      },
+    },
+    {
+      input: "VLOOKUP(2.5, [[1, 10], [2, 20], [3, 30]], 2, TRUE)",
+      output: 20,
+      description: {
+        en: "Approximate match returns largest value less than or equal to lookup",
+        ja: "近似一致は検索値以下の最大値を返す",
+      },
+    },
+    {
+      input: "VLOOKUP(\"Cat\", [[\"Apple\", 5], [\"Cat\", 10], [\"Dog\", 15]], 2, FALSE)",
+      output: 10,
+      description: {
+        en: "Text lookup with exact match",
+        ja: "テキスト検索での完全一致",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length > 4) {
       throw new Error("VLOOKUP expects three or four arguments");

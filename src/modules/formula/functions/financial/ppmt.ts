@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const ppmtFunction: FormulaFunctionEagerDefinition = {
   name: "PPMT",
+  category: "financial",
   description: {
     en: "Returns the principal component of a payment for a given period.",
     ja: "指定期に支払う元本部分を返します。",
   },
   examples: ["PPMT(0.05/12, 1, 60, 10000)", "PPMT(rate, per, nper, pv, fv, type)"],
+  samples: [
+    {
+      input: "PPMT(0.05/12, 1, 60, 10000)",
+      output: -147.04,
+      description: {
+        en: "Principal portion of first payment on $10,000 loan",
+        ja: "10,000ドルのローンの初回支払いの元本部分",
+      },
+    },
+    {
+      input: "PPMT(0.08/12, 12, 120, 50000)",
+      output: -308.46,
+      description: {
+        en: "Principal portion of 12th payment",
+        ja: "12回目の支払いの元本部分",
+      },
+    },
+    {
+      input: "PPMT(0.06/12, 36, 36, 20000)",
+      output: -604.17,
+      description: {
+        en: "Principal portion of final payment",
+        ja: "最終支払いの元本部分",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 4 || args.length > 6) {
       throw new Error("PPMT expects rate, period, nper, pv, and optional fv and type");

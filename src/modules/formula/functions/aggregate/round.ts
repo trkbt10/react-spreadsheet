@@ -29,11 +29,38 @@ const roundToDigits = (value: number, digits: number): number => {
 
 export const roundFunction: FormulaFunctionEagerDefinition = {
   name: "ROUND",
+  category: "aggregate",
   description: {
     en: "Rounds a number to a specified number of digits using half-away-from-zero rounding.",
     ja: "数値を指定した桁数に、ゼロから離れる丸め規則で丸めます。",
   },
   examples: ["ROUND(1.235, 2)", "ROUND(A1, -1)"],
+  samples: [
+    {
+      input: "ROUND(1.235, 2)",
+      output: 1.24,
+      description: {
+        en: "Round to two decimal places",
+        ja: "小数第2位に四捨五入",
+      },
+    },
+    {
+      input: "ROUND(15.5, 0)",
+      output: 16,
+      description: {
+        en: "Round to nearest integer",
+        ja: "最も近い整数に四捨五入",
+      },
+    },
+    {
+      input: "ROUND(1234.567, -2)",
+      output: 1200,
+      description: {
+        en: "Round to hundreds place",
+        ja: "百の位に四捨五入",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("ROUND expects exactly two arguments");

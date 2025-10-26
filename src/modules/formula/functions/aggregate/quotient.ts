@@ -12,11 +12,38 @@ const truncateTowardZero = (value: number): number => {
 
 export const quotientFunction: FormulaFunctionEagerDefinition = {
   name: "QUOTIENT",
+  category: "aggregate",
   description: {
     en: "Returns the integer portion of a division, truncating toward zero.",
     ja: "除算の結果をゼロ方向に切り捨てた整数部分を返します。",
   },
   examples: ["QUOTIENT(10, 3)", "QUOTIENT(A1, B1)"],
+  samples: [
+    {
+      input: "QUOTIENT(10, 3)",
+      output: 3,
+      description: {
+        en: "Integer quotient of positive numbers",
+        ja: "正の数の整数商",
+      },
+    },
+    {
+      input: "QUOTIENT(15, 4)",
+      output: 3,
+      description: {
+        en: "Division result truncated to integer",
+        ja: "除算結果を整数に切り捨て",
+      },
+    },
+    {
+      input: "QUOTIENT(-10, 3)",
+      output: -3,
+      description: {
+        en: "Negative division truncated toward zero",
+        ja: "負の除算をゼロ方向へ切り捨て",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("QUOTIENT expects exactly two arguments");

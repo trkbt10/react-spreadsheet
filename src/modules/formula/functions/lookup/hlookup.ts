@@ -7,11 +7,38 @@ import { toLookupTable, readTableCell } from "./table";
 
 export const hlookupFunction: FormulaFunctionEagerDefinition = {
   name: "HLOOKUP",
+  category: "lookup",
   description: {
     en: "Searches the first row of a table for a value and returns data from another row.",
     ja: "表の最初の行で値を検索し、別の行のデータを返します。",
   },
   examples: ["HLOOKUP(A1, Table1, 2, FALSE)", "HLOOKUP(5, A1:J2, 2)"],
+  samples: [
+    {
+      input: "HLOOKUP(\"B\", [[\"A\", \"B\", \"C\"], [10, 20, 30]], 2, FALSE)",
+      output: 20,
+      description: {
+        en: "Exact match in horizontal table",
+        ja: "横方向テーブルでの完全一致",
+      },
+    },
+    {
+      input: "HLOOKUP(2.5, [[1, 2, 3], [\"X\", \"Y\", \"Z\"]], 2, TRUE)",
+      output: "Y",
+      description: {
+        en: "Approximate match in first row",
+        ja: "最初の行での近似一致",
+      },
+    },
+    {
+      input: "HLOOKUP(\"Cat\", [[\"Apple\", \"Cat\", \"Dog\"], [5, 10, 15]], 2, FALSE)",
+      output: 10,
+      description: {
+        en: "Text lookup in horizontal header",
+        ja: "横方向ヘッダーでのテキスト検索",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length > 4) {
       throw new Error("HLOOKUP expects three or four arguments");

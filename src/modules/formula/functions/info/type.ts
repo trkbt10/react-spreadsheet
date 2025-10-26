@@ -32,11 +32,38 @@ const determineType = (value: EvalResult): number => {
 
 export const typeFunction: FormulaFunctionLazyDefinition = {
   name: "TYPE",
+  category: "info",
   description: {
     en: "Returns a number representing the type of a value.",
     ja: "値の種類を表す番号を返します。",
   },
   examples: ["TYPE(42)", "TYPE(\"text\")", "TYPE(TRUE)", "TYPE(1/0)"],
+  samples: [
+    {
+      input: "TYPE(42)",
+      output: 1,
+      description: {
+        en: "Number type is 1",
+        ja: "数値型は1",
+      },
+    },
+    {
+      input: 'TYPE("text")',
+      output: 2,
+      description: {
+        en: "Text type is 2",
+        ja: "テキスト型は2",
+      },
+    },
+    {
+      input: "TYPE(TRUE)",
+      output: 4,
+      description: {
+        en: "Boolean type is 4",
+        ja: "論理値型は4",
+      },
+    },
+  ],
   evaluateLazy: (nodes, context) => {
     if (nodes.length !== 1) {
       throw new Error("TYPE expects exactly one argument");

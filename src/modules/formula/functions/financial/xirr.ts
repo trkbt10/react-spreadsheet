@@ -25,11 +25,30 @@ const hasOpposingSigns = (values: number[]): boolean => {
 
 export const xirrFunction: FormulaFunctionEagerDefinition = {
   name: "XIRR",
+  category: "financial",
   description: {
     en: "Returns the internal rate of return for irregular cash flows.",
     ja: "不規則なキャッシュフロー列の内部収益率を計算します。",
   },
   examples: ["XIRR(values, dates)", "XIRR(values, dates, guess)"],
+  samples: [
+    {
+      input: "XIRR([-10000, 3000, 4200, 6800], [44562, 44652, 44743, 44926])",
+      output: 0.3733,
+      description: {
+        en: "IRR for irregular cash flow dates",
+        ja: "不規則な日付のキャッシュフローのIRR",
+      },
+    },
+    {
+      input: "XIRR([-1000, 500, 600], [45000, 45100, 45200], 0.1)",
+      output: 0.2586,
+      description: {
+        en: "IRR with initial guess",
+        ja: "初期推定値を指定したIRR",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 2 || args.length > 3) {
       throw new Error("XIRR expects values, dates, and optional guess");

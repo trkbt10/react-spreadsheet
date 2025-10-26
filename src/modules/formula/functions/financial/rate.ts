@@ -22,11 +22,38 @@ const evaluateBalance = (
 
 export const rateFunction: FormulaFunctionEagerDefinition = {
   name: "RATE",
+  category: "financial",
   description: {
     en: "Returns the interest rate per period for an annuity.",
     ja: "年金の各期利率を算出します。",
   },
   examples: ["RATE(60, -188.71, 10000)", "RATE(nper, pmt, pv, fv, type, guess)"],
+  samples: [
+    {
+      input: "RATE(60, -188.71, 10000)",
+      output: 0.004167,
+      description: {
+        en: "Monthly interest rate for a loan (approximately 5% annual)",
+        ja: "ローンの月利（年利約5%）",
+      },
+    },
+    {
+      input: "RATE(120, -606.64, 50000)",
+      output: 0.006667,
+      description: {
+        en: "Monthly rate for 10-year loan",
+        ja: "10年ローンの月利",
+      },
+    },
+    {
+      input: "RATE(36, -300, 10000, 0, 0, 0.01)",
+      output: 0.005827,
+      description: {
+        en: "Rate with initial guess",
+        ja: "初期推定値を指定した利率計算",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length > 6) {
       throw new Error("RATE expects nper, payment, pv, and optional fv, type, guess");

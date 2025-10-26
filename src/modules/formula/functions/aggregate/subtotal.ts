@@ -12,11 +12,38 @@ const collectValues = (args: FormulaEvaluationResult[][]): FormulaEvaluationResu
 
 export const subtotalFunction: FormulaFunctionEagerDefinition = {
   name: "SUBTOTAL",
+  category: "aggregate",
   description: {
     en: "Calculates a subtotal using a selected aggregation and one or more ranges.",
     ja: "指定した集計方法で1つ以上の範囲を集計した小計を返します。",
   },
   examples: ["SUBTOTAL(9, A1:A10)", "SUBTOTAL(1, A1:A5, B1:B5)"],
+  samples: [
+    {
+      input: "SUBTOTAL(9, [10, 20, 30])",
+      output: 60,
+      description: {
+        en: "Sum (function 9) of values",
+        ja: "値の合計（関数9）",
+      },
+    },
+    {
+      input: "SUBTOTAL(1, [5, 10, 15])",
+      output: 10,
+      description: {
+        en: "Average (function 1) of values",
+        ja: "値の平均（関数1）",
+      },
+    },
+    {
+      input: "SUBTOTAL(4, [3, 7, 2, 8])",
+      output: 8,
+      description: {
+        en: "Maximum (function 4) of values",
+        ja: "値の最大（関数4）",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 2) {
       throw new Error("SUBTOTAL expects a function number and at least one range");

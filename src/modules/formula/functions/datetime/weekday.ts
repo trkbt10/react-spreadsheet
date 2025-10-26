@@ -20,11 +20,38 @@ const normalizeWeekday = (weekday: number, returnType: number): number => {
 
 export const weekDayFunction: FormulaFunctionEagerDefinition = {
   name: "WEEKDAY",
+  category: "datetime",
   description: {
     en: "Returns the day of the week for a date, with configurable numbering schemes.",
     ja: "日付の曜日を取得し、番号付け方式を指定できます。",
   },
   examples: ['WEEKDAY("2024-01-07")', "WEEKDAY(A1, 2)"],
+  samples: [
+    {
+      input: 'WEEKDAY("2024-01-07")',
+      output: 1,
+      description: {
+        en: "Sunday returns 1 (default numbering)",
+        ja: "日曜日は1を返す（デフォルトの番号付け）",
+      },
+    },
+    {
+      input: 'WEEKDAY("2024-01-08", 2)',
+      output: 1,
+      description: {
+        en: "Monday returns 1 (Monday-based numbering)",
+        ja: "月曜日は1を返す（月曜始まりの番号付け）",
+      },
+    },
+    {
+      input: 'WEEKDAY("2024-01-08", 3)',
+      output: 0,
+      description: {
+        en: "Monday returns 0 (0-indexed from Monday)",
+        ja: "月曜日は0を返す（月曜から0始まりの番号付け）",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 1 || args.length > 2) {
       throw new Error("WEEKDAY expects one or two arguments");

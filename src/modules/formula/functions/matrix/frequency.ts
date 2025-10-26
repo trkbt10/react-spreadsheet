@@ -34,11 +34,38 @@ const computeFrequencyCounts = (data: number[], bins: number[]): number[] => {
 
 export const frequencyFunction: FormulaFunctionEagerDefinition = {
   name: "FREQUENCY",
+  category: "matrix",
   description: {
     en: "Returns a frequency distribution as a vertical array.",
     ja: "度数分布を縦方向の配列として返します。",
   },
   examples: ["FREQUENCY(A1:A10, B1:B3)"],
+  samples: [
+    {
+      input: "FREQUENCY([1, 2, 3, 4, 5, 6], [2, 4])",
+      output: [[2], [2], [2]],
+      description: {
+        en: "Count values <=2, 2<x<=4, >4 (returns 2, 2, 2)",
+        ja: "値を<=2、2<x<=4、>4でカウント（2、2、2を返す）",
+      },
+    },
+    {
+      input: "FREQUENCY([10, 20, 30, 40], [15, 25, 35])",
+      output: [[1], [1], [1], [1]],
+      description: {
+        en: "Count data in bins <=15, 15<x<=25, 25<x<=35, >35",
+        ja: "<=15、15<x<=25、25<x<=35、>35の範囲でデータをカウント",
+      },
+    },
+    {
+      input: "FREQUENCY([5, 5, 5, 15, 25, 25], [10, 20])",
+      output: [[3], [1], [2]],
+      description: {
+        en: "Count values <=10 (3), 10<x<=20 (1), >20 (2)",
+        ja: "<=10 (3)、10<x<=20 (1)、>20 (2)の値をカウント",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("FREQUENCY expects exactly two arguments");

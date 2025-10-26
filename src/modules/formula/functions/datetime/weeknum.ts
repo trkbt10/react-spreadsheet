@@ -31,11 +31,38 @@ const computeWeekNumber = (serial: number, returnType: number): number => {
 
 export const weekNumFunction: FormulaFunctionEagerDefinition = {
   name: "WEEKNUM",
+  category: "datetime",
   description: {
     en: "Returns the week number of a date using Sunday or Monday as the first day of the week.",
     ja: "週の開始曜日(日曜または月曜)を指定して日付の週番号を返します。",
   },
   examples: ['WEEKNUM("2024-01-06")', "WEEKNUM(A1, 2)"],
+  samples: [
+    {
+      input: 'WEEKNUM("2024-01-06")',
+      output: 1,
+      description: {
+        en: "Week number with Sunday as first day",
+        ja: "日曜始まりでの週番号",
+      },
+    },
+    {
+      input: 'WEEKNUM("2024-01-15", 2)',
+      output: 3,
+      description: {
+        en: "Week number with Monday as first day",
+        ja: "月曜始まりでの週番号",
+      },
+    },
+    {
+      input: 'WEEKNUM("2024-12-31")',
+      output: 53,
+      description: {
+        en: "Last week of the year (Sunday-based)",
+        ja: "年の最終週（日曜始まり）",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 1 || args.length > 2) {
       throw new Error("WEEKNUM expects one or two arguments");

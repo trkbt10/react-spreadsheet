@@ -7,11 +7,22 @@ import { createCriteriaPredicate } from "../helpers";
 
 export const countIfsFunction: FormulaFunctionEagerDefinition = {
   name: "COUNTIFS",
+  category: "statistical",
   description: {
     en: "Counts values that satisfy multiple range/criteria pairs.",
     ja: "複数の範囲と条件をすべて満たす件数を数えます。",
   },
   examples: ['COUNTIFS(A1:A10, "East", B1:B10, ">=2024")', "COUNTIFS(A1:A5, B1:B5, 1)"],
+  samples: [
+    {
+      input: 'COUNTIFS([1, 2, 3, 4], ">1", [10, 20, 30, 40], ">=20")',
+      output: 2,
+      description: {
+        en: "Count with multiple criteria",
+        ja: "複数条件でのカウント",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 2 || args.length % 2 !== 0) {
       throw new Error("COUNTIFS expects range/criteria pairs");

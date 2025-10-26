@@ -39,11 +39,38 @@ const computeBesselSeries = (order: number, x: number, alternating: boolean): nu
 
 export const besseliFunction: FormulaFunctionEagerDefinition = {
   name: "BESSELI",
+  category: "engineering",
   description: {
     en: "Returns the modified Bessel function of the first kind.",
     ja: "第1種変形ベッセル関数を返します。",
   },
   examples: ["BESSELI(1, 0)", "BESSELI(2, 1.5)"],
+  samples: [
+    {
+      input: "BESSELI(0, 0)",
+      output: 1,
+      description: {
+        en: "Modified Bessel I₀(0) equals 1",
+        ja: "変形ベッセルI₀(0)は1",
+      },
+    },
+    {
+      input: "BESSELI(1, 0)",
+      output: 1.2661,
+      description: {
+        en: "Modified Bessel I₀(1) is approximately 1.2661",
+        ja: "変形ベッセルI₀(1)は約1.2661",
+      },
+    },
+    {
+      input: "BESSELI(1, 1)",
+      output: 0.5652,
+      description: {
+        en: "Modified Bessel I₁(1) is approximately 0.5652",
+        ja: "変形ベッセルI₁(1)は約0.5652",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("BESSELI expects exactly two arguments");
@@ -60,11 +87,38 @@ export const besseliFunction: FormulaFunctionEagerDefinition = {
 
 export const besseljFunction: FormulaFunctionEagerDefinition = {
   name: "BESSELJ",
+  category: "engineering",
   description: {
     en: "Returns the Bessel function of the first kind.",
     ja: "第1種ベッセル関数を返します。",
   },
   examples: ["BESSELJ(0, 1)", "BESSELJ(1, 2.5)"],
+  samples: [
+    {
+      input: "BESSELJ(0, 0)",
+      output: 1,
+      description: {
+        en: "Bessel J₀(0) equals 1",
+        ja: "ベッセルJ₀(0)は1",
+      },
+    },
+    {
+      input: "BESSELJ(1, 0)",
+      output: 0.7652,
+      description: {
+        en: "Bessel J₀(1) is approximately 0.7652",
+        ja: "ベッセルJ₀(1)は約0.7652",
+      },
+    },
+    {
+      input: "BESSELJ(1, 1)",
+      output: 0.4401,
+      description: {
+        en: "Bessel J₁(1) is approximately 0.4401",
+        ja: "ベッセルJ₁(1)は約0.4401",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("BESSELJ expects exactly two arguments");

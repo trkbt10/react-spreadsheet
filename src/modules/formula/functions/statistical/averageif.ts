@@ -7,11 +7,30 @@ import { createCriteriaPredicate } from "../helpers";
 
 export const averageIfFunction: FormulaFunctionEagerDefinition = {
   name: "AVERAGEIF",
+  category: "statistical",
   description: {
     en: "Returns the mean of values that satisfy a single condition.",
     ja: "単一条件を満たす値の平均を計算します。",
   },
   examples: ['AVERAGEIF(A1:A10, ">0")', 'AVERAGEIF(A1:A10, "=East", B1:B10)'],
+  samples: [
+    {
+      input: 'AVERAGEIF([5, 10, 15, 20], ">10")',
+      output: 17.5,
+      description: {
+        en: "Average of values greater than 10",
+        ja: "10より大きい値の平均",
+      },
+    },
+    {
+      input: 'AVERAGEIF([10, 20, 30, 40], ">=20")',
+      output: 30,
+      description: {
+        en: "Average with condition",
+        ja: "条件付きの平均",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 2 || args.length > 3) {
       throw new Error("AVERAGEIF expects two or three arguments");

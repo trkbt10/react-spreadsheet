@@ -6,11 +6,22 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const trueFunction: FormulaFunctionEagerDefinition = {
   name: "TRUE",
+  category: "logical",
   description: {
     en: "Returns the logical constant TRUE.",
     ja: "論理値TRUEを返します。",
   },
   examples: ["TRUE()"],
+  samples: [
+    {
+      input: "TRUE()",
+      output: true,
+      description: {
+        en: "Return logical TRUE",
+        ja: "論理値TRUEを返す",
+      },
+    },
+  ],
   evaluate: (args) => {
     if (args.length !== 0) {
       throw new Error("TRUE expects no arguments");

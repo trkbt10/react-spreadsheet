@@ -140,18 +140,31 @@ export type FormulaFunctionDescription = {
   ja: string;
 };
 
+export type FormulaFunctionSample = {
+  input: string;
+  output: string | number | boolean | (string | number | boolean)[][] | (string | number | boolean)[];
+  description?: {
+    en: string;
+    ja: string;
+  };
+};
+
 export type FormulaFunctionEagerDefinition = {
   name: string;
+  category?: string;
   description?: FormulaFunctionDescription;
   examples?: string[];
+  samples?: FormulaFunctionSample[];
   evaluate: FormulaFunctionEvaluator;
   evaluateLazy?: undefined;
 };
 
 export type FormulaFunctionLazyDefinition = {
   name: string;
+  category?: string;
   description?: FormulaFunctionDescription;
   examples?: string[];
+  samples?: FormulaFunctionSample[];
   evaluateLazy: FormulaFunctionLazyEvaluator;
   evaluate?: undefined;
 };
@@ -179,6 +192,20 @@ export const getFormulaFunction = (name: string): FormulaFunctionDefinition | un
 
 export const listFormulaFunctions = (): FormulaFunctionDefinition[] => {
   return Array.from(registry.values());
+};
+
+export const getFunctionsByCategory = (category: string): FormulaFunctionDefinition[] => {
+  return Array.from(registry.values()).filter((fn) => fn.category === category);
+};
+
+export const listFunctionCategories = (): string[] => {
+  const categories = new Set<string>();
+  for (const fn of registry.values()) {
+    if (fn.category !== undefined) {
+      categories.add(fn.category);
+    }
+  }
+  return Array.from(categories).sort();
 };
 
 export { registeredHelpers as formulaFunctionHelpers };

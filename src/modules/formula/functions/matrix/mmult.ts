@@ -33,11 +33,38 @@ const multiplyMatrices = (left: number[][], right: number[][], description: stri
 
 export const mmultFunction: FormulaFunctionEagerDefinition = {
   name: "MMULT",
+  category: "matrix",
   description: {
     en: "Returns the matrix product of two arrays.",
     ja: "2つの配列の行列積を返します。",
   },
   examples: ["MMULT({1,2;3,4},{5;6})", "MMULT(A1:B2, C1:D2)"],
+  samples: [
+    {
+      input: "MMULT([[1, 2], [3, 4]], [[5], [6]])",
+      output: [[17], [39]],
+      description: {
+        en: "2x2 matrix multiplied by 2x1 column vector",
+        ja: "2x2行列と2x1列ベクトルの乗算",
+      },
+    },
+    {
+      input: "MMULT([[1, 2]], [[3, 4], [5, 6]])",
+      output: [[13, 16]],
+      description: {
+        en: "1x2 row vector multiplied by 2x2 matrix",
+        ja: "1x2行ベクトルと2x2行列の乗算",
+      },
+    },
+    {
+      input: "MMULT([[1, 0], [0, 1]], [[2, 3], [4, 5]])",
+      output: [[2, 3], [4, 5]],
+      description: {
+        en: "Identity matrix multiplied by 2x2 matrix",
+        ja: "単位行列と2x2行列の乗算",
+      },
+    },
+  ],
   evaluate: (args) => {
     if (args.length !== 2) {
       throw new Error("MMULT expects exactly two arguments");

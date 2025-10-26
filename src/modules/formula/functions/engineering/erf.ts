@@ -73,11 +73,38 @@ const computeErfc = (x: number): number => {
 
 export const erfFunction: FormulaFunctionEagerDefinition = {
   name: "ERF",
+  category: "engineering",
   description: {
     en: "Returns the integral of the Gaussian distribution.",
     ja: "ガウス分布の積分値（誤差関数）を返します。",
   },
   examples: ["ERF(1)", "ERF(0, 1)"],
+  samples: [
+    {
+      input: "ERF(0)",
+      output: 0,
+      description: {
+        en: "Error function of 0 is 0",
+        ja: "0の誤差関数は0",
+      },
+    },
+    {
+      input: "ERF(1)",
+      output: 0.8427,
+      description: {
+        en: "Error function of 1 is approximately 0.8427",
+        ja: "1の誤差関数は約0.8427",
+      },
+    },
+    {
+      input: "ERF(0, 1)",
+      output: 0.8427,
+      description: {
+        en: "Error function between 0 and 1",
+        ja: "0から1までの誤差関数",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length === 0 || args.length > 2) {
       throw new Error("ERF expects one or two arguments");
@@ -93,11 +120,38 @@ export const erfFunction: FormulaFunctionEagerDefinition = {
 
 export const erfcFunction: FormulaFunctionEagerDefinition = {
   name: "ERFC",
+  category: "engineering",
   description: {
     en: "Returns the complementary error function.",
     ja: "相補誤差関数を返します。",
   },
   examples: ["ERFC(1)"],
+  samples: [
+    {
+      input: "ERFC(0)",
+      output: 1,
+      description: {
+        en: "Complementary error function of 0 is 1",
+        ja: "0の相補誤差関数は1",
+      },
+    },
+    {
+      input: "ERFC(1)",
+      output: 0.1573,
+      description: {
+        en: "Complementary error function of 1 is approximately 0.1573",
+        ja: "1の相補誤差関数は約0.1573",
+      },
+    },
+    {
+      input: "ERFC(2)",
+      output: 0.0047,
+      description: {
+        en: "Complementary error function of 2 is approximately 0.0047",
+        ja: "2の相補誤差関数は約0.0047",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("ERFC expects exactly one argument");

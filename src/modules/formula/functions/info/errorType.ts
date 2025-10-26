@@ -6,11 +6,22 @@ import type { FormulaFunctionLazyDefinition } from "../../functionRegistry";
 
 export const errorTypeFunction: FormulaFunctionLazyDefinition = {
   name: "ERROR.TYPE",
+  category: "info",
   description: {
     en: "Returns a number corresponding to an error value.",
     ja: "エラー値に対応する番号を返します。",
   },
   examples: ['ERROR.TYPE(1/0)', 'ERROR.TYPE(IFNA(A1, "Fallback"))'],
+  samples: [
+    {
+      input: "ERROR.TYPE(1/0)",
+      output: 2,
+      description: {
+        en: "Division by zero error type",
+        ja: "ゼロ除算エラーのタイプ",
+      },
+    },
+  ],
   evaluateLazy: (nodes, context) => {
     if (nodes.length !== 1) {
       throw new Error("ERROR.TYPE expects exactly one argument");

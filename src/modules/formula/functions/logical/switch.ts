@@ -6,11 +6,30 @@ import type { FormulaFunctionLazyDefinition } from "../../functionRegistry";
 
 export const switchFunction: FormulaFunctionLazyDefinition = {
   name: "SWITCH",
+  category: "logical",
   description: {
     en: "Matches an expression against value/result pairs and returns the first match or default.",
     ja: "式を値と結果のペアと比較し、最初に一致した結果または既定値を返します。",
   },
   examples: ['SWITCH(A1, 1, "One", 2, "Two", "Other")'],
+  samples: [
+    {
+      input: 'SWITCH(2, 1, "One", 2, "Two", 3, "Three")',
+      output: "Two",
+      description: {
+        en: "Match value and return result",
+        ja: "値が一致して結果を返す",
+      },
+    },
+    {
+      input: 'SWITCH(5, 1, "One", 2, "Two", "Default")',
+      output: "Default",
+      description: {
+        en: "No match, return default",
+        ja: "一致なし、デフォルトを返す",
+      },
+    },
+  ],
   evaluateLazy: (argNodes, context) => {
     if (argNodes.length < 3) {
       throw new Error("SWITCH expects at least three arguments");

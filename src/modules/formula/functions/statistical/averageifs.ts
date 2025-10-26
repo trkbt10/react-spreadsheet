@@ -7,11 +7,22 @@ import { createCriteriaPredicate } from "../helpers";
 
 export const averageIfsFunction: FormulaFunctionEagerDefinition = {
   name: "AVERAGEIFS",
+  category: "statistical",
   description: {
     en: "Returns the mean of values that satisfy multiple criteria across ranges.",
     ja: "複数の範囲と条件を満たす値の平均を計算します。",
   },
   examples: ['AVERAGEIFS(C1:C10, A1:A10, "East", B1:B10, ">=2024")', "AVERAGEIFS(A1:A5, B1:B5, 1)"],
+  samples: [
+    {
+      input: 'AVERAGEIFS([10, 20, 30], [1, 2, 3], ">1", [5, 10, 15], ">=10")',
+      output: 25,
+      description: {
+        en: "Average with multiple criteria",
+        ja: "複数条件での平均",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 3 || (args.length - 1) % 2 !== 0) {
       throw new Error("AVERAGEIFS expects average_range followed by range/criteria pairs");

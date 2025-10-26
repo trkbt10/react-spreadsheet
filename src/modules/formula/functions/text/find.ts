@@ -17,11 +17,38 @@ const isMatchAt = (haystack: string[], needle: string[], startIndex: number): bo
 
 export const findFunction: FormulaFunctionEagerDefinition = {
   name: "FIND",
+  category: "text",
   description: {
     en: "Locates one text value within another, matching case and returning the position.",
     ja: "大文字小文字を区別して文字列内の位置を検索します。",
   },
   examples: ['FIND("sheet", "Spreadsheet")', 'FIND("-", A1, 3)'],
+  samples: [
+    {
+      input: 'FIND("sheet", "Spreadsheet")',
+      output: 7,
+      description: {
+        en: "Finds 'sheet' starting at position 7 (case-sensitive)",
+        ja: "'sheet'が7文字目から始まる（大文字小文字区別）",
+      },
+    },
+    {
+      input: 'FIND("-", "2024-01-15")',
+      output: 5,
+      description: {
+        en: "Finds first hyphen at position 5",
+        ja: "最初のハイフンが5文字目",
+      },
+    },
+    {
+      input: 'FIND("-", "2024-01-15", 6)',
+      output: 8,
+      description: {
+        en: "Finds next hyphen starting from position 6",
+        ja: "6文字目以降の次のハイフンを検索",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 2 || args.length > 3) {
       throw new Error("FIND expects two or three arguments");

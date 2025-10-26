@@ -31,11 +31,38 @@ const evaluateDiscountedSeries = (
 
 export const irrFunction: FormulaFunctionEagerDefinition = {
   name: "IRR",
+  category: "financial",
   description: {
     en: "Returns the internal rate of return for a series of cash flows.",
     ja: "キャッシュフロー列の内部収益率を返します。",
   },
   examples: ["IRR({-10000,3000,4200,6800})", "IRR(values, guess)"],
+  samples: [
+    {
+      input: "IRR([-10000, 3000, 4200, 6800])",
+      output: 0.2343,
+      description: {
+        en: "IRR for investment with initial outlay and three returns",
+        ja: "初期支出と3回のリターンがある投資のIRR",
+      },
+    },
+    {
+      input: "IRR([-50000, 10000, 15000, 20000, 25000])",
+      output: 0.1851,
+      description: {
+        en: "IRR for multi-period investment",
+        ja: "複数期間の投資のIRR",
+      },
+    },
+    {
+      input: "IRR([-100, 50, 60, 70], 0.1)",
+      output: 0.3425,
+      description: {
+        en: "IRR with initial guess",
+        ja: "初期推定値を指定したIRR",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 1 || args.length > 2) {
       throw new Error("IRR expects values and an optional guess");

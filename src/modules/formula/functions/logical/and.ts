@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const andFunction: FormulaFunctionEagerDefinition = {
   name: "AND",
+  category: "logical",
   description: {
     en: "Returns TRUE if all arguments evaluate to TRUE; otherwise FALSE.",
     ja: "すべての引数がTRUEの場合にTRUEを返し、それ以外はFALSEを返します。",
   },
   examples: ["AND(TRUE, FALSE)", "AND(A1:A3)"],
+  samples: [
+    {
+      input: "AND(TRUE, TRUE, TRUE)",
+      output: true,
+      description: {
+        en: "All values are TRUE",
+        ja: "すべての値がTRUE",
+      },
+    },
+    {
+      input: "AND(TRUE, FALSE, TRUE)",
+      output: false,
+      description: {
+        en: "At least one FALSE",
+        ja: "少なくとも1つがFALSE",
+      },
+    },
+    {
+      input: "AND(1, 1, 1)",
+      output: true,
+      description: {
+        en: "Non-zero numbers coerce to TRUE",
+        ja: "ゼロ以外の数値はTRUEに変換される",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args);
     if (values.length === 0) {

@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const ipmtFunction: FormulaFunctionEagerDefinition = {
   name: "IPMT",
+  category: "financial",
   description: {
     en: "Returns the interest payment for a given period.",
     ja: "指定期の利息支払額を返します。",
   },
   examples: ["IPMT(0.05/12, 1, 60, 10000)", "IPMT(rate, per, nper, pv, fv, type)"],
+  samples: [
+    {
+      input: "IPMT(0.05/12, 1, 60, 10000)",
+      output: -41.67,
+      description: {
+        en: "Interest portion of first payment on $10,000 loan",
+        ja: "10,000ドルのローンの初回支払いの利息部分",
+      },
+    },
+    {
+      input: "IPMT(0.08/12, 12, 120, 50000)",
+      output: -298.18,
+      description: {
+        en: "Interest portion of 12th payment",
+        ja: "12回目の支払いの利息部分",
+      },
+    },
+    {
+      input: "IPMT(0.06/12, 6, 36, 20000)",
+      output: -87.03,
+      description: {
+        en: "Interest portion of 6th payment",
+        ja: "6回目の支払いの利息部分",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length < 4 || args.length > 6) {
       throw new Error("IPMT expects rate, period, nper, pv, and optional fv and type");

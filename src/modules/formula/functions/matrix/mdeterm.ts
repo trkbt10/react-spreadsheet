@@ -91,11 +91,38 @@ const computeDeterminant = (matrix: number[][]): number => {
 
 export const mdetermFunction: FormulaFunctionEagerDefinition = {
   name: "MDETERM",
+  category: "matrix",
   description: {
     en: "Returns the determinant of a square matrix.",
     ja: "正方行列の行列式を返します。",
   },
   examples: ["MDETERM({1,2;3,4})", "MDETERM(A1:C3)"],
+  samples: [
+    {
+      input: "MDETERM([[1, 0], [0, 1]])",
+      output: 1,
+      description: {
+        en: "Determinant of identity matrix is 1",
+        ja: "単位行列の行列式は1",
+      },
+    },
+    {
+      input: "MDETERM([[1, 2], [3, 4]])",
+      output: -2,
+      description: {
+        en: "Determinant of a 2x2 matrix is (1*4 - 2*3) = -2",
+        ja: "2x2行列の行列式は(1*4 - 2*3) = -2",
+      },
+    },
+    {
+      input: "MDETERM([[2, 0, 0], [0, 3, 0], [0, 0, 4]])",
+      output: 24,
+      description: {
+        en: "Determinant of diagonal matrix is product of diagonal (2*3*4 = 24)",
+        ja: "対角行列の行列式は対角要素の積(2*3*4 = 24)",
+      },
+    },
+  ],
   evaluate: (args) => {
     if (args.length !== 1) {
       throw new Error("MDETERM expects exactly one argument");

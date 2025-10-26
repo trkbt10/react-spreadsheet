@@ -26,11 +26,38 @@ const roundUpToDigits = (value: number, digits: number): number => {
 
 export const roundUpFunction: FormulaFunctionEagerDefinition = {
   name: "ROUNDUP",
+  category: "aggregate",
   description: {
     en: "Rounds a number away from zero to the specified number of digits.",
     ja: "数値をゼロから遠ざかる方向に指定桁へ切り上げます。",
   },
   examples: ["ROUNDUP(1.21, 1)", "ROUNDUP(A1, -2)"],
+  samples: [
+    {
+      input: "ROUNDUP(1.21, 1)",
+      output: 1.3,
+      description: {
+        en: "Round up to one decimal place",
+        ja: "小数第1位へ切り上げ",
+      },
+    },
+    {
+      input: "ROUNDUP(3.14, 0)",
+      output: 4,
+      description: {
+        en: "Round up to nearest integer",
+        ja: "最も近い整数へ切り上げ",
+      },
+    },
+    {
+      input: "ROUNDUP(-2.5, 0)",
+      output: -3,
+      description: {
+        en: "Round negative number away from zero",
+        ja: "負の数をゼロから遠ざける方向へ",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("ROUNDUP expects exactly two arguments");

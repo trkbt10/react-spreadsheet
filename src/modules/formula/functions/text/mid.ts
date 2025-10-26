@@ -6,11 +6,38 @@ import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
 export const midFunction: FormulaFunctionEagerDefinition = {
   name: "MID",
+  category: "text",
   description: {
     en: "Returns a substring starting at a given position for a specified length.",
     ja: "指定した位置から指定した長さの部分文字列を返します。",
   },
   examples: ['MID("Spreadsheet", 2, 5)', "MID(A1, 3, 4)"],
+  samples: [
+    {
+      input: 'MID("Spreadsheet", 7, 5)',
+      output: "sheet",
+      description: {
+        en: "Extracts 5 characters starting at position 7",
+        ja: "7文字目から5文字を抽出",
+      },
+    },
+    {
+      input: 'MID("Hello World", 7, 5)',
+      output: "World",
+      description: {
+        en: "Extracts 5 characters starting at position 7",
+        ja: "7文字目から5文字を抽出",
+      },
+    },
+    {
+      input: 'MID("2024-01-15", 6, 2)',
+      output: "01",
+      description: {
+        en: "Extracts month portion from date string",
+        ja: "日付文字列から月部分を抽出",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 3) {
       throw new Error("MID expects exactly three arguments");

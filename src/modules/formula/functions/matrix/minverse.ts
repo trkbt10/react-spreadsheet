@@ -84,11 +84,38 @@ const invertMatrix = (matrix: NumericMatrix): NumericMatrix => {
 
 export const minverseFunction: FormulaFunctionEagerDefinition = {
   name: "MINVERSE",
+  category: "matrix",
   description: {
     en: "Returns the inverse matrix for a square array.",
     ja: "正方行列の逆行列を返します。",
   },
   examples: ["MINVERSE({1,2;3,4})", "MINVERSE(A1:C3)"],
+  samples: [
+    {
+      input: "MINVERSE([[1, 0], [0, 1]])",
+      output: [[1, 0], [0, 1]],
+      description: {
+        en: "Inverse of identity matrix is itself",
+        ja: "単位行列の逆行列は自分自身",
+      },
+    },
+    {
+      input: "MINVERSE([[1, 2], [3, 4]])",
+      output: [[-2, 1], [1.5, -0.5]],
+      description: {
+        en: "Inverse of a 2x2 matrix",
+        ja: "2x2行列の逆行列",
+      },
+    },
+    {
+      input: "MINVERSE([[2, 0], [0, 2]])",
+      output: [[0.5, 0], [0, 0.5]],
+      description: {
+        en: "Inverse of a diagonal matrix",
+        ja: "対角行列の逆行列",
+      },
+    },
+  ],
   evaluate: (args) => {
     if (args.length !== 1) {
       throw new Error("MINVERSE expects exactly one argument");

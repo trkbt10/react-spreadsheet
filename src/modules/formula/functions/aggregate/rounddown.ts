@@ -26,11 +26,38 @@ const roundDownToDigits = (value: number, digits: number): number => {
 
 export const roundDownFunction: FormulaFunctionEagerDefinition = {
   name: "ROUNDDOWN",
+  category: "aggregate",
   description: {
     en: "Rounds a number toward zero to the specified number of digits.",
     ja: "数値をゼロ方向へ切り下げて指定桁に揃えます。",
   },
   examples: ["ROUNDDOWN(1.29, 1)", "ROUNDDOWN(A1, -1)"],
+  samples: [
+    {
+      input: "ROUNDDOWN(1.29, 1)",
+      output: 1.2,
+      description: {
+        en: "Round down to one decimal place",
+        ja: "小数第1位へ切り下げ",
+      },
+    },
+    {
+      input: "ROUNDDOWN(3.99, 0)",
+      output: 3,
+      description: {
+        en: "Round down to nearest integer",
+        ja: "最も近い整数へ切り下げ",
+      },
+    },
+    {
+      input: "ROUNDDOWN(-2.7, 0)",
+      output: -2,
+      description: {
+        en: "Round negative number toward zero",
+        ja: "負の数をゼロ方向へ",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("ROUNDDOWN expects exactly two arguments");

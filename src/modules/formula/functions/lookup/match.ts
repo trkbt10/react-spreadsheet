@@ -14,11 +14,38 @@ const ensureVector = (values: FormulaEvaluationResult[], description: string): F
 
 export const matchFunction: FormulaFunctionEagerDefinition = {
   name: "MATCH",
+  category: "lookup",
   description: {
     en: "Returns the position of a lookup value within a vector, supporting exact or approximate matches.",
     ja: "検索値がベクター内のどこに位置するかを、完全一致または近似一致で返します。",
   },
   examples: ['MATCH("Key", A1:A10, 0)', "MATCH(5, A1:A10, 1)"],
+  samples: [
+    {
+      input: "MATCH(\"B\", [\"A\", \"B\", \"C\"], 0)",
+      output: 2,
+      description: {
+        en: "Exact match returns position (1-based index)",
+        ja: "完全一致は位置を返す（1始まりのインデックス）",
+      },
+    },
+    {
+      input: "MATCH(25, [10, 20, 30, 40], 1)",
+      output: 2,
+      description: {
+        en: "Match type 1 finds largest value less than or equal to lookup",
+        ja: "マッチタイプ1は検索値以下の最大値を見つける",
+      },
+    },
+    {
+      input: "MATCH(25, [40, 30, 20, 10], -1)",
+      output: 3,
+      description: {
+        en: "Match type -1 finds smallest value greater than or equal to lookup",
+        ja: "マッチタイプ-1は検索値以上の最小値を見つける",
+      },
+    },
+  ],
   evaluate: (args, helpers) => {
     if (args.length !== 2 && args.length !== 3) {
       throw new Error("MATCH expects two or three arguments");
