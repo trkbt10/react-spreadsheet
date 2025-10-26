@@ -1,0 +1,94 @@
+/**
+ * @file MATCH function implementation (ODF 1.3 §6.14.15).
+ */
+
+import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
+import type { FormulaEvaluationResult } from "../../types";
+
+const ensureVector = (
+  values: FormulaEvaluationResult[],
+  description: string,
+): FormulaEvaluationResult[] => {
+  if (values.length === 0) {
+    throw new Error(`${description} vector cannot be empty`);
+  }
+  return values;
+};
+
+export const matchFunction: FormulaFunctionEagerDefinition = {
+  name: "MATCH",
+  description: {
+    en: "Returns the position of a lookup value within a vector, supporting exact or approximate matches.",
+    ja: "検索値がベクター内のどこに位置するかを、完全一致または近似一致で返します。",
+  },
+  examples: ['MATCH("Key", A1:A10, 0)', 'MATCH(5, A1:A10, 1)'],
+  evaluate: (args, helpers) => {
+    if (args.length !== 2 && args.length !== 3) {
+      throw new Error("MATCH expects two or three arguments");
+    }
+
+    const lookupValue = helpers.coerceScalar(args[0], "MATCH lookup value");
+    const lookupVector = ensureVector(
+      helpers.flattenResult(args[1]).map((value) => (value ?? null) as FormulaEvaluationResult),
+      "MATCH lookup",
+    );
+
+    const matchType = args.length === 3 ? helpers.requireNumber(args[2], "MATCH match type") : 1;
+    if (!Number.isFinite(matchType)) {
+      throw new Error("MATCH match type must be finite");
+    }
+
+    if (matchType === 0) {
+      const index = lookupVector.findIndex((candidate) =>
+        helpers.comparePrimitiveEquality(candidate, lookupValue),
+      );
+      if (index === -1) {
+        throw new Error("MATCH could not find an exact match");
+      }
+      return index + 1;
+    }
+
+    if (typeof lookupValue !== "number") {
+      throw new Error("MATCH approximate match requires numeric lookup value");
+    }
+
+    if (matchType === 1) {
+      let candidateIndex: number | null = null;
+      for (let index = 0; index < lookupVector.length; index += 1) {
+        const candidate = lookupVector[index];
+        if (typeof candidate !== "number") {
+          throw new Error("MATCH with match type 1 requires numeric lookup vector");
+        }
+        if (candidate > lookupValue) {
+          break;
+        }
+        candidateIndex = index;
+      }
+      if (candidateIndex === null) {
+        throw new Error("MATCH could not find an approximate match for match type 1");
+      }
+      return candidateIndex + 1;
+    }
+
+    if (matchType === -1) {
+      let candidateIndex: number | null = null;
+      for (let index = 0; index < lookupVector.length; index += 1) {
+        const candidate = lookupVector[index];
+        if (typeof candidate !== "number") {
+          throw new Error("MATCH with match type -1 requires numeric lookup vector");
+        }
+        if (candidate >= lookupValue) {
+          candidateIndex = index;
+        }
+      }
+      if (candidateIndex === null) {
+        throw new Error("MATCH could not find an approximate match for match type -1");
+      }
+      return candidateIndex + 1;
+    }
+
+    throw new Error("MATCH match type must be -1, 0, or 1");
+  },
+};
+
+// NOTE: Approximate matching behaviors mirror VLOOKUP implementation patterns.

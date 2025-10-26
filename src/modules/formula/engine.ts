@@ -7,7 +7,7 @@ import { buildWorkbookMatrix } from "./matrix";
 import { buildDependencyTree } from "./dependencyTree";
 import type { BuildDependencyTreeResult } from "./dependencyTree";
 import { buildDependencyComponents } from "./components";
-import { createCellAddressKey, parseCellReference } from "./address";
+import { createCellAddressKey, parseCellReference, parseCellAddressKeyParts } from "./address";
 import type {
   CellAddress,
   CellAddressKey,
@@ -23,13 +23,7 @@ import type {
 import { type FormulaAstNode, type RangeNode } from "./ast";
 import { parseFormula } from "./parser";
 import { formulaFunctionHelpers, getFormulaFunction } from "./functionRegistry";
-import {
-  coerceScalar,
-  requireBoolean,
-  requireNumber,
-  isArrayResult,
-  type EvalResult,
-} from "./functions/helpers";
+import { coerceScalar, requireNumber, isArrayResult, type EvalResult } from "./functions/helpers";
 
 type CellState = {
   value: FormulaEvaluationResult;
@@ -446,6 +440,7 @@ export class FormulaEngine {
         throw new Error("Formula definition missing for cell");
       }
       const dependencyVersionMap = new Map<CellAddressKey, number>();
+      const originAddress = this.keyToAddress(key);
       const result = this.evaluateFormula(parsed.ast, {
         resolve: (address) => {
           const dependencyKey = createCellAddressKey(address);
@@ -456,7 +451,7 @@ export class FormulaEngine {
             version: dependencyState.version,
           };
         },
-      });
+      }, originAddress);
       if (isArrayResult(result)) {
         throw new Error("Formula cannot resolve directly to a range");
       }
@@ -565,6 +560,7 @@ export class FormulaEngine {
           throw new Error("Formula definition missing for cell");
         }
         const dependencyVersionMap = new Map<CellAddressKey, number>();
+        const originAddress = this.keyToAddress(nodeKey);
         const result = this.evaluateFormula(parsed.ast, {
           resolve: (address) => {
             const resolved = resolveDependency(address);
@@ -572,7 +568,7 @@ export class FormulaEngine {
             dependencyVersionMap.set(dependencyId, resolved.version);
             return resolved;
           },
-        });
+        }, originAddress);
 
         if (isArrayResult(result)) {
           throw new Error("Formula cannot resolve directly to a range");
@@ -599,7 +595,11 @@ export class FormulaEngine {
     this.componentStates.set(component.id, componentState);
   }
 
-  private evaluateFormula(ast: FormulaAstNode, scope: FormulaEvaluationScope): EvalResult {
+  private evaluateFormula(
+    ast: FormulaAstNode,
+    scope: FormulaEvaluationScope,
+    origin: CellAddress,
+  ): EvalResult {
     if (ast.type === "Literal") {
       return ast.value;
     }
@@ -613,7 +613,7 @@ export class FormulaEngine {
     }
 
     if (ast.type === "Unary") {
-      const value = this.evaluateFormula(ast.argument, scope);
+      const value = this.evaluateFormula(ast.argument, scope, origin);
       if (ast.operator === "+") {
         return requireNumber(value, "unary plus");
       }
@@ -621,8 +621,8 @@ export class FormulaEngine {
     }
 
     if (ast.type === "Binary") {
-      const left = this.evaluateFormula(ast.left, scope);
-      const right = this.evaluateFormula(ast.right, scope);
+      const left = this.evaluateFormula(ast.left, scope, origin);
+      const right = this.evaluateFormula(ast.right, scope, origin);
       const operator = ast.operator;
       const leftNumber = requireNumber(left, `binary ${operator}`);
       const rightNumber = requireNumber(right, `binary ${operator}`);
@@ -647,24 +647,10 @@ export class FormulaEngine {
     }
 
     if (ast.type === "Function") {
-      if (ast.name === "IF") {
-        if (ast.arguments.length < 2 || ast.arguments.length > 3) {
-          throw new Error("IF requires two or three arguments");
-        }
-        const condition = this.evaluateFormula(ast.arguments[0], scope);
-        const conditionValue = requireBoolean(condition, "IF condition");
-        if (conditionValue) {
-          return this.evaluateFormula(ast.arguments[1], scope);
-        }
-        if (ast.arguments.length === 3) {
-          return this.evaluateFormula(ast.arguments[2], scope);
-        }
-        return null;
-      }
-
-      const evaluatedArgs = ast.arguments.map((argument) => this.evaluateFormula(argument, scope));
-
       if (isComparatorFunction(ast.name)) {
+        const evaluatedArgs = ast.arguments.map((argument) =>
+          this.evaluateFormula(argument, scope, origin),
+        );
         const comparator = ast.name.slice("COMPARE_".length);
         const comparatorFn = comparatorFns[comparator];
         if (!comparatorFn) {
@@ -676,11 +662,33 @@ export class FormulaEngine {
         return comparatorFn(evaluatedArgs[0], evaluatedArgs[1]);
       }
 
-      const evaluator = getFormulaFunction(ast.name);
-      if (!evaluator) {
+      const definition = getFormulaFunction(ast.name);
+      if (!definition) {
         throw new Error(`Unknown function "${ast.name}"`);
       }
-      return evaluator.evaluate(evaluatedArgs, formulaFunctionHelpers);
+
+      if (definition.evaluateLazy) {
+        return definition.evaluateLazy(ast.arguments, {
+          evaluate: (node) => this.evaluateFormula(node, scope, origin),
+          helpers: formulaFunctionHelpers,
+          parseReference: (reference) =>
+            parseCellReference(reference, {
+              defaultSheetId: origin.sheetId,
+              defaultSheetName: origin.sheetName,
+              workbookIndex: this.workbookIndex,
+            }),
+          origin,
+        });
+      }
+
+      if (!definition.evaluate) {
+        throw new Error(`Formula function "${ast.name}" must provide an eager evaluator`);
+      }
+
+      const evaluatedArgs = ast.arguments.map((argument) =>
+        this.evaluateFormula(argument, scope, origin),
+      );
+      return definition.evaluate(evaluatedArgs, formulaFunctionHelpers);
     }
 
     throw new Error("Unsupported formula node");
@@ -713,6 +721,29 @@ export class FormulaEngine {
     }
 
     return rows;
+  }
+
+  private keyToAddress(key: CellAddressKey): CellAddress {
+    const { sheetId, column, row } = parseCellAddressKeyParts(key);
+    const sheetInfo = this.sheetInfo.get(sheetId);
+    if (sheetInfo) {
+      return {
+        sheetId,
+        sheetName: sheetInfo.sheetName,
+        column,
+        row,
+      };
+    }
+    const sheetIndex = this.workbookIndex.byId.get(sheetId);
+    if (!sheetIndex) {
+      throw new Error(`Unknown sheet id "${sheetId}"`);
+    }
+    return {
+      sheetId,
+      sheetName: sheetIndex.name,
+      column,
+      row,
+    };
   }
 
   private ensureAddress(address: CellAddress): CellAddress {

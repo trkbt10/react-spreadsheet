@@ -11,6 +11,16 @@ import { coerceScalar as coerceScalarInternal } from "./coerceScalar";
 import { requireNumber as requireNumberInternal } from "./requireNumber";
 import { requireBoolean as requireBooleanInternal } from "./requireBoolean";
 import { comparePrimitiveEquality as comparePrimitiveEqualityInternal } from "./comparePrimitiveEquality";
+import { createCriteriaPredicate as createCriteriaPredicateInternal } from "./createCriteriaPredicate";
+import { summarizeNumbers as summarizeNumbersInternal } from "./summarizeNumbers";
+import { collectNumericArguments as collectNumericArgumentsInternal } from "./collectNumericArguments";
+import {
+  requireInteger as requireIntegerInternal,
+  computePowerOfTen as computePowerOfTenInternal,
+  normalizeZero as normalizeZeroInternal,
+} from "./numeric";
+import { coerceText as coerceTextInternal, valueToText as valueToTextInternal } from "./text";
+import { coerceLogical as coerceLogicalInternal } from "./coerceLogical";
 
 export type { EvalResult, FormulaFunctionHelpers } from "./types";
 
@@ -45,12 +55,60 @@ export const comparePrimitiveEquality = (
   return comparePrimitiveEqualityInternal(left, right);
 };
 
+export const coerceLogical = (result: EvalResult, description: string): boolean => {
+  return coerceLogicalInternal(result, description);
+};
+
+export const requireInteger = (value: number, errorMessage: string): number => {
+  return requireIntegerInternal(value, errorMessage);
+};
+
+export const computePowerOfTen = (exponent: number, errorMessage: string): number => {
+  return computePowerOfTenInternal(exponent, errorMessage);
+};
+
+export const normalizeZero = (value: number): number => {
+  return normalizeZeroInternal(value);
+};
+
+export const coerceText = (result: EvalResult, description: string): string => {
+  return coerceTextInternal(result, description);
+};
+
+export const valueToText = (value: FormulaEvaluationResult): string => {
+  return valueToTextInternal(value);
+};
+
+export const createCriteriaPredicate = (
+  criteria: EvalResult,
+  compare: (left: FormulaEvaluationResult, right: FormulaEvaluationResult) => boolean,
+  description: string,
+) => {
+  return createCriteriaPredicateInternal(criteria, compare, description);
+};
+
+export const collectNumericArguments = (args: EvalResult[], helpers: FormulaFunctionHelpers) => {
+  return collectNumericArgumentsInternal(args, helpers);
+};
+
+export const summarizeNumbers = (values: ReadonlyArray<number>) => {
+  return summarizeNumbersInternal(values);
+};
+
 export const formulaFunctionHelpers: FormulaFunctionHelpers = {
   flattenArguments,
   flattenResult,
   coerceScalar,
+  coerceLogical,
   requireNumber,
   requireBoolean,
   comparePrimitiveEquality,
+  requireInteger,
+  computePowerOfTen,
+  normalizeZero,
+  coerceText,
+  valueToText,
+  createCriteriaPredicate,
+  collectNumericArguments,
+  summarizeNumbers,
 };
-

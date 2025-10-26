@@ -42,8 +42,15 @@ export type SelectionTarget = CellSelectionTarget | RangeSelectionTarget;
 export type EditingOrigin = "formulaBar" | "cellEditor";
 
 export type EditingSelection =
-  | (CellSelectionTarget & { value: string; origin: EditingOrigin; isDirty: boolean })
-  | (RangeSelectionTarget & { value: string; origin: EditingOrigin; isDirty: boolean });
+  | (CellSelectionTarget & { value: string; isDirty: boolean })
+  | (RangeSelectionTarget & { value: string; isDirty: boolean });
+
+export type EditorActivity = Record<EditingOrigin, boolean>;
+
+const createInactiveEditors = (): EditorActivity => ({
+  formulaBar: false,
+  cellEditor: false,
+});
 
 const isSingleCellRange = (range: SelectionRange): boolean => {
   const isSingleColumn = range.endCol - range.startCol === 1;
@@ -101,6 +108,7 @@ export type SheetState = {
   dragStartPos: Point | null;
   styleRegistry: StyleRegistry;
   editingSelection: EditingSelection | null;
+  editorActivity: EditorActivity;
 };
 
 export type SheetAction = ActionUnion<typeof sheetActions>;
@@ -117,6 +125,7 @@ export const initialSheetState: SheetState = {
   dragStartPos: null,
   styleRegistry: createStyleRegistry(),
   editingSelection: null,
+  editorActivity: createInactiveEditors(),
 };
 
 const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(sheetActions, {
@@ -281,6 +290,10 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
 
   startEditingCell: (state, action) => {
     const { col, row, initialValue, origin } = action.payload;
+    const editorActivity: EditorActivity = {
+      ...state.editorActivity,
+      [origin]: true,
+    };
     return {
       ...state,
       selection: {
@@ -293,14 +306,18 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
         col,
         row,
         value: initialValue,
-        origin,
         isDirty: false,
       },
+      editorActivity,
     };
   },
 
   startEditingRange: (state, action) => {
     const { range, initialValue, origin } = action.payload;
+    const editorActivity: EditorActivity = {
+      ...state.editorActivity,
+      [origin]: true,
+    };
     return {
       ...state,
       selection: rangeToSelectionTarget(range),
@@ -311,9 +328,9 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
         startRow: range.startRow,
         endRow: range.endRow,
         value: initialValue,
-        origin,
         isDirty: false,
       },
+      editorActivity,
     };
   },
 
@@ -343,6 +360,7 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
     return {
       ...state,
       editingSelection: null,
+      editorActivity: createInactiveEditors(),
     };
   },
 
@@ -350,6 +368,7 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
     return {
       ...state,
       editingSelection: null,
+      editorActivity: createInactiveEditors(),
     };
   },
 

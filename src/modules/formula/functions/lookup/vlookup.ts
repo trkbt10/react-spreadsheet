@@ -2,60 +2,23 @@
  * @file VLOOKUP function implementation (ODF 1.3 §6.14.14).
  */
 
-import type { FormulaFunctionDefinition } from "../../functionRegistry";
-import type { FormulaEvaluationResult } from "../../types";
-import type { EvalResult } from "../helpers";
-import { isArrayResult } from "../helpers";
+import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
+import { toLookupTable, readTableCell } from "./table";
 
-const normalizeRow = (row: EvalResult): EvalResult[] => {
-  if (!isArrayResult(row)) {
-    return [row];
-  }
-  return row;
-};
-
-const toTable = (result: EvalResult): EvalResult[][] => {
-  if (!isArrayResult(result)) {
-    throw new Error("VLOOKUP table range must be a range reference");
-  }
-  return result.map((row) => {
-    const normalizedRow = normalizeRow(row);
-    return normalizedRow.map((value) => {
-      if (isArrayResult(value)) {
-        throw new Error("VLOOKUP does not support nested ranges");
-      }
-      return value ?? null;
-    });
-  });
-};
-
-const getColumnValue = (
-  row: EvalResult[],
-  index: number,
-  description: string,
-): FormulaEvaluationResult => {
-  const value = row[index];
-  if (value === undefined) {
-    throw new Error(`${description} failed: missing column in table range`);
-  }
-  if (isArrayResult(value)) {
-    throw new Error(`${description} failed: nested range result is not supported`);
-  }
-  return (value ?? null) as FormulaEvaluationResult;
-};
-
-export const vlookupFunction: FormulaFunctionDefinition = {
+export const vlookupFunction: FormulaFunctionEagerDefinition = {
   name: "VLOOKUP",
+  description: {
+    en: "Searches the first column of a table for a value and returns data from another column.",
+    ja: "表の最初の列で値を検索し、別の列のデータを返します。",
+  },
+  examples: ['VLOOKUP(A2, Table1, 3, FALSE)', 'VLOOKUP(5, A1:B10, 2)'],
   evaluate: (args, helpers) => {
     if (args.length < 3 || args.length > 4) {
       throw new Error("VLOOKUP expects three or four arguments");
     }
 
     const lookupValue = helpers.coerceScalar(args[0], "VLOOKUP lookup value");
-    const table = toTable(args[1]);
-    if (table.length === 0) {
-      throw new Error("VLOOKUP table range cannot be empty");
-    }
+    const table = toLookupTable(args[1], "VLOOKUP");
 
     const columnIndexRaw = helpers.requireNumber(args[2], "VLOOKUP column index");
     if (!Number.isInteger(columnIndexRaw)) {
@@ -76,37 +39,38 @@ export const vlookupFunction: FormulaFunctionDefinition = {
     }
 
     if (!approximateMatch) {
-      const match = table.find((row) => {
-        const firstColumn = getColumnValue(row, 0, "VLOOKUP");
+      const matchIndex = table.findIndex((_, rowIndex) => {
+        const firstColumn = readTableCell(table, rowIndex, 0, "VLOOKUP");
         return helpers.comparePrimitiveEquality(firstColumn, lookupValue);
       });
-      if (!match) {
+      if (matchIndex === -1) {
         throw new Error("VLOOKUP could not find an exact match");
       }
-      return getColumnValue(match, columnIndex - 1, "VLOOKUP");
+      return readTableCell(table, matchIndex, columnIndex - 1, "VLOOKUP");
     }
 
     if (typeof lookupValue !== "number") {
       throw new Error("VLOOKUP approximate match requires numeric lookup value");
     }
 
-    let candidate: EvalResult[] | null = null;
-    for (const row of table) {
-      const firstColumn = getColumnValue(row, 0, "VLOOKUP");
+    let candidateIndex: number | null = null;
+    for (let rowIndex = 0; rowIndex < table.length; rowIndex += 1) {
+      const firstColumn = readTableCell(table, rowIndex, 0, "VLOOKUP");
       if (typeof firstColumn !== "number") {
         throw new Error("VLOOKUP approximate match requires numeric table rows");
       }
       if (firstColumn > lookupValue) {
         break;
       }
-      candidate = row;
+      candidateIndex = rowIndex;
     }
 
-    if (!candidate) {
+    if (candidateIndex === null) {
       throw new Error("VLOOKUP could not find an approximate match");
     }
 
-    return getColumnValue(candidate, columnIndex - 1, "VLOOKUP");
+    return readTableCell(table, candidateIndex, columnIndex - 1, "VLOOKUP");
   },
 };
 
+// NOTE: Relies on shared lookup table utilities in src/modules/formula/functions/lookup/table.ts.

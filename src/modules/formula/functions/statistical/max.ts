@@ -2,10 +2,15 @@
  * @file MAX function implementation (ODF 1.3 §6.18.46).
  */
 
-import type { FormulaFunctionDefinition } from "../../functionRegistry";
+import type { FormulaFunctionEagerDefinition } from "../../functionRegistry";
 
-export const maxFunction: FormulaFunctionDefinition = {
+export const maxFunction: FormulaFunctionEagerDefinition = {
   name: "MAX",
+  description: {
+    en: "Returns the largest numeric value from the arguments.",
+    ja: "引数の中で最大の数値を返します。",
+  },
+  examples: ['MAX(1, 5, 3)', 'MAX(A1:A10)'],
   evaluate: (args, helpers) => {
     const values = helpers.flattenArguments(args).filter(
       (value): value is number => typeof value === "number",
@@ -16,4 +21,3 @@ export const maxFunction: FormulaFunctionDefinition = {
     return Math.max(...values);
   },
 };
-

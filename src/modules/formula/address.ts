@@ -107,6 +107,29 @@ export const createCellAddressKey = ({ sheetId, column, row }: CellAddress): Cel
   return `${sheetId}|${column}:${row}`;
 };
 
+export const parseCellAddressKeyParts = (
+  key: CellAddressKey,
+): { sheetId: string; column: number; row: number } => {
+  const [sheetPart, coordinatePart] = key.split("|");
+  if (!sheetPart || !coordinatePart) {
+    throw new Error(`Invalid cell address key "${key}"`);
+  }
+  const [columnPart, rowPart] = coordinatePart.split(":");
+  if (columnPart === undefined || rowPart === undefined) {
+    throw new Error(`Invalid cell coordinate encoding in "${key}"`);
+  }
+  const column = Number.parseInt(columnPart, 10);
+  const row = Number.parseInt(rowPart, 10);
+  if (!Number.isInteger(column) || !Number.isInteger(row)) {
+    throw new Error(`Invalid numeric coordinates in address key "${key}"`);
+  }
+  return {
+    sheetId: sheetPart,
+    column,
+    row,
+  };
+};
+
 export type ParseCellReferenceDependencies = {
   defaultSheetId: string;
   defaultSheetName: string;
