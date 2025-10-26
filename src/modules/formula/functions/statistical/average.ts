@@ -1,8 +1,8 @@
 /**
- * @file AVERAGE formula function.
+ * @file AVERAGE function implementation (ODF 1.3 §6.18.3).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
 
 export const averageFunction: FormulaFunctionDefinition = {
   name: "AVERAGE",

@@ -1,11 +1,11 @@
 /**
- * @file VLOOKUP formula function.
+ * @file VLOOKUP function implementation (ODF 1.3 §6.14.14).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
-import type { FormulaEvaluationResult } from "../types";
-import type { EvalResult } from "./helpers";
-import { isArrayResult } from "./helpers";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
+import type { FormulaEvaluationResult } from "../../types";
+import type { EvalResult } from "../helpers";
+import { isArrayResult } from "../helpers";
 
 const normalizeRow = (row: EvalResult): EvalResult[] => {
   if (!isArrayResult(row)) {
@@ -109,3 +109,4 @@ export const vlookupFunction: FormulaFunctionDefinition = {
     return getColumnValue(candidate, columnIndex - 1, "VLOOKUP");
   },
 };
+

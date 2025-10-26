@@ -8,13 +8,13 @@ import {
   type EvalResult,
   type FormulaFunctionHelpers,
 } from "./functions/helpers";
-import { sumFunction } from "./functions/sum";
-import { averageFunction } from "./functions/average";
-import { maxFunction } from "./functions/max";
-import { minFunction } from "./functions/min";
-import { countFunction } from "./functions/count";
-import { countIfFunction } from "./functions/countif";
-import { vlookupFunction } from "./functions/vlookup";
+import { sumFunction } from "./functions/aggregate/sum";
+import { averageFunction } from "./functions/statistical/average";
+import { maxFunction } from "./functions/statistical/max";
+import { minFunction } from "./functions/statistical/min";
+import { countFunction } from "./functions/statistical/count";
+import { countIfFunction } from "./functions/statistical/countif";
+import { vlookupFunction } from "./functions/lookup/vlookup";
 
 export type FormulaFunctionEvaluator = (
   args: EvalResult[],

@@ -1,8 +1,8 @@
 /**
- * @file SUM formula function.
+ * @file SUM function implementation (ODF 1.3 §6.10.1).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
 
 export const sumFunction: FormulaFunctionDefinition = {
   name: "SUM",

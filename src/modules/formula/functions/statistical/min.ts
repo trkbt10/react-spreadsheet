@@ -1,8 +1,8 @@
 /**
- * @file MIN formula function.
+ * @file MIN function implementation (ODF 1.3 §6.18.48).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
 
 export const minFunction: FormulaFunctionDefinition = {
   name: "MIN",

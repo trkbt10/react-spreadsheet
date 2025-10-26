@@ -1,8 +1,8 @@
 /**
- * @file MAX formula function.
+ * @file MAX function implementation (ODF 1.3 §6.18.46).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
 
 export const maxFunction: FormulaFunctionDefinition = {
   name: "MAX",

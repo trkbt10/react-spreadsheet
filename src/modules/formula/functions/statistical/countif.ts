@@ -1,10 +1,10 @@
 /**
- * @file COUNTIF formula function.
+ * @file COUNTIF function implementation (ODF 1.3 §6.18.5).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
-import type { EvalResult } from "./helpers";
-import type { FormulaEvaluationResult } from "../types";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
+import type { EvalResult } from "../helpers";
+import type { FormulaEvaluationResult } from "../../types";
 
 const COUNTIF_COMPARATORS = ["<>", ">=", "<=", ">", "<", "="] as const;
 
@@ -127,3 +127,4 @@ export const countIfFunction: FormulaFunctionDefinition = {
     return values.reduce<number>((count, value) => (predicate(value) ? count + 1 : count), 0);
   },
 };
+

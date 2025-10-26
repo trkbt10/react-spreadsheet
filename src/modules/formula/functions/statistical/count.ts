@@ -1,8 +1,8 @@
 /**
- * @file COUNT formula function.
+ * @file COUNT function implementation (ODF 1.3 §6.18.4).
  */
 
-import type { FormulaFunctionDefinition } from "../functionRegistry";
+import type { FormulaFunctionDefinition } from "../../functionRegistry";
 
 export const countFunction: FormulaFunctionDefinition = {
   name: "COUNT",
