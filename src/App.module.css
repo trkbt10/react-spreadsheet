@@ -1,0 +1,9 @@
+/**
+ * @file App component styles.
+ */
+
+.appContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}

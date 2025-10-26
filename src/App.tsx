@@ -11,6 +11,7 @@ import type { SpreadsheetOption } from "./components/app-header/AppHeader";
 import rawBasic from "../__mocks__/spreadsheet.basic.json";
 import rawAdvanced from "../__mocks__/spreadsheet.advanced.json";
 import rawVisual from "../__mocks__/spreadsheet.visual.json";
+import styles from "./App.module.css";
 
 const SPREADSHEET_CONFIGS = {
   basic: { raw: rawBasic, id: "basic", name: "Basic Spreadsheet" },
@@ -39,13 +40,13 @@ export function App(): ReactElement {
   const spreadsheet = parseSpreadsheet(config.raw);
 
   const handleSpreadsheetChange = (id: string): void => {
-    if (id === "basic" || id === "advanced" || id === "visual") {
-      setCurrentId(id);
+    if (id in SPREADSHEET_CONFIGS) {
+      setCurrentId(id as SpreadsheetId);
     }
   };
 
   return (
-    <>
+    <div className={styles.appContainer}>
       <AppHeader
         title={spreadsheet.name}
         createdAt={spreadsheet.createdAt}
@@ -55,6 +56,6 @@ export function App(): ReactElement {
         onSpreadsheetChange={handleSpreadsheetChange}
       />
       <SpreadSheetView key={currentId} spreadsheet={spreadsheet} />
-    </>
+    </div>
   );
 }
