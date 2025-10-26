@@ -33,7 +33,7 @@ export default defineConfig(({ command, mode }) => {
   if (command === "build" && mode === "pages") {
     return {
       ...baseConfig,
-      base: "/sheets/",
+      base: "/react-spreadsheet/",
       build: {
         outDir: "dist-pages",
       },
