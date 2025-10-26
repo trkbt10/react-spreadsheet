@@ -423,6 +423,9 @@ const parsePrimary = (stream: TokenStream, context: ParseContext): FormulaAstNod
         endToken.value.includes("!")
           ? parseCellReference(endToken.value, context)
           : (() => {
+              // NOTE: Excel-style ranges such as 'Sheet 2'!A2:B3 inherit the sheet from
+              // the leading reference, so we reuse the start address metadata when the
+              // trailing endpoint omits an explicit sheet qualifier.
               const coordinate = parseCellLabel(endToken.value);
               return {
                 sheetId: startAddress.sheetId,

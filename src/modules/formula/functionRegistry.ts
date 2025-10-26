@@ -4,7 +4,7 @@
 
 import type { FormulaEvaluationResult } from "./types";
 import {
-  functionHelpers,
+  formulaFunctionHelpers,
   type EvalResult,
   type FormulaFunctionHelpers,
 } from "./functions/helpers";
@@ -28,6 +28,8 @@ export type FormulaFunctionDefinition = {
 
 const registry = new Map<string, FormulaFunctionDefinition>();
 
+const registeredHelpers = formulaFunctionHelpers;
+
 export const registerFormulaFunction = (definition: FormulaFunctionDefinition): void => {
   const normalizedName = definition.name.toUpperCase();
   if (registry.has(normalizedName)) {
@@ -43,7 +45,7 @@ export const getFormulaFunction = (name: string): FormulaFunctionDefinition | un
   return registry.get(name.toUpperCase());
 };
 
-export const formulaFunctionHelpers = functionHelpers;
+export { registeredHelpers as formulaFunctionHelpers };
 
 const builtInFunctions: FormulaFunctionDefinition[] = [
   sumFunction,
