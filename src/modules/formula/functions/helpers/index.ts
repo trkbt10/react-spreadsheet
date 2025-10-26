@@ -32,6 +32,14 @@ import {
   calculateInterestPayment as calculateInterestPaymentInternal,
   computeXNPV as computeXNPVInternal,
 } from "./finance";
+import {
+  createFormulaError as createFormulaErrorInternal,
+  getErrorCodeFromError,
+  getErrorTypeNumber as getErrorTypeNumberInternal,
+  isNAError as isNAErrorInternal,
+  isFormulaError as isFormulaErrorInternal,
+  type FormulaErrorCode,
+} from "./errors";
 
 export type { EvalResult, FormulaFunctionHelpers } from "./types";
 
@@ -148,6 +156,28 @@ export const calculateInterestPayment = (
   return calculateInterestPaymentInternal(rate, periods, payment, presentValue, futureValue, type, targetPeriod);
 };
 
+export { type FormulaErrorCode } from "./errors";
+
+export const createFormulaError = (code: FormulaErrorCode, message?: string) => {
+  return createFormulaErrorInternal(code, message);
+};
+
+export const getErrorCode = (error: unknown): FormulaErrorCode => {
+  return getErrorCodeFromError(error);
+};
+
+export const getErrorTypeNumber = (code: FormulaErrorCode): number => {
+  return getErrorTypeNumberInternal(code);
+};
+
+export const isNAError = (error: unknown): boolean => {
+  return isNAErrorInternal(error);
+};
+
+export const isFormulaError = (error: unknown): boolean => {
+  return isFormulaErrorInternal(error);
+};
+
 export const formulaFunctionHelpers: FormulaFunctionHelpers = {
   flattenArguments,
   flattenResult,
@@ -171,4 +201,9 @@ export const formulaFunctionHelpers: FormulaFunctionHelpers = {
   calculatePayment,
   calculateInterestPayment,
   computeXNPV,
+  createFormulaError,
+  getErrorCode,
+  getErrorTypeNumber,
+  isNAError,
+  isFormulaError,
 };

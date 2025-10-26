@@ -3,6 +3,7 @@
  */
 
 import type { FormulaEvaluationResult } from "../../types";
+import type { FormulaErrorCode } from "./errors";
 
 export type EvalResult = FormulaEvaluationResult | EvalResult[];
 
@@ -45,4 +46,9 @@ export type FormulaFunctionHelpers = {
     targetPeriod: number,
   ) => number;
   computeXNPV: (rate: number, cashflows: number[], dayDifferences: number[]) => number;
+  createFormulaError: (code: FormulaErrorCode, message?: string) => Error;
+  getErrorCode: (error: unknown) => FormulaErrorCode;
+  getErrorTypeNumber: (code: FormulaErrorCode) => number;
+  isNAError: (error: unknown) => boolean;
+  isFormulaError: (error: unknown) => boolean;
 };

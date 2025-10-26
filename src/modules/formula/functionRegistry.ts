@@ -43,6 +43,16 @@ import { irrFunction } from "./functions/financial/irr";
 import { xnpvFunction } from "./functions/financial/xnpv";
 import { xirrFunction } from "./functions/financial/xirr";
 import { rateFunction } from "./functions/financial/rate";
+import { isBlankFunction } from "./functions/info/isblank";
+import { isNumberFunction } from "./functions/info/isnumber";
+import { isTextFunction } from "./functions/info/isttext";
+import { isLogicalFunction } from "./functions/info/islogical";
+import { isErrFunction } from "./functions/info/iserr";
+import { isErrorFunction } from "./functions/info/iserror";
+import { ifErrorFunction } from "./functions/info/iferror";
+import { ifNaFunction } from "./functions/info/ifna";
+import { errorTypeFunction } from "./functions/info/errorType";
+import { typeFunction } from "./functions/info/type";
 import { averageFunction } from "./functions/statistical/average";
 import { averageIfFunction } from "./functions/statistical/averageif";
 import { averageIfsFunction } from "./functions/statistical/averageifs";
@@ -59,6 +69,11 @@ import { varianceFunction } from "./functions/statistical/var";
 import { variancePopulationFunction } from "./functions/statistical/varp";
 import { standardDeviationFunction } from "./functions/statistical/stdev";
 import { standardDeviationPopulationFunction } from "./functions/statistical/stdevp";
+import { dSumFunction, dProductFunction } from "./functions/database/daggregate";
+import { dAverageFunction } from "./functions/database/daverage";
+import { dCountFunction } from "./functions/database/dcount";
+import { dMaxFunction, dMinFunction } from "./functions/database/dextrema";
+import { dStdevFunction, dStdevpFunction, dVarFunction, dVarpFunction } from "./functions/database/dstatistics";
 import { vlookupFunction } from "./functions/lookup/vlookup";
 import { hlookupFunction } from "./functions/lookup/hlookup";
 import { lookupFunction } from "./functions/lookup/lookup";
@@ -90,6 +105,24 @@ import { replaceFunction } from "./functions/text/replace";
 import { substituteFunction } from "./functions/text/substitute";
 import { findFunction } from "./functions/text/find";
 import { searchFunction } from "./functions/text/search";
+import {
+  sinFunction,
+  cosFunction,
+  tanFunction,
+  asinFunction,
+  acosFunction,
+  atanFunction,
+} from "./functions/engineering/trigonometric";
+import { sinhFunction, coshFunction, tanhFunction } from "./functions/engineering/hyperbolic";
+import { degreesFunction, radiansFunction } from "./functions/engineering/conversion";
+import { besseliFunction, besseljFunction } from "./functions/engineering/bessel";
+import { deltaFunction } from "./functions/engineering/delta";
+import { erfFunction, erfcFunction } from "./functions/engineering/erf";
+import { mmultFunction } from "./functions/matrix/mmult";
+import { minverseFunction } from "./functions/matrix/minverse";
+import { mdetermFunction } from "./functions/matrix/mdeterm";
+import { transposeFunction } from "./functions/matrix/transpose";
+import { frequencyFunction } from "./functions/matrix/frequency";
 
 export type FormulaFunctionEvaluator = (args: EvalResult[], helpers: FormulaFunctionHelpers) => EvalResult;
 
@@ -189,6 +222,16 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
   xnpvFunction,
   xirrFunction,
   rateFunction,
+  isBlankFunction,
+  isNumberFunction,
+  isTextFunction,
+  isLogicalFunction,
+  isErrFunction,
+  isErrorFunction,
+  ifErrorFunction,
+  ifNaFunction,
+  errorTypeFunction,
+  typeFunction,
   averageFunction,
   averageIfFunction,
   averageIfsFunction,
@@ -205,6 +248,16 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
   variancePopulationFunction,
   standardDeviationFunction,
   standardDeviationPopulationFunction,
+  dSumFunction,
+  dProductFunction,
+  dAverageFunction,
+  dCountFunction,
+  dMaxFunction,
+  dMinFunction,
+  dStdevFunction,
+  dStdevpFunction,
+  dVarFunction,
+  dVarpFunction,
   vlookupFunction,
   hlookupFunction,
   lookupFunction,
@@ -236,6 +289,27 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
   substituteFunction,
   findFunction,
   searchFunction,
+  sinFunction,
+  cosFunction,
+  tanFunction,
+  asinFunction,
+  acosFunction,
+  atanFunction,
+  sinhFunction,
+  coshFunction,
+  tanhFunction,
+  degreesFunction,
+  radiansFunction,
+  besseliFunction,
+  besseljFunction,
+  deltaFunction,
+  erfFunction,
+  erfcFunction,
+  mmultFunction,
+  minverseFunction,
+  mdetermFunction,
+  transposeFunction,
+  frequencyFunction,
 ];
 
 builtInFunctions.forEach(registerFormulaFunction);
