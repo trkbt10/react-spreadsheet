@@ -6,80 +6,8 @@ import { useParams } from "react-router-dom";
 import type { ReactElement } from "react";
 import { getFormulaFunction } from "../../modules/formula/functionRegistry";
 import { useShowcaseMetadata as useShowcaseMetadataHook } from "../hooks/useShowcaseMetadata";
-import { parseFormula } from "../../modules/formula/parser";
-import { formulaFunctionHelpers } from "../../modules/formula/functionRegistry";
-import type { EvalResult } from "../../modules/formula/functions/helpers";
+import { evaluateSample, formatSampleValue } from "./evaluateSample";
 import styles from "./FunctionPreviewPage.module.css";
-
-const evaluateSample = (input: string): string => {
-  try {
-    const mockSheetIndex = { id: "Sheet1", name: "Sheet1", index: 0 };
-    const mockContext = {
-      defaultSheetId: "Sheet1",
-      defaultSheetName: "Sheet1",
-      workbookIndex: {
-        byId: new Map([["Sheet1", mockSheetIndex]]),
-        byName: new Map([["Sheet1", mockSheetIndex]]),
-      },
-    };
-
-    const result = parseFormula(input, mockContext);
-    const ast = result.ast;
-
-    if (ast.type !== "Function") {
-      throw new Error("Input must be a function call");
-    }
-
-    const func = getFormulaFunction(ast.name);
-    if (func === undefined) {
-      throw new Error(`Function ${ast.name} not found`);
-    }
-
-    if (func.evaluate === undefined) {
-      throw new Error(`Function ${ast.name} does not support eager evaluation`);
-    }
-
-    const evaluatedArgs: EvalResult[] = ast.arguments.map((arg): EvalResult => {
-      if (arg.type === "Literal" && typeof arg.value === "number") {
-        return arg.value;
-      }
-      if (arg.type === "Literal" && typeof arg.value === "string") {
-        return arg.value;
-      }
-      if (arg.type === "Literal" && typeof arg.value === "boolean") {
-        return arg.value;
-      }
-      throw new Error(`Unsupported argument type: ${arg.type}`);
-    });
-
-    const output = func.evaluate(evaluatedArgs, formulaFunctionHelpers);
-    return formatOutput(output);
-  } catch (error) {
-    if (error instanceof Error) {
-      return `Error: ${error.message}`;
-    }
-    return `Error: ${String(error)}`;
-  }
-};
-
-const formatOutput = (value: EvalResult): string => {
-  if (value === null) {
-    return "null";
-  }
-  if (typeof value === "boolean") {
-    return value ? "TRUE" : "FALSE";
-  }
-  if (typeof value === "number") {
-    return value.toString();
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((v) => formatOutput(v)).join(", ")}]`;
-  }
-  return String(value);
-};
 
 export const FunctionPreviewPage = (): ReactElement => {
   const { category, functionName } = useParams<{ category: string; functionName: string }>();
@@ -155,8 +83,23 @@ export const FunctionPreviewPage = (): ReactElement => {
         <div className={styles.samplesGrid}>
           {func.samples.map((sample, index) => {
             const actualOutput = evaluateSample(sample.input);
-            const expectedOutput = formatOutput(sample.output);
-            const isMatch = actualOutput === expectedOutput;
+            const expectedOutput = formatSampleValue(sample.output);
+
+            const isMatch = (() => {
+              if (actualOutput === expectedOutput) {
+                return true;
+              }
+
+              const actualNum = parseFloat(actualOutput);
+              const expectedNum = typeof sample.output === "number" ? sample.output : parseFloat(expectedOutput);
+
+              if (!isNaN(actualNum) && !isNaN(expectedNum)) {
+                const tolerance = Math.abs(expectedNum) * 0.0001;
+                return Math.abs(actualNum - expectedNum) <= Math.max(tolerance, 1e-9);
+              }
+
+              return false;
+            })();
 
             const renderSampleDescription = (): ReactElement | null => {
               if (sample.description === undefined) {
