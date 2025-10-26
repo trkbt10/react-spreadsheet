@@ -12,12 +12,9 @@ import type {
   KeyboardEventHandler,
   ReactElement,
 } from "react";
-import {
-  extractFormulaQuery,
-  filterFormulaSuggestions,
-  loadFormulaSuggestions,
-  type FormulaFunctionSuggestion,
-} from "./formulaSuggestions";
+import { extractFormulaQuery } from "./formulaSuggestions/query";
+import { filterFormulaSuggestions, loadFormulaSuggestions } from "./formulaSuggestions/data";
+import type { FormulaFunctionSuggestion } from "./formulaSuggestions/types";
 import styles from "./FormulaFunctionInput.module.css";
 
 type FormulaFunctionInputProps = {

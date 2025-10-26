@@ -1,27 +1,10 @@
 /**
- * @file Utilities for retrieving and filtering formula function suggestions.
+ * @file Data utilities for formula function suggestions.
  */
 
-import { listFormulaFunctions } from "../../modules/formula/functionRegistry";
-
-export type FormulaFunctionSuggestion = {
-  name: string;
-  description?: string;
-};
-
-const MAX_SUGGESTIONS = 8;
-
-export const extractFormulaQuery = (value: string): string | null => {
-  if (!value.startsWith("=")) {
-    return null;
-  }
-  const sliced = value.slice(1);
-  const match = sliced.match(/^[A-Za-z]+/);
-  if (!match) {
-    return "";
-  }
-  return match[0].toUpperCase();
-};
+import { listFormulaFunctions } from "../../../modules/formula/functionRegistry";
+import type { FormulaFunctionSuggestion } from "./types";
+import { MAX_FORMULA_SUGGESTIONS } from "./types";
 
 export const loadFormulaSuggestions = (): FormulaFunctionSuggestion[] => {
   return listFormulaFunctions()
@@ -45,15 +28,15 @@ export const filterFormulaSuggestions = (
     return [] satisfies FormulaFunctionSuggestion[];
   }
   if (query === "") {
-    return suggestions.slice(0, MAX_SUGGESTIONS);
+    return suggestions.slice(0, MAX_FORMULA_SUGGESTIONS);
   }
   const matches = suggestions.filter((suggestion) => {
     return suggestion.name.startsWith(query);
   });
-  return matches.slice(0, MAX_SUGGESTIONS);
+  return matches.slice(0, MAX_FORMULA_SUGGESTIONS);
 };
 
 /**
  * Notes:
- * - Reads formula registry via listFormulaFunctions for canonical data source.
+ * - Pulls metadata straight from the function registry to ensure suggestions remain canonical.
  */
