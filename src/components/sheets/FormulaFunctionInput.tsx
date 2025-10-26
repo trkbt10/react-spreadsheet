@@ -42,6 +42,17 @@ const renderSuggestionDescription = (text: string): ReactElement | null => {
   return <span className={styles.suggestionDescription}>{text}</span>;
 };
 
+const renderSuggestionExample = (example: string | undefined): ReactElement | null => {
+  if (!example) {
+    return null;
+  }
+  return (
+    <span className={styles.suggestionExample}>
+      Example: <code>{example}</code>
+    </span>
+  );
+};
+
 export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunctionInputProps>(
   (props, forwardedRef): ReactElement => {
     const { onChange, onKeyDown, onFocus, onBlur, className, value, ...rest } = props;
@@ -176,6 +187,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
             const optionId = `${suggestionListId}-${index}`;
             const description = suggestion.description ?? "";
             const descriptionNode = renderSuggestionDescription(description);
+            const exampleNode = renderSuggestionExample(suggestion.example);
             return (
               <div
                 key={suggestion.name}
@@ -193,6 +205,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
               >
                 <span className={styles.suggestionName}>{suggestion.name}</span>
                 {descriptionNode}
+                {exampleNode}
               </div>
             );
           })}

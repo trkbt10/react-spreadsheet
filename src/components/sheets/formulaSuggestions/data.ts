@@ -10,9 +10,12 @@ export const loadFormulaSuggestions = (): FormulaFunctionSuggestion[] => {
   return listFormulaFunctions()
     .map((definition) => {
       const description = definition.description?.ja ?? definition.description?.en ?? undefined;
+      const rawExample = definition.examples?.[0];
+      const example = rawExample ? (rawExample.startsWith("=") ? rawExample : `=${rawExample}`) : undefined;
       return {
         name: definition.name,
         description,
+        example,
       } satisfies FormulaFunctionSuggestion;
     })
     .sort((left, right) => {

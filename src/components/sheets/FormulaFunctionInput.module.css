@@ -58,3 +58,17 @@
 .suggestion[data-is-active="true"] .suggestionDescription {
   color: var(--color-text-primary);
 }
+
+.suggestionExample {
+  margin-top: var(--spacing-3xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.suggestionExample code {
+  font-family: var(--font-family-mono);
+}
+
+.suggestion[data-is-active="true"] .suggestionExample {
+  color: var(--color-text-primary);
+}
