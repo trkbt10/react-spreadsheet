@@ -7,6 +7,11 @@ import { normalizeTimeToFraction } from "./serialDate";
 
 export const timeFunction: FormulaFunctionEagerDefinition = {
   name: "TIME",
+  description: {
+    en: "Converts hour, minute, and second arguments into a fractional-day time serial.",
+    ja: "時・分・秒を1日を基準とした時間シリアル値に変換します。",
+  },
+  examples: ['TIME(14, 30, 0)', 'TIME(A1, B1, C1)'],
   evaluate: (args, helpers) => {
     if (args.length !== 3) {
       throw new Error("TIME expects exactly three arguments");
@@ -23,4 +28,3 @@ export const timeFunction: FormulaFunctionEagerDefinition = {
     return normalizeTimeToFraction(hours, minutes, seconds);
   },
 };
-

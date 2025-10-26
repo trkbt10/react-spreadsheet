@@ -8,6 +8,11 @@ import { coerceDateSerial } from "./coerceDateSerial";
 
 export const eoMonthFunction: FormulaFunctionEagerDefinition = {
   name: "EOMONTH",
+  description: {
+    en: "Returns the serial number of the last day of the month a given number of months away.",
+    ja: "指定した月数だけ前後した月の月末日シリアル値を返します。",
+  },
+  examples: ['EOMONTH("2024-01-15", 1)', 'EOMONTH(A1, 0)'],
   evaluate: (args, helpers) => {
     if (args.length !== 2) {
       throw new Error("EOMONTH expects exactly two arguments");

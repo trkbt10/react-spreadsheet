@@ -7,6 +7,11 @@ import { serialToUTCComponents } from "./serialDate";
 
 export const yearFunction: FormulaFunctionEagerDefinition = {
   name: "YEAR",
+  description: {
+    en: "Returns the year component from a serial date.",
+    ja: "シリアル日付から年を返します。",
+  },
+  examples: ['YEAR("2024-05-10")', 'YEAR(A1)'],
   evaluate: (args, helpers) => {
     if (args.length !== 1) {
       throw new Error("YEAR expects exactly one argument");
@@ -15,4 +20,3 @@ export const yearFunction: FormulaFunctionEagerDefinition = {
     return serialToUTCComponents(Math.floor(serial)).year;
   },
 };
-

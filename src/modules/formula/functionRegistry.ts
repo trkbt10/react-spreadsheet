@@ -24,6 +24,19 @@ import { sumIfFunction } from "./functions/aggregate/sumif";
 import { sumIfsFunction } from "./functions/aggregate/sumifs";
 import { subtotalFunction } from "./functions/aggregate/subtotal";
 import { aggregateFunction } from "./functions/aggregate/aggregate";
+import { dateFunction } from "./functions/datetime/date";
+import { timeFunction } from "./functions/datetime/time";
+import { dateValueFunction } from "./functions/datetime/datevalue";
+import { timeValueFunction } from "./functions/datetime/timevalue";
+import { todayFunction } from "./functions/datetime/today";
+import { nowFunction } from "./functions/datetime/now";
+import { eDateFunction } from "./functions/datetime/edate";
+import { eoMonthFunction } from "./functions/datetime/eomonth";
+import { dayFunction } from "./functions/datetime/day";
+import { monthFunction } from "./functions/datetime/month";
+import { yearFunction } from "./functions/datetime/year";
+import { weekDayFunction } from "./functions/datetime/weekday";
+import { weekNumFunction } from "./functions/datetime/weeknum";
 import { averageFunction } from "./functions/statistical/average";
 import { averageIfFunction } from "./functions/statistical/averageif";
 import { averageIfsFunction } from "./functions/statistical/averageifs";
@@ -48,19 +61,6 @@ import { indexFunction } from "./functions/lookup/index";
 import { offsetFunction } from "./functions/lookup/offset";
 import { indirectFunction } from "./functions/lookup/indirect";
 import { chooseFunction } from "./functions/lookup/choose";
-import { dateFunction } from "./functions/datetime/date";
-import { timeFunction } from "./functions/datetime/time";
-import { dateValueFunction } from "./functions/datetime/datevalue";
-import { timeValueFunction } from "./functions/datetime/timevalue";
-import { todayFunction } from "./functions/datetime/today";
-import { nowFunction } from "./functions/datetime/now";
-import { eDateFunction } from "./functions/datetime/edate";
-import { eoMonthFunction } from "./functions/datetime/eomonth";
-import { dayFunction } from "./functions/datetime/day";
-import { monthFunction } from "./functions/datetime/month";
-import { yearFunction } from "./functions/datetime/year";
-import { weekDayFunction } from "./functions/datetime/weekday";
-import { weekNumFunction } from "./functions/datetime/weeknum";
 import { andFunction } from "./functions/logical/and";
 import { orFunction } from "./functions/logical/or";
 import { notFunction } from "./functions/logical/not";
@@ -164,6 +164,19 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
   sumIfsFunction,
   subtotalFunction,
   aggregateFunction,
+  dateFunction,
+  timeFunction,
+  dateValueFunction,
+  timeValueFunction,
+  todayFunction,
+  nowFunction,
+  eDateFunction,
+  eoMonthFunction,
+  dayFunction,
+  monthFunction,
+  yearFunction,
+  weekDayFunction,
+  weekNumFunction,
   averageFunction,
   averageIfFunction,
   averageIfsFunction,
@@ -180,19 +193,6 @@ const builtInFunctions: FormulaFunctionDefinition[] = [
   variancePopulationFunction,
   standardDeviationFunction,
   standardDeviationPopulationFunction,
-  dateFunction,
-  timeFunction,
-  dateValueFunction,
-  timeValueFunction,
-  todayFunction,
-  nowFunction,
-  eDateFunction,
-  eoMonthFunction,
-  dayFunction,
-  monthFunction,
-  yearFunction,
-  weekDayFunction,
-  weekNumFunction,
   vlookupFunction,
   hlookupFunction,
   lookupFunction,

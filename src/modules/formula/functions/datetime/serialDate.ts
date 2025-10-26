@@ -5,12 +5,17 @@
 const MILLISECONDS_PER_DAY = 86_400_000;
 const SPREADSHEET_EPOCH_MS = Date.UTC(1899, 11, 30);
 
-export const datePartsToSerial = (year: number, month: number, day: number): number => {
-  const milliseconds = Date.UTC(year, month - 1, day);
+const toUtcDate = (year: number, monthIndex: number, day: number): Date => {
+  const milliseconds = Date.UTC(year, monthIndex, day);
   if (!Number.isFinite(milliseconds)) {
     throw new Error("DATE produced an invalid calendar date");
   }
-  return (milliseconds - SPREADSHEET_EPOCH_MS) / MILLISECONDS_PER_DAY;
+  return new Date(milliseconds);
+};
+
+export const datePartsToSerial = (year: number, month: number, day: number): number => {
+  const utcDate = toUtcDate(year, month - 1, day);
+  return (utcDate.getTime() - SPREADSHEET_EPOCH_MS) / MILLISECONDS_PER_DAY;
 };
 
 export const dateTimeToSerial = (date: Date): number => {
@@ -61,3 +66,7 @@ export const normalizeTimeToFraction = (
   return totalSeconds / 86_400;
 };
 
+export const daysInMonth = (year: number, month: number): number => {
+  const boundary = toUtcDate(year, month, 0);
+  return boundary.getUTCDate();
+};

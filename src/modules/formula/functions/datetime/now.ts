@@ -7,6 +7,11 @@ import { dateTimeToSerial } from "./serialDate";
 
 export const nowFunction: FormulaFunctionEagerDefinition = {
   name: "NOW",
+  description: {
+    en: "Returns the current date and time as a serial number.",
+    ja: "現在の日付と時刻をシリアル値で返します。",
+  },
+  examples: ['NOW()'],
   evaluate: (args) => {
     if (args.length !== 0) {
       throw new Error("NOW expects no arguments");
@@ -14,4 +19,3 @@ export const nowFunction: FormulaFunctionEagerDefinition = {
     return dateTimeToSerial(new Date());
   },
 };
-
