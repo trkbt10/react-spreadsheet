@@ -2,12 +2,13 @@
  * @file Catalog page for demonstrating UI components.
  */
 
-import { useState } from "react";
-import type { ReactElement } from "react";
+import { useCallback, useState } from "react";
+import type { ChangeEvent, ReactElement } from "react";
 import { FiScissors, FiCopy, FiClipboard, FiTrash2 } from "react-icons/fi";
 import { MdFormatColorText } from "react-icons/md";
 import { ContextMenu } from "./components/layouts/ContextMenu.tsx";
 import type { MenuItem, MenuPosition } from "./components/layouts/ContextMenu.types";
+import { FormulaFunctionInput } from "./components/sheets/FormulaFunctionInput.tsx";
 import styles from "./Catalog.module.css";
 
 /**
@@ -15,6 +16,11 @@ import styles from "./Catalog.module.css";
  */
 export function Catalog(): ReactElement {
   const [contextMenuPosition, setContextMenuPosition] = useState<MenuPosition | null>(null);
+  const [formulaValue, setFormulaValue] = useState<string>("=");
+
+  const handleFormulaChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setFormulaValue(event.target.value);
+  }, []);
 
   const contextMenuItems: MenuItem[] = [
     {
@@ -246,6 +252,24 @@ export function Catalog(): ReactElement {
           setContextMenuPosition(null);
         }}
       />
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Formula Function Input</h2>
+        <div className={styles.formulaDemo}>
+          <p className={styles.formulaDescription}>Type "=" followed by a name to explore registered functions.</p>
+          <div className={styles.formulaPreview}>
+            <FormulaFunctionInput
+              value={formulaValue}
+              onChange={handleFormulaChange}
+              className={styles.formulaInput}
+              type="text"
+              placeholder="Enter a formula"
+            />
+            <span className={styles.formulaValueLabel}>Current value:</span>
+            <code className={styles.formulaValue}>{formulaValue}</code>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

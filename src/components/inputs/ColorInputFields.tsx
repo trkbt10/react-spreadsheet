@@ -72,6 +72,106 @@ export const ColorInputFields = ({
     [hsl, onHslChange],
   );
 
+  const renderHexInputs = () => {
+    if (mode !== "hex") {
+      return null;
+    }
+    return (
+      <div className={styles.inputGroup}>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>HEX</span>
+          <input type="text" className={styles.input} value={hex} onChange={handleHexChange} placeholder="#000000" />
+        </label>
+      </div>
+    );
+  };
+
+  const renderRgbInputs = () => {
+    if (mode !== "rgb") {
+      return null;
+    }
+    return (
+      <div className={styles.inputGroup}>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>R</span>
+          <input
+            type="number"
+            className={styles.input}
+            value={Math.round(rgb.r)}
+            onChange={handleRgbChange("r")}
+            min="0"
+            max="255"
+          />
+        </label>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>G</span>
+          <input
+            type="number"
+            className={styles.input}
+            value={Math.round(rgb.g)}
+            onChange={handleRgbChange("g")}
+            min="0"
+            max="255"
+          />
+        </label>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>B</span>
+          <input
+            type="number"
+            className={styles.input}
+            value={Math.round(rgb.b)}
+            onChange={handleRgbChange("b")}
+            min="0"
+            max="255"
+          />
+        </label>
+      </div>
+    );
+  };
+
+  const renderHslInputs = () => {
+    if (mode !== "hsl") {
+      return null;
+    }
+    return (
+      <div className={styles.inputGroup}>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>H</span>
+          <input
+            type="number"
+            className={styles.input}
+            value={Math.round(hsl.h)}
+            onChange={handleHslChange("h")}
+            min="0"
+            max="360"
+          />
+        </label>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>S</span>
+          <input
+            type="number"
+            className={styles.input}
+            value={Math.round(hsl.s)}
+            onChange={handleHslChange("s")}
+            min="0"
+            max="100"
+          />
+        </label>
+        <label className={styles.inputLabel}>
+          <span className={styles.labelText}>L</span>
+          <input
+            type="number"
+            className={styles.input}
+            value={Math.round(hsl.l)}
+            onChange={handleHslChange("l")}
+            min="0"
+            max="100"
+          />
+        </label>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.modeSelector}>
@@ -107,90 +207,9 @@ export const ColorInputFields = ({
         </button>
       </div>
 
-      {mode === "hex" ? (
-        <div className={styles.inputGroup}>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>HEX</span>
-            <input type="text" className={styles.input} value={hex} onChange={handleHexChange} placeholder="#000000" />
-          </label>
-        </div>
-      ) : null}
-
-      {mode === "rgb" ? (
-        <div className={styles.inputGroup}>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>R</span>
-            <input
-              type="number"
-              className={styles.input}
-              value={Math.round(rgb.r)}
-              onChange={handleRgbChange("r")}
-              min="0"
-              max="255"
-            />
-          </label>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>G</span>
-            <input
-              type="number"
-              className={styles.input}
-              value={Math.round(rgb.g)}
-              onChange={handleRgbChange("g")}
-              min="0"
-              max="255"
-            />
-          </label>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>B</span>
-            <input
-              type="number"
-              className={styles.input}
-              value={Math.round(rgb.b)}
-              onChange={handleRgbChange("b")}
-              min="0"
-              max="255"
-            />
-          </label>
-        </div>
-      ) : null}
-
-      {mode === "hsl" ? (
-        <div className={styles.inputGroup}>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>H</span>
-            <input
-              type="number"
-              className={styles.input}
-              value={Math.round(hsl.h)}
-              onChange={handleHslChange("h")}
-              min="0"
-              max="360"
-            />
-          </label>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>S</span>
-            <input
-              type="number"
-              className={styles.input}
-              value={Math.round(hsl.s)}
-              onChange={handleHslChange("s")}
-              min="0"
-              max="100"
-            />
-          </label>
-          <label className={styles.inputLabel}>
-            <span className={styles.labelText}>L</span>
-            <input
-              type="number"
-              className={styles.input}
-              value={Math.round(hsl.l)}
-              onChange={handleHslChange("l")}
-              min="0"
-              max="100"
-            />
-          </label>
-        </div>
-      ) : null}
+      {renderHexInputs()}
+      {renderRgbInputs()}
+      {renderHslInputs()}
     </div>
   );
 };

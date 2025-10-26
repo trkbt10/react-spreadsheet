@@ -212,7 +212,6 @@ const SheetWithHeaders = ({ actions, maxColumns, maxRows }: SheetWithHeadersProp
       <div className={styles.columnHeaderFixed}>
         <ColumnHeader
           viewportLeft={viewportRect.left}
-          viewportWidth={viewportRect.width}
           defaultCellWidth={defaultCellWidth}
           columnSizes={columnSizes}
           visibleStartCol={visibleRange.startCol}
@@ -226,7 +225,6 @@ const SheetWithHeaders = ({ actions, maxColumns, maxRows }: SheetWithHeadersProp
       <div className={styles.rowHeaderFixed}>
         <RowHeader
           viewportTop={viewportRect.top}
-          viewportHeight={viewportRect.height}
           defaultCellHeight={defaultCellHeight}
           rowSizes={rowSizes}
           visibleStartRow={visibleRange.startRow}

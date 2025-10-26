@@ -65,3 +65,44 @@
   left: 0;
   font-weight: bold;
 }
+
+.formulaDemo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary));
+  box-shadow: var(--shadow-sm);
+}
+
+.formulaDescription {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+}
+
+.formulaPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.formulaInput {
+  width: 100%;
+}
+
+.formulaValueLabel {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
+.formulaValue {
+  font-family: "Source Code Pro", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  font-size: var(--font-size-lg);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  align-self: flex-start;
+}

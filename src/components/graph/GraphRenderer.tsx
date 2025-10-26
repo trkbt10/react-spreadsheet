@@ -349,7 +349,7 @@ const PieChart = ({ element, data, width, height, colorScale }: PieChartProps): 
   const radius = Math.max(0, Math.min(width - margin.left - margin.right, height - margin.top - margin.bottom) / 2);
 
   return (
-    <g transform={`translate(${width / 2}, ${height / 2})`}>
+    <g transform={`translate(${width / 2}, ${height / 2})`} data-element-id={element.id}>
       <Pie<GraphDataPoint>
         data={data}
         outerRadius={radius}
@@ -420,6 +420,22 @@ export const GraphRenderer = ({ element, data, title }: GraphRendererProps): Rea
 
   const chartProps = useMemo<BaseChartProps>(() => ({ element, data, width, height }), [element, data, width, height]);
 
+  const resolveChartContent = (): { chart: ReactElement; legend: ReactElement | null } => {
+    if (element.graphType === "pie") {
+      const colorScale = createPieColorScale(element, data);
+      return {
+        chart: <PieChart {...chartProps} colorScale={colorScale} />,
+        legend: createPieLegend(colorScale, data),
+      };
+    }
+
+    const component = CHART_COMPONENTS[element.graphType as Exclude<GraphType, "pie">];
+    return {
+      chart: component ? component(chartProps) : ColumnChart(chartProps),
+      legend: null,
+    };
+  };
+
   if (data.length === 0) {
     return (
       <div className={styles.container} data-graph-type={element.graphType}>
@@ -428,17 +444,7 @@ export const GraphRenderer = ({ element, data, title }: GraphRendererProps): Rea
     );
   }
 
-  let chart: ReactElement;
-  let legend: ReactElement | null = null;
-
-  if (element.graphType === "pie") {
-    const colorScale = createPieColorScale(element, data);
-    chart = <PieChart {...chartProps} colorScale={colorScale} />;
-    legend = createPieLegend(colorScale, data);
-  } else {
-    const component = CHART_COMPONENTS[element.graphType as Exclude<GraphType, "pie">];
-    chart = component ? component(chartProps) : ColumnChart(chartProps);
-  }
+  const { chart, legend } = resolveChartContent();
 
   return (
     <div className={styles.container} data-graph-type={element.graphType}>
@@ -453,3 +459,4 @@ export const GraphRenderer = ({ element, data, title }: GraphRendererProps): Rea
 
 // Debug notes:
 // - Reviewed src/global.css to source color and spacing tokens for chart styling.
+// - Reviewed src/types.ts to confirm SheetGraphElement structure (specifically the id field) before tagging pie chart groups.

@@ -2,7 +2,7 @@
  * @file Input component that augments formula editing with function suggestions.
  */
 
-import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type {
   ChangeEvent,
   FocusEvent,
@@ -12,13 +12,13 @@ import type {
   KeyboardEventHandler,
   ReactElement,
 } from "react";
-import { listFormulaFunctions } from "../../modules/formula/functionRegistry";
+import {
+  extractFormulaQuery,
+  filterFormulaSuggestions,
+  loadFormulaSuggestions,
+  type FormulaFunctionSuggestion,
+} from "./formulaSuggestions";
 import styles from "./FormulaFunctionInput.module.css";
-
-type FormulaFunctionSuggestion = {
-  name: string;
-  description?: string;
-};
 
 type FormulaFunctionInputProps = {
   value: string;
@@ -27,20 +27,6 @@ type FormulaFunctionInputProps = {
   onFocus?: FocusEventHandler<HTMLInputElement>;
   onBlur?: FocusEventHandler<HTMLInputElement>;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "onKeyDown" | "onFocus" | "onBlur">;
-
-const MAX_SUGGESTIONS = 8;
-
-const extractQuery = (inputValue: string): string | null => {
-  if (!inputValue.startsWith("=")) {
-    return null;
-  }
-  const sliced = inputValue.slice(1);
-  const match = sliced.match(/^[A-Za-z]+/);
-  if (!match) {
-    return "";
-  }
-  return match[0].toUpperCase();
-};
 
 const getActiveSetter = (input: HTMLInputElement): ((value: string) => void) => {
   const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
@@ -52,47 +38,44 @@ const getActiveSetter = (input: HTMLInputElement): ((value: string) => void) => 
   };
 };
 
+const renderSuggestionDescription = (text: string): ReactElement | null => {
+  if (text === "") {
+    return null;
+  }
+  return <span className={styles.suggestionDescription}>{text}</span>;
+};
+
 export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunctionInputProps>(
   (props, forwardedRef): ReactElement => {
     const { onChange, onKeyDown, onFocus, onBlur, className, value, ...rest } = props;
     const internalRef = useRef<HTMLInputElement>(null);
-    useImperativeHandle(forwardedRef, () => internalRef.current, []);
-
+    const mergeRefs = useCallback(
+      (node: HTMLInputElement | null) => {
+        internalRef.current = node;
+        const targetRef = forwardedRef;
+        if (typeof targetRef === "function") {
+          targetRef(node);
+          return;
+        }
+        if (targetRef !== null) {
+          targetRef.current = node;
+        }
+      },
+      [forwardedRef],
+    );
     const [isFocused, setIsFocused] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     const availableFunctions = useMemo<FormulaFunctionSuggestion[]>(() => {
-      return listFormulaFunctions().map((definition) => {
-        const description = definition.description?.ja ?? definition.description?.en;
-        return {
-          name: definition.name,
-          description,
-        } satisfies FormulaFunctionSuggestion;
-      });
+      return loadFormulaSuggestions();
     }, []);
 
     const query = useMemo(() => {
-      return extractQuery(value);
+      return extractFormulaQuery(value);
     }, [value]);
 
     const filteredSuggestions = useMemo(() => {
-      if (query === null) {
-        return [] satisfies FormulaFunctionSuggestion[];
-      }
-      if (query === "") {
-        return availableFunctions.slice(0, MAX_SUGGESTIONS);
-      }
-      const normalized = query;
-      const matching = availableFunctions.filter((suggestion) => {
-        return suggestion.name.startsWith(normalized);
-      });
-      if (matching.length > 0) {
-        return matching.slice(0, MAX_SUGGESTIONS);
-      }
-      const partialMatches = availableFunctions.filter((suggestion) => {
-        return suggestion.name.includes(normalized);
-      });
-      return partialMatches.slice(0, MAX_SUGGESTIONS);
+      return filterFormulaSuggestions(availableFunctions, query);
     }, [availableFunctions, query]);
 
     useEffect(() => {
@@ -100,11 +83,10 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
     }, [query]);
 
     const suggestionListId = useId();
-    const activeOptionId = filteredSuggestions[highlightedIndex]
-      ? `${suggestionListId}-${highlightedIndex}`
-      : undefined;
+    const activeSuggestion = filteredSuggestions[highlightedIndex];
+    const activeOptionId = activeSuggestion ? `${suggestionListId}-${highlightedIndex}` : undefined;
 
-    const shouldShowSuggestions = isFocused && filteredSuggestions.length > 0;
+    const shouldShowSuggestions = isFocused ? filteredSuggestions.length > 0 : false;
 
     const focusHandler = useCallback(
       (event: FocusEvent<HTMLInputElement>) => {
@@ -186,11 +168,46 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
       [onChange],
     );
 
+    const suggestionPanel = useMemo(() => {
+      if (!shouldShowSuggestions) {
+        return null;
+      }
+      return (
+        <div className={styles.suggestionPanel} id={suggestionListId} role="listbox">
+          {filteredSuggestions.map((suggestion, index) => {
+            const isActive = index === highlightedIndex;
+            const optionId = `${suggestionListId}-${index}`;
+            const description = suggestion.description ?? "";
+            const descriptionNode = renderSuggestionDescription(description);
+            return (
+              <div
+                key={suggestion.name}
+                id={optionId}
+                role="option"
+                data-is-active={isActive ? "true" : "false"}
+                className={styles.suggestion}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  applySuggestion(suggestion);
+                }}
+                onMouseEnter={() => {
+                  setHighlightedIndex(index);
+                }}
+              >
+                <span className={styles.suggestionName}>{suggestion.name}</span>
+                {descriptionNode}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }, [applySuggestion, filteredSuggestions, highlightedIndex, shouldShowSuggestions, suggestionListId]);
+
     return (
       <div className={styles.container} data-suggestions-visible={shouldShowSuggestions ? "true" : "false"}>
         <input
           {...rest}
-          ref={internalRef}
+          ref={mergeRefs}
           className={className}
           value={value}
           onFocus={focusHandler}
@@ -201,34 +218,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
           aria-controls={shouldShowSuggestions ? suggestionListId : undefined}
           aria-activedescendant={activeOptionId}
         />
-        {shouldShowSuggestions ? (
-          <div className={styles.suggestionPanel} id={suggestionListId} role="listbox">
-            {filteredSuggestions.map((suggestion, index) => {
-              const isActive = index === highlightedIndex;
-              const optionId = `${suggestionListId}-${index}`;
-              const description = suggestion.description ?? "";
-              return (
-                <div
-                  key={suggestion.name}
-                  id={optionId}
-                  role="option"
-                  data-is-active={isActive ? "true" : "false"}
-                  className={styles.suggestion}
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    applySuggestion(suggestion);
-                  }}
-                  onMouseEnter={() => {
-                    setHighlightedIndex(index);
-                  }}
-                >
-                  <span className={styles.suggestionName}>{suggestion.name}</span>
-                  {description !== "" ? <span className={styles.suggestionDescription}>{description}</span> : null}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
+        {suggestionPanel}
       </div>
     );
   },

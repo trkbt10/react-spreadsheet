@@ -2,7 +2,7 @@
  * @file ColorSlider component for selecting hue or other color values.
  */
 
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import type { ReactElement, MouseEvent, TouchEvent } from "react";
 import styles from "./ColorSlider.module.css";
 
@@ -95,10 +95,12 @@ export const ColorSlider = ({ value, onChange, type, currentColor }: ColorSlider
 
   const cursorPosition = type === "hue" ? (value / 360) * 100 : value;
 
-  const sliderBackground =
-    type === "hue"
-      ? "linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)"
-      : `linear-gradient(to right, transparent, ${currentColor ?? "#000000"})`;
+  const sliderBackground = useMemo(() => {
+    if (type === "hue") {
+      return "linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)";
+    }
+    return `linear-gradient(to right, transparent, ${currentColor ?? "#000000"})`;
+  }, [type, currentColor]);
 
   return (
     <div

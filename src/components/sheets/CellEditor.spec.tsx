@@ -4,7 +4,6 @@
  * @file Tests for the CellEditor component.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { ReactElement, ReactNode } from "react";
 import { useLayoutEffect, act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -145,7 +144,7 @@ describe("CellEditor formula bar interaction", () => {
   beforeEach(() => {
     actionsRef.current = null;
     stateRef.current = null;
-    onCellsUpdateRef.current = vi.fn();
+    onCellsUpdateRef.current = () => {};
     renderWithProviders();
   });
 
@@ -156,7 +155,6 @@ describe("CellEditor formula bar interaction", () => {
     containerRef.current?.remove();
     rootRef.current = null;
     containerRef.current = null;
-    vi.clearAllMocks();
   });
 
   it("keeps inline editor hidden for multi-cell edits triggered by the formula bar", () => {

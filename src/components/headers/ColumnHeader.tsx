@@ -11,7 +11,6 @@ import styles from "./ColumnHeader.module.css";
 
 export type ColumnHeaderProps = {
   viewportLeft: number;
-  viewportWidth: number;
   defaultCellWidth: number;
   columnSizes: ColumnSizeMap;
   visibleStartCol: number;
@@ -27,7 +26,6 @@ export type ColumnHeaderProps = {
  */
 export const ColumnHeader = ({
   viewportLeft,
-  viewportWidth,
   defaultCellWidth,
   columnSizes,
   visibleStartCol,

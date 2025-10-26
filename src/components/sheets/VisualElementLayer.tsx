@@ -5,6 +5,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import type { CSSProperties, ReactElement } from "react";
 import type {
+  Cell,
   CellId,
   Sheet,
   SheetGraphElement,
@@ -67,7 +68,29 @@ const parseCellId = (cellId: CellId): { col: number; row: number } => {
 
 const makeCellKey = (col: number, row: number): `${number}:${number}` => `${col}:${row}`;
 
-const isNumber = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
+const isNumber = (value: unknown): value is number => {
+  if (typeof value !== "number") {
+    return false;
+  }
+  return Number.isFinite(value);
+};
+
+const hasNonEmptyStringValue = (cell?: Cell): cell is Cell & { value: string } => {
+  if (!cell) {
+    return false;
+  }
+  if (typeof cell.value !== "string") {
+    return false;
+  }
+  return cell.value.length > 0;
+};
+
+const resolveGraphLabel = (labelCell: Cell | undefined, fallbackIndex: number): string => {
+  if (hasNonEmptyStringValue(labelCell)) {
+    return labelCell.value;
+  }
+  return `Row ${fallbackIndex}`;
+};
 
 const computeGraphDataPoints = (sheet: Sheet, element: SheetGraphElement): GraphDataPoint[] => {
   const { range } = element.data;
@@ -92,12 +115,9 @@ const computeGraphDataPoints = (sheet: Sheet, element: SheetGraphElement): Graph
 
     const labelCell = labelColumn !== undefined ? sheet.cells[makeCellKey(labelColumn, row)] : undefined;
     const fallbackLabelIndex = points.length + 1;
-    const label =
-      typeof labelCell?.value === "string" && labelCell.value.length > 0
-        ? labelCell.value
-        : `Row ${fallbackLabelIndex}`;
+    const labelText = resolveGraphLabel(labelCell, fallbackLabelIndex);
 
-    points.push({ label, value: valueCell.value });
+    points.push({ label: labelText, value: valueCell.value });
   }
 
   return points;
@@ -110,7 +130,7 @@ const extractGraphTitle = (sheet: Sheet, element: SheetGraphElement): string | u
   }
 
   const cell = sheet.cells[labelCellId];
-  if (cell && typeof cell.value === "string" && cell.value.length > 0) {
+  if (hasNonEmptyStringValue(cell)) {
     return cell.value;
   }
 
@@ -160,20 +180,34 @@ const createElementStyle = (element: SheetVisualElement, viewport: ViewportRect)
 };
 
 const cloneVisualElement = (element: SheetVisualElement): SheetVisualElement => {
+  const cloneBounds = () => {
+    const bounds = element.visibility.bounds;
+    if (!bounds) {
+      return undefined;
+    }
+    return {
+      startCol: bounds.startCol,
+      endCol: bounds.endCol,
+      startRow: bounds.startRow,
+      endRow: bounds.endRow,
+    };
+  };
+
+  const cloneOptions = () => {
+    const { options } = element as SheetGraphElement;
+    if (!options) {
+      return undefined;
+    }
+    return { ...options };
+  };
+
   const base = {
     id: element.id,
     anchorCell: element.anchorCell,
     position: { ...element.position },
     visibility: {
       hideWhenOutOfBounds: element.visibility.hideWhenOutOfBounds,
-      bounds: element.visibility.bounds
-        ? {
-            startCol: element.visibility.bounds.startCol,
-            endCol: element.visibility.bounds.endCol,
-            startRow: element.visibility.bounds.startRow,
-            endRow: element.visibility.bounds.endRow,
-          }
-        : undefined,
+      bounds: cloneBounds(),
     },
     transform: {
       width: element.transform.width,
@@ -209,7 +243,7 @@ const cloneVisualElement = (element: SheetVisualElement): SheetVisualElement => 
       },
       labelCell: element.data.labelCell,
     },
-    options: element.options ? { ...element.options } : undefined,
+    options: cloneOptions(),
   };
 
   return graph;
@@ -243,14 +277,8 @@ const sortVisualElements = (visualElements: SheetVisualElementRegistry): SheetVi
 };
 
 const normalizeAngle = (angle: number): number => {
-  let result = angle;
-  while (result <= -180) {
-    result += 360;
-  }
-  while (result > 180) {
-    result -= 360;
-  }
-  return result;
+  const normalized = ((angle + 180) % 360 + 360) % 360 - 180;
+  return normalized === -180 ? 180 : normalized;
 };
 
 const shouldRenderElement = (element: SheetVisualElement, viewport: ViewportRect): boolean => {
@@ -277,24 +305,37 @@ const createUpdatedElement = (
     transform?: { width?: number; height?: number; angle?: number };
   },
 ): SheetVisualElement => {
-  const position = updates.position
-    ? {
-        ...base.position,
-        ...updates.position,
-      }
-    : base.position;
+  const resolvePosition = () => {
+    if (!updates.position) {
+      return base.position;
+    }
+    return {
+      ...base.position,
+      ...updates.position,
+    };
+  };
 
-  const transform = updates.transform
-    ? {
-        ...base.transform,
-        width: updates.transform.width ?? base.transform.width,
-        height: updates.transform.height ?? base.transform.height,
-        rotation: {
-          ...base.transform.rotation,
-          angle: updates.transform.angle ?? base.transform.rotation.angle,
-        },
-      }
-    : base.transform;
+  const resolveTransform = () => {
+    if (!updates.transform) {
+      return base.transform;
+    }
+    const nextWidth = updates.transform.width ?? base.transform.width;
+    const nextHeight = updates.transform.height ?? base.transform.height;
+    const nextAngle = updates.transform.angle ?? base.transform.rotation.angle;
+
+    return {
+      ...base.transform,
+      width: nextWidth,
+      height: nextHeight,
+      rotation: {
+        ...base.transform.rotation,
+        angle: nextAngle,
+      },
+    };
+  };
+
+  const position = resolvePosition();
+  const transform = resolveTransform();
 
   if (base.elementType === "image") {
     return {
@@ -550,6 +591,25 @@ const InteractiveVisualElement = ({
     };
   }, [finishInteraction]);
 
+  const renderCornerHandles = () => {
+    if (!isFocused) {
+      return null;
+    }
+    return cornerHandles.map((handle) => (
+      <div key={`${handle}-group`} className={styles.handleGroup} data-handle={handle}>
+        <div
+          className={styles.resizeHandle}
+          data-handle={handle}
+          onPointerDown={(event) => handleResizePointerDown(event, handle)}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          role="presentation"
+        />
+      </div>
+    ));
+  };
+
   return (
     <div
       ref={elementRef}
@@ -565,21 +625,7 @@ const InteractiveVisualElement = ({
       role="presentation"
     >
       {content}
-      {isFocused
-        ? cornerHandles.map((handle) => (
-            <div key={`${handle}-group`} className={styles.handleGroup} data-handle={handle}>
-              <div
-                className={styles.resizeHandle}
-                data-handle={handle}
-                onPointerDown={(event) => handleResizePointerDown(event, handle)}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={handlePointerUp}
-                role="presentation"
-              />
-            </div>
-          ))
-        : null}
+      {renderCornerHandles()}
     </div>
   );
 };
@@ -607,12 +653,16 @@ export const VisualElementLayer = ({ sheet, viewport }: VisualElementLayerProps)
       if (!previous) {
         return null;
       }
-      return sheet.visualElements && sheet.visualElements[previous] ? previous : null;
+      const registry = sheet.visualElements;
+      if (registry && registry[previous]) {
+        return previous;
+      }
+      return null;
     });
   }, [sheet.id, sheet.visualElements]);
 
   useEffect(() => {
-    if (focusedElementId && !elementStates[focusedElementId]) {
+    if (focusedElementId !== null && elementStates[focusedElementId] === undefined) {
       setFocusedElementId(null);
     }
   }, [focusedElementId, elementStates]);

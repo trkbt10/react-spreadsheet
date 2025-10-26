@@ -4,7 +4,6 @@
  * @file Tests for SelectionHighlight behaviour under different editing modes.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { act, useLayoutEffect } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";

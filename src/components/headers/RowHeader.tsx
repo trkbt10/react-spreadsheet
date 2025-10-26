@@ -11,7 +11,6 @@ import styles from "./RowHeader.module.css";
 
 export type RowHeaderProps = {
   viewportTop: number;
-  viewportHeight: number;
   defaultCellHeight: number;
   rowSizes: RowSizeMap;
   visibleStartRow: number;
@@ -27,7 +26,6 @@ export type RowHeaderProps = {
  */
 export const RowHeader = ({
   viewportTop,
-  viewportHeight,
   defaultCellHeight,
   rowSizes,
   visibleStartRow,

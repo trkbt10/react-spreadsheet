@@ -351,6 +351,119 @@ export const SelectionHighlight = ({
     [effectiveAutoFillHandler, sheet, actions, onCellsUpdate, updateFillPreview],
   );
 
+  const renderDraggingHighlight = () => {
+    if (!isDragging || !visibleDraggingRect) {
+      return null;
+    }
+    return (
+      <g data-highlight="dragging">
+        <rect
+          className={styles.rangeFill}
+          x={visibleDraggingRect.x}
+          y={visibleDraggingRect.y}
+          width={visibleDraggingRect.width}
+          height={visibleDraggingRect.height}
+        />
+        <rect
+          className={styles.rangeOutline}
+          x={visibleDraggingRect.x + 1}
+          y={visibleDraggingRect.y + 1}
+          width={Math.max(0, visibleDraggingRect.width - 2)}
+          height={Math.max(0, visibleDraggingRect.height - 2)}
+        />
+      </g>
+    );
+  };
+
+  const renderSelectionHighlight = () => {
+    if (isDragging || !visibleSelectionRect) {
+      return null;
+    }
+    return (
+      <g data-highlight="selection">
+        <rect
+          className={styles.rangeFill}
+          x={visibleSelectionRect.x}
+          y={visibleSelectionRect.y}
+          width={visibleSelectionRect.width}
+          height={visibleSelectionRect.height}
+        />
+        <rect
+          className={styles.rangeOutline}
+          x={visibleSelectionRect.x + 1}
+          y={visibleSelectionRect.y + 1}
+          width={Math.max(0, visibleSelectionRect.width - 2)}
+          height={Math.max(0, visibleSelectionRect.height - 2)}
+        />
+      </g>
+    );
+  };
+
+  const renderFillPreviewHighlight = () => {
+    if (!fillPreview || !visibleFillPreviewRect) {
+      return null;
+    }
+    return (
+      <g data-highlight="fill-preview">
+        <rect
+          className={styles.fillPreviewFill}
+          x={visibleFillPreviewRect.x}
+          y={visibleFillPreviewRect.y}
+          width={visibleFillPreviewRect.width}
+          height={visibleFillPreviewRect.height}
+        />
+        <rect
+          className={styles.fillPreviewOutline}
+          x={visibleFillPreviewRect.x + 1}
+          y={visibleFillPreviewRect.y + 1}
+          width={Math.max(0, visibleFillPreviewRect.width - 2)}
+          height={Math.max(0, visibleFillPreviewRect.height - 2)}
+        />
+      </g>
+    );
+  };
+
+  const renderAnchorHighlight = () => {
+    if (!anchorRect) {
+      return null;
+    }
+    return (
+      <rect
+        className={styles.anchorRect}
+        x={anchorRect.x + 1}
+        y={anchorRect.y + 1}
+        width={Math.max(0, anchorRect.width - 2)}
+        height={Math.max(0, anchorRect.height - 2)}
+      />
+    );
+  };
+
+  const renderFillHandle = () => {
+    if (isDragging) {
+      return null;
+    }
+    if (!visibleSelectionRect) {
+      return null;
+    }
+    if (!selectionRange) {
+      return null;
+    }
+    if (isInlineEditing) {
+      return null;
+    }
+    return (
+      <circle
+        className={styles.fillHandle}
+        cx={visibleSelectionRect.x + visibleSelectionRect.width - 1}
+        cy={visibleSelectionRect.y + visibleSelectionRect.height - 1}
+        r={4}
+        onPointerDown={handleFillPointerDown}
+        onPointerMove={handleFillPointerMove}
+        onPointerUp={handleFillPointerUp}
+      />
+    );
+  };
+
   return (
     <svg
       className={styles.highlight}
@@ -360,88 +473,19 @@ export const SelectionHighlight = ({
       viewBox={`0 0 ${svgWidth} ${svgHeight}`}
     >
       {/* Dragging range highlight (during drag) */}
-      {isDragging && visibleDraggingRect && (
-        <g data-highlight="dragging">
-          <rect
-            className={styles.rangeFill}
-            x={visibleDraggingRect.x}
-            y={visibleDraggingRect.y}
-            width={visibleDraggingRect.width}
-            height={visibleDraggingRect.height}
-          />
-          <rect
-            className={styles.rangeOutline}
-            x={visibleDraggingRect.x + 1}
-            y={visibleDraggingRect.y + 1}
-            width={Math.max(0, visibleDraggingRect.width - 2)}
-            height={Math.max(0, visibleDraggingRect.height - 2)}
-          />
-        </g>
-      )}
+      {renderDraggingHighlight()}
 
       {/* Selection highlight (after drag is finished) */}
-      {!isDragging && visibleSelectionRect && (
-        <g data-highlight="selection">
-          <rect
-            className={styles.rangeFill}
-            x={visibleSelectionRect.x}
-            y={visibleSelectionRect.y}
-            width={visibleSelectionRect.width}
-            height={visibleSelectionRect.height}
-          />
-          <rect
-            className={styles.rangeOutline}
-            x={visibleSelectionRect.x + 1}
-            y={visibleSelectionRect.y + 1}
-            width={Math.max(0, visibleSelectionRect.width - 2)}
-            height={Math.max(0, visibleSelectionRect.height - 2)}
-          />
-        </g>
-      )}
+      {renderSelectionHighlight()}
 
       {/* Fill preview highlight */}
-      {fillPreview && visibleFillPreviewRect && (
-        <g data-highlight="fill-preview">
-          <rect
-            className={styles.fillPreviewFill}
-            x={visibleFillPreviewRect.x}
-            y={visibleFillPreviewRect.y}
-            width={visibleFillPreviewRect.width}
-            height={visibleFillPreviewRect.height}
-          />
-          <rect
-            className={styles.fillPreviewOutline}
-            x={visibleFillPreviewRect.x + 1}
-            y={visibleFillPreviewRect.y + 1}
-            width={Math.max(0, visibleFillPreviewRect.width - 2)}
-            height={Math.max(0, visibleFillPreviewRect.height - 2)}
-          />
-        </g>
-      )}
+      {renderFillPreviewHighlight()}
 
       {/* Anchor cell emphasis */}
-      {anchorRect && (
-        <rect
-          className={styles.anchorRect}
-          x={anchorRect.x + 1}
-          y={anchorRect.y + 1}
-          width={Math.max(0, anchorRect.width - 2)}
-          height={Math.max(0, anchorRect.height - 2)}
-        />
-      )}
+      {renderAnchorHighlight()}
 
       {/* Fill handle */}
-      {!isDragging && visibleSelectionRect && selectionRange && !isInlineEditing && (
-        <circle
-          className={styles.fillHandle}
-          cx={visibleSelectionRect.x + visibleSelectionRect.width - 1}
-          cy={visibleSelectionRect.y + visibleSelectionRect.height - 1}
-          r={4}
-          onPointerDown={handleFillPointerDown}
-          onPointerMove={handleFillPointerMove}
-          onPointerUp={handleFillPointerUp}
-        />
-      )}
+      {renderFillHandle()}
     </svg>
   );
 };

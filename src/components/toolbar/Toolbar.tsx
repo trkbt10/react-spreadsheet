@@ -3,7 +3,7 @@
  */
 
 import { useCallback } from "react";
-import type { ReactElement, MouseEvent } from "react";
+import type { ReactElement } from "react";
 import { FaBold, FaItalic, FaUnderline, FaStrikethrough, FaPalette, FaFillDrip } from "react-icons/fa";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarDivider } from "./ToolbarDivider";
@@ -35,33 +35,21 @@ export type ToolbarProps = {
  * @returns Toolbar component
  */
 export const Toolbar = ({ currentStyle, onStyleChange, isDisabled = false }: ToolbarProps): ReactElement => {
-  const handleBoldClick = useCallback(
-    (_event: MouseEvent<HTMLButtonElement>) => {
-      onStyleChange({ ...currentStyle, bold: !currentStyle.bold });
-    },
-    [currentStyle, onStyleChange],
-  );
+  const handleBoldClick = useCallback(() => {
+    onStyleChange({ ...currentStyle, bold: !currentStyle.bold });
+  }, [currentStyle, onStyleChange]);
 
-  const handleItalicClick = useCallback(
-    (_event: MouseEvent<HTMLButtonElement>) => {
-      onStyleChange({ ...currentStyle, italic: !currentStyle.italic });
-    },
-    [currentStyle, onStyleChange],
-  );
+  const handleItalicClick = useCallback(() => {
+    onStyleChange({ ...currentStyle, italic: !currentStyle.italic });
+  }, [currentStyle, onStyleChange]);
 
-  const handleUnderlineClick = useCallback(
-    (_event: MouseEvent<HTMLButtonElement>) => {
-      onStyleChange({ ...currentStyle, underline: !currentStyle.underline });
-    },
-    [currentStyle, onStyleChange],
-  );
+  const handleUnderlineClick = useCallback(() => {
+    onStyleChange({ ...currentStyle, underline: !currentStyle.underline });
+  }, [currentStyle, onStyleChange]);
 
-  const handleStrikethroughClick = useCallback(
-    (_event: MouseEvent<HTMLButtonElement>) => {
-      onStyleChange({ ...currentStyle, strikethrough: !currentStyle.strikethrough });
-    },
-    [currentStyle, onStyleChange],
-  );
+  const handleStrikethroughClick = useCallback(() => {
+    onStyleChange({ ...currentStyle, strikethrough: !currentStyle.strikethrough });
+  }, [currentStyle, onStyleChange]);
 
   const handleFontSizeChange = useCallback(
     (fontSize: string) => {

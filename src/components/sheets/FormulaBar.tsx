@@ -13,6 +13,7 @@ import { createCellTarget, createRangeTarget } from "../../modules/spreadsheet/c
 import { resolveStyle } from "../../modules/spreadsheet/styleResolver";
 import { selectionToRange } from "../../modules/spreadsheet/sheetReducer";
 import { createUpdatesFromSelection, getSelectionAnchor } from "../../modules/spreadsheet/selectionUtils";
+import { FormulaFunctionInput } from "./FormulaFunctionInput";
 import styles from "./FormulaBar.module.css";
 
 const toColumnName = (index: number): string => {
@@ -222,11 +223,15 @@ export const FormulaBar = (): ReactElement => {
     [selection, actions],
   );
 
-  const placeholder = !selection
-    ? "Select a cell to edit"
-    : selection.kind === "range"
-      ? "Enter value for selected cells"
-      : "Enter value or formula (=...)";
+  const placeholder = useMemo(() => {
+    if (!selection) {
+      return "Select a cell to edit";
+    }
+    if (selection.kind === "range") {
+      return "Enter value for selected cells";
+    }
+    return "Enter value or formula (=...)";
+  }, [selection]);
   const isDisabled = !selection;
 
   return (
@@ -235,7 +240,7 @@ export const FormulaBar = (): ReactElement => {
       <div className={styles.formulaBar}>
         <div className={styles.cellReference}>{displayedReference}</div>
         <div className={styles.inputWrapper}>
-          <input
+          <FormulaFunctionInput
             ref={inputRef}
             className={styles.input}
             type="text"

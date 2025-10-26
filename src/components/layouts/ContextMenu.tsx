@@ -86,14 +86,16 @@ const calculateSubmenuPosition = ({
 
   // First level submenu (depth 0) always goes right unless it overflows
   // Deeper submenus prefer the side that keeps them closer to root
-  const preferLeft =
-    depth === 0
-      ? false
-      : (() => {
-          const rightDistanceFromRoot = Math.abs(rightX + menuWidth / 2 - rootMenuX);
-          const leftDistanceFromRoot = Math.abs(leftX + menuWidth / 2 - rootMenuX);
-          return leftDistanceFromRoot < rightDistanceFromRoot;
-        })();
+  const shouldPreferLeft = (): boolean => {
+    if (depth === 0) {
+      return false;
+    }
+    const rightDistanceFromRoot = Math.abs(rightX + menuWidth / 2 - rootMenuX);
+    const leftDistanceFromRoot = Math.abs(leftX + menuWidth / 2 - rootMenuX);
+    return leftDistanceFromRoot < rightDistanceFromRoot;
+  };
+
+  const preferLeft = shouldPreferLeft();
 
   const x = wouldOverflowRight || preferLeft ? leftX : rightX;
 

@@ -1,3 +1,7 @@
+/**
+ * @file Type definitions for context menu components.
+ */
+
 import type { ReactNode } from "react";
 
 export type MenuItemAction = {
