@@ -7,7 +7,7 @@ import type { CSSProperties, ReactElement } from "react";
 import type { SpreadSheet as SpreadSheetType } from "../types";
 import { Sheet } from "./Sheet";
 import { Tabs } from "./layouts/Tabs";
-import { FormulaBar } from "./sheets/cell-input/FormulaBar";
+import { FormulaBar } from "./sheets/cell-input";
 import { SheetProvider } from "../modules/spreadsheet/SheetContext";
 import { SpreadSheetProvider, useSpreadSheetContext } from "../modules/spreadsheet/SpreadSheetContext";
 import { SAFE_MAX_COLUMNS, SAFE_MAX_ROWS } from "../modules/spreadsheet/gridLayout";

@@ -26,7 +26,7 @@ import { RowHeader } from "./headers/RowHeader";
 import { HeaderCorner } from "./headers/HeaderCorner";
 import { Cell } from "./Cell";
 import { SelectionHighlight } from "./sheets/SelectionHighlight";
-import { CellEditor } from "./sheets/cell-input/CellEditor";
+import { CellEditor } from "./sheets/cell-input";
 import styles from "./Sheet.module.css";
 import { GridLines } from "./GridLines";
 import { resolveStyle } from "../modules/spreadsheet/styleResolver";

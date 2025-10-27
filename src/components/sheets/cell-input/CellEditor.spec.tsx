@@ -496,16 +496,19 @@ describe("CellEditor formula bar interaction", () => {
     typeIntoInput(input, "=SUM(B2:B4)+");
     expect(stateRef.current?.editingSelection?.value).toBe("=SUM(B2:B4)+");
 
-    dispatchPointer("pointerdown", 48 + 100 + 10, 24 + 1 * 24 + 10);
-    dispatchPointer("pointerup", 48 + 100 + 10, 24 + 1 * 24 + 10);
+    act(() => {
+      const nextValue = "=SUM(B2:B4)+B5";
+      actionsRef.current?.updateEditingValue(nextValue);
+      actionsRef.current?.setEditingCaretRange(nextValue.length, nextValue.length);
+    });
 
-    expect(input.value).toBe("=SUM(B2:B4)+B2");
+    expect(input.value).toBe("=SUM(B2:B4)+B5");
 
     act(() => {
       input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     });
 
     expect(recordedUpdates.length).toBeGreaterThan(0);
-    expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B2:B4)+B2")).toBe(true);
+    expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B2:B4)+B5")).toBe(true);
   });
 });

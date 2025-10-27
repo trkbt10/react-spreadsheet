@@ -8,7 +8,7 @@ import { FiScissors, FiCopy, FiClipboard, FiTrash2 } from "react-icons/fi";
 import { MdFormatColorText } from "react-icons/md";
 import { ContextMenu } from "../../components/layouts/ContextMenu";
 import type { MenuItem, MenuPosition } from "../../components/layouts/ContextMenu.types";
-import { FormulaFunctionInput } from "../../components/sheets/cell-input/FormulaFunctionInput";
+import { FormulaFunctionInput } from "../../components/sheets/cell-input";
 import { useShowcaseMetadata } from "../hooks/useShowcaseMetadata";
 import styles from "./UIComponentsPage.module.css";
 
