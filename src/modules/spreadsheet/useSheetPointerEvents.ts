@@ -3,7 +3,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { PointerEvent } from "react";
 import type { BoundActionCreators } from "../../utils/typedActions";
 import type { sheetActions } from "./sheetActions";
 import type { Sheet, SpreadSheet } from "../../types";
@@ -40,10 +39,25 @@ export type UseSheetPointerEventsParams = {
   formulaTargeting: FormulaTargetingState | null;
 };
 
+type PointerTarget = {
+  setPointerCapture: (pointerId: number) => void;
+  releasePointerCapture: (pointerId: number) => void;
+  getBoundingClientRect: () => DOMRect;
+};
+
+export type SheetPointerEvent = {
+  readonly pointerId: number;
+  readonly clientX: number;
+  readonly clientY: number;
+  readonly shiftKey: boolean;
+  readonly currentTarget: PointerTarget;
+  readonly preventDefault: () => void;
+};
+
 export type UseSheetPointerEventsReturn = {
-  handlePointerDown: (event: PointerEvent<HTMLDivElement>) => void;
-  handlePointerMove: (event: PointerEvent<HTMLDivElement>) => void;
-  handlePointerUp: (event: PointerEvent<HTMLDivElement>) => void;
+  handlePointerDown: (event: SheetPointerEvent) => void;
+  handlePointerMove: (event: SheetPointerEvent) => void;
+  handlePointerUp: (event: SheetPointerEvent) => void;
 };
 
 /**
@@ -83,9 +97,14 @@ export const useSheetPointerEvents = ({
     startCell: null,
   });
 
-  const isFormulaEditingActive = Boolean(
-    editingSelection && (editorActivity.formulaBar || editorActivity.cellEditor),
-  );
+  const hasActiveEditor = [editorActivity.formulaBar, editorActivity.cellEditor].some((value) => value);
+  const isFormulaCandidate = (() => {
+    if (!editingSelection) {
+      return false;
+    }
+    return editingSelection.value.trimStart().startsWith("=");
+  })();
+  const isFormulaEditingActive = hasActiveEditor ? isFormulaCandidate : false;
 
   const targetingAnalysis = useMemo(() => {
     if (!editingSelection) {
@@ -108,6 +127,9 @@ export const useSheetPointerEvents = ({
     if (!editingSelection) {
       return null;
     }
+    if (!isFormulaCandidate) {
+      return null;
+    }
     if (targetingAnalysis.entries.length > 0) {
       return targetingAnalysis.activeEntry ?? targetingAnalysis.entries[0] ?? null;
     }
@@ -117,7 +139,7 @@ export const useSheetPointerEvents = ({
       sheetName: sheet.name,
       value: editingSelection.value,
     });
-  }, [editingSelection, editingCaret, sheet.id, sheet.name, targetingAnalysis]);
+  }, [editingSelection, editingCaret, isFormulaCandidate, sheet.id, sheet.name, targetingAnalysis]);
 
   const targetingFunctionName = targetingAnalysis.analysis?.name ?? "";
 
@@ -200,7 +222,7 @@ export const useSheetPointerEvents = ({
   );
 
   const getPositionFromPointer = useCallback(
-    (event: PointerEvent<HTMLDivElement>): { x: number; y: number } | null => {
+    (event: SheetPointerEvent): { x: number; y: number } | null => {
       const rect = event.currentTarget.getBoundingClientRect();
       const x = event.clientX - rect.left + scrollLeft - headerColumnWidth;
       const y = event.clientY - rect.top + scrollTop - headerRowHeight;
@@ -242,7 +264,7 @@ export const useSheetPointerEvents = ({
   };
 
   const handlePointerDown = useCallback(
-    (event: PointerEvent<HTMLDivElement>): void => {
+    (event: SheetPointerEvent): void => {
       const pos = getPositionFromPointer(event);
       if (!pos) {
         return;
@@ -308,7 +330,7 @@ export const useSheetPointerEvents = ({
   );
 
   const handlePointerMove = useCallback(
-    (event: PointerEvent<HTMLDivElement>): void => {
+    (event: SheetPointerEvent): void => {
       const pos = getPositionFromPointer(event);
       if (!pos) {
         return;
@@ -378,7 +400,7 @@ export const useSheetPointerEvents = ({
   );
 
   const handlePointerUp = useCallback(
-    (event: PointerEvent<HTMLDivElement>): void => {
+    (event: SheetPointerEvent): void => {
       const pointerMatches = formulaTargetPointerRef.current.pointerId === event.pointerId;
       if (pointerMatches && isTargetingReady(formulaTargeting)) {
         const pos = getPositionFromPointer(event);
@@ -490,3 +512,4 @@ export const useSheetPointerEvents = ({
 // Notes:
 // - Reviewed src/modules/spreadsheet/sheetReducer.ts to ensure shift-extend interactions align with existing selection state transitions.
 // - Reviewed src/components/Sheet.tsx to confirm pointer event hook parameters cover current selection metadata for drag behaviors.
+// - Revisited src/modules/spreadsheet/formulaTargetingUtils.ts to validate fallback targeting is limited to formula-prefixed inputs.

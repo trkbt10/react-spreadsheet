@@ -4,16 +4,17 @@
 
 import { useCallback, useRef, useMemo, useEffect } from "react";
 import type { ReactElement, KeyboardEvent, ChangeEvent, CompositionEvent } from "react";
-import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
-import { useFormulaEngine } from "../../modules/formula/FormulaEngineContext";
-import { Toolbar } from "../toolbar/Toolbar";
-import type { ToolbarStyle } from "../toolbar/Toolbar";
-import { toolbarStyleToCellStyle, cellStyleToToolbarStyle } from "../toolbar/toolbarStyleConverter";
-import { createCellTarget, createRangeTarget } from "../../modules/spreadsheet/cellStyle";
-import { resolveStyle } from "../../modules/spreadsheet/styleResolver";
-import { selectionToRange } from "../../modules/spreadsheet/sheetReducer";
-import { createUpdatesFromSelection, getSelectionAnchor } from "../../modules/spreadsheet/selectionUtils";
+import { useSheetContext } from "../../../modules/spreadsheet/SheetContext";
+import { useFormulaEngine } from "../../../modules/formula/FormulaEngineContext";
+import { Toolbar } from "../../toolbar/Toolbar";
+import type { ToolbarStyle } from "../../toolbar/Toolbar";
+import { toolbarStyleToCellStyle, cellStyleToToolbarStyle } from "../../toolbar/toolbarStyleConverter";
+import { createCellTarget, createRangeTarget } from "../../../modules/spreadsheet/cellStyle";
+import { resolveStyle } from "../../../modules/spreadsheet/styleResolver";
+import { selectionToRange } from "../../../modules/spreadsheet/sheetReducer";
+import { getSelectionAnchor } from "../../../modules/spreadsheet/selectionUtils";
 import { FormulaFunctionInput } from "./FormulaFunctionInput";
+import { useEditingCommit } from "./useEditingCommit";
 import styles from "./FormulaBar.module.css";
 
 const toColumnName = (index: number): string => {
@@ -43,6 +44,7 @@ export const FormulaBar = (): ReactElement => {
   const { sheet, state, actions, onCellsUpdate } = useSheetContext();
   const { selection, editingSelection, editorActivity } = state;
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasCommittedRef = useRef(false);
   useFormulaEngine();
 
   const focusInput = useCallback((options?: { selectAll?: boolean }) => {
@@ -70,6 +72,13 @@ export const FormulaBar = (): ReactElement => {
     }
     focusInput({ selectAll: !editingSelection.isDirty });
   }, [editingSelection, editorActivity.formulaBar, focusInput]);
+
+  useEffect(() => {
+    if (!editingSelection) {
+      return;
+    }
+    hasCommittedRef.current = false;
+  }, [editingSelection]);
 
   useEffect(() => {
     const input = inputRef.current;
@@ -188,47 +197,19 @@ export const FormulaBar = (): ReactElement => {
     [actions],
   );
 
-  const applyEditingUpdates = useCallback((): boolean => {
-    if (!editingSelection) {
-      return true;
-    }
-    if (!editingSelection.isDirty || !onCellsUpdate) {
-      return true;
-    }
-
-    const input = inputRef.current;
-    const committedValue = input ? input.value : editingSelection.value;
-    const updates = createUpdatesFromSelection(editingSelection, committedValue);
-    const result = onCellsUpdate(updates);
-    if (!result || result.status === "applied" || result.status === "unchanged") {
-      if (editingSelection.value !== committedValue) {
-        actions.updateEditingValue(committedValue);
-      }
-      return true;
-    }
-    if (result.status === "rejected") {
-      const input = inputRef.current;
-      if (input) {
-        input.setCustomValidity(result.error.message);
-        if (typeof input.reportValidity === "function") {
-          input.reportValidity();
-        }
-      }
+  const { commitEditingValue } = useEditingCommit({
+    editingSelection,
+    actions: {
+      commitEdit: actions.commitEdit,
+      updateEditingValue: actions.updateEditingValue,
+    },
+    inputRef,
+    hasCommittedRef,
+    onCellsUpdate,
+    onValidationFailure: () => {
       focusInput({ selectAll: false });
-      return false;
-    }
-    return true;
-  }, [actions, editingSelection, onCellsUpdate, focusInput]);
-
-  const commitEditingValue = useCallback(() => {
-    if (!editingSelection) {
-      return;
-    }
-    if (!applyEditingUpdates()) {
-      return;
-    }
-    actions.commitEdit();
-  }, [actions, applyEditingUpdates, editingSelection]);
+    },
+  });
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -353,7 +334,7 @@ export const FormulaBar = (): ReactElement => {
 /**
  * Notes:
  * - Reviewed src/modules/spreadsheet/sheetReducer.ts to align with the unified selection state shape.
- * - Checked src/components/sheets/CellEditor.tsx and src/components/sheets/SelectionHighlight.tsx to ensure shared editing/selection behavior remained consistent after refactoring.
+ * - Checked src/components/sheets/cell-input/CellEditor.tsx and src/components/sheets/SelectionHighlight.tsx to ensure shared editing/selection behavior remained consistent after refactoring.
  * - Inspected src/modules/spreadsheet/SpreadSheetContext.tsx and formula engine utilities while integrating update propagation for formula bar edits.
  * - Re-validated pointer handling across src/modules/spreadsheet/useSheetPointerEvents.ts to ensure overlay interactions stop conflicting with formula bar focus.
  * - Synced validation handling with src/modules/formula/errors.ts to surface matching error feedback between formula entry points.

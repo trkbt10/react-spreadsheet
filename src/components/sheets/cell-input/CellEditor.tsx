@@ -4,10 +4,11 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import type { ReactElement, KeyboardEvent, ChangeEvent, CompositionEvent } from "react";
-import { useVirtualScrollContext } from "../scrollarea/VirtualScrollContext";
-import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
-import { calculateColumnPosition, calculateRowPosition } from "../../modules/spreadsheet/gridLayout";
-import { getSelectionAnchor, createUpdatesFromSelection } from "../../modules/spreadsheet/selectionUtils";
+import { useVirtualScrollContext } from "../../scrollarea/VirtualScrollContext";
+import { useSheetContext } from "../../../modules/spreadsheet/SheetContext";
+import { calculateColumnPosition, calculateRowPosition } from "../../../modules/spreadsheet/gridLayout";
+import { getSelectionAnchor } from "../../../modules/spreadsheet/selectionUtils";
+import { useEditingCommit } from "./useEditingCommit";
 import styles from "./CellEditor.module.css";
 
 const HEADER_ROW_HEIGHT = 24;
@@ -23,6 +24,14 @@ export const CellEditor = (): ReactElement | null => {
   const { editingSelection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
   const inputRef = useRef<HTMLInputElement>(null);
   const isComposingRef = useRef(false);
+  const hasCommittedRef = useRef(false);
+
+  useEffect(() => {
+    if (!editingSelection) {
+      return;
+    }
+    hasCommittedRef.current = false;
+  }, [editingSelection]);
   const handleSelectionChange = useCallback(() => {
     if (isComposingRef.current) {
       return;
@@ -52,39 +61,25 @@ export const CellEditor = (): ReactElement | null => {
     [actions],
   );
 
-  const applyEditingUpdates = useCallback((): boolean => {
-    if (!editingSelection) {
-      return true;
-    }
-    if (!editingSelection.isDirty || !onCellsUpdate) {
-      return true;
-    }
-
-    const input = inputRef.current;
-    const committedValue = input ? input.value : editingSelection.value;
-    const updates = createUpdatesFromSelection(editingSelection, committedValue);
-    const result = onCellsUpdate(updates);
-    if (!result || result.status === "applied" || result.status === "unchanged") {
-      if (editingSelection.value !== committedValue) {
-        actions.updateEditingValue(committedValue);
-      }
-      return true;
-    }
-    if (result.status === "rejected") {
+  const { applyEditingUpdates, commitEditingValue } = useEditingCommit({
+    editingSelection,
+    actions: {
+      commitEdit: actions.commitEdit,
+      updateEditingValue: actions.updateEditingValue,
+    },
+    inputRef,
+    hasCommittedRef,
+    onCellsUpdate,
+    onValidationFailure: () => {
       const input = inputRef.current;
-      if (input) {
-        input.setCustomValidity(result.error.message);
-        if (typeof input.reportValidity === "function") {
-          input.reportValidity();
-        }
-        requestAnimationFrame(() => {
-          input.focus({ preventScroll: true });
-        });
+      if (!input) {
+        return;
       }
-      return false;
-    }
-    return true;
-  }, [actions, editingSelection, onCellsUpdate]);
+      requestAnimationFrame(() => {
+        input.focus({ preventScroll: true });
+      });
+    },
+  });
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -93,18 +88,18 @@ export const CellEditor = (): ReactElement | null => {
       }
       if (event.key === "Enter") {
         event.preventDefault();
-        const applied = applyEditingUpdates();
-        if (applied) {
-          actions.commitEdit();
+          const applied = applyEditingUpdates();
+          if (applied) {
+            commitEditingValue();
+          }
+          return;
         }
-        return;
-      }
-      if (event.key === "Escape") {
-        event.preventDefault();
-        actions.cancelEdit();
+        if (event.key === "Escape") {
+          event.preventDefault();
+          actions.cancelEdit();
       }
     },
-    [actions, applyEditingUpdates, editingSelection],
+    [actions, applyEditingUpdates, commitEditingValue, editingSelection],
   );
 
   const handleBlur = useCallback(() => {
@@ -114,8 +109,8 @@ export const CellEditor = (): ReactElement | null => {
     if (!applyEditingUpdates()) {
       return;
     }
-    actions.commitEdit();
-  }, [actions, applyEditingUpdates, editingSelection]);
+    commitEditingValue();
+  }, [applyEditingUpdates, commitEditingValue, editingSelection]);
 
   const handleCompositionStart = useCallback(() => {
     isComposingRef.current = true;

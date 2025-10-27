@@ -73,6 +73,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
     );
     const [isFocused, setIsFocused] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
+    const [hasNavigatedSuggestions, setHasNavigatedSuggestions] = useState(false);
 
     const availableFunctions = useMemo<FormulaFunctionSuggestion[]>(() => {
       return loadFormulaSuggestions();
@@ -88,6 +89,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
 
     useEffect(() => {
       setHighlightedIndex(0);
+      setHasNavigatedSuggestions(false);
     }, [query]);
 
     const suggestionListId = useId();
@@ -140,6 +142,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
               }
               return next;
             });
+            setHasNavigatedSuggestions(true);
             return;
           }
           if (event.key === "ArrowUp") {
@@ -150,23 +153,28 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
               }
               return previous - 1;
             });
+            setHasNavigatedSuggestions(true);
             return;
           }
           if (event.key === "Tab" || event.key === "Enter") {
-            event.preventDefault();
-            const targetSuggestion = filteredSuggestions[highlightedIndex];
-            if (targetSuggestion) {
-              applySuggestion(targetSuggestion);
+            const shouldApplySuggestion = hasNavigatedSuggestions || (query !== null && query !== "");
+            if (shouldApplySuggestion) {
+              event.preventDefault();
+              const targetSuggestion = filteredSuggestions[highlightedIndex];
+              if (targetSuggestion) {
+                applySuggestion(targetSuggestion);
+              }
+              return;
             }
-            return;
           }
           if (event.key === "Escape") {
             setHighlightedIndex(0);
+            setHasNavigatedSuggestions(false);
           }
         }
         onKeyDown?.(event);
       },
-      [applySuggestion, filteredSuggestions, highlightedIndex, onKeyDown, shouldShowSuggestions],
+      [applySuggestion, filteredSuggestions, hasNavigatedSuggestions, highlightedIndex, onKeyDown, query, shouldShowSuggestions],
     );
 
     const changeHandler = useCallback(
@@ -197,6 +205,7 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
                 className={styles.suggestion}
                 onMouseDown={(event) => {
                   event.preventDefault();
+                  setHasNavigatedSuggestions(true);
                   applySuggestion(suggestion);
                 }}
                 onMouseEnter={() => {
