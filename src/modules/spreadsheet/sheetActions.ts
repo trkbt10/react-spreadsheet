@@ -5,6 +5,10 @@
 import { createAction } from "../../utils/typedActions";
 import type { StyleTarget, CellStyle, StyleKey } from "./cellStyle";
 import type { EditingOrigin } from "./sheetReducer";
+import type { CellUpdate } from "./cellUpdates";
+import type { FormulaReferenceHighlight, FormulaTargetingState } from "./formulaTargetingTypes";
+
+type StartFormulaTargetingPayload = Omit<FormulaTargetingState, "previewRange">;
 
 export const sheetActions = {
   setColumnWidth: createAction("sheet/setColumnWidth", (col: number, width: number) => ({ col, width })),
@@ -32,6 +36,23 @@ export const sheetActions = {
     ) => ({ range, initialValue, origin }),
   ),
   updateEditingValue: createAction("sheet/updateEditingValue", (value: string) => ({ value })),
+  setEditingCaretRange: createAction("sheet/setEditingCaretRange", (start: number, end: number) => ({ start, end })),
+  setFormulaReferenceHighlights: createAction(
+    "sheet/setFormulaReferenceHighlights",
+    (highlights: ReadonlyArray<FormulaReferenceHighlight>) => ({ highlights }),
+  ),
+  startFormulaTargeting: createAction(
+    "sheet/startFormulaTargeting",
+    (targeting: StartFormulaTargetingPayload) => ({ targeting }),
+  ),
+  updateFormulaTargetPreview: createAction(
+    "sheet/updateFormulaTargetPreview",
+    (previewRange: FormulaTargetingState["previewRange"], sheetId?: string) => ({
+      previewRange,
+      sheetId: sheetId ?? null,
+    }),
+  ),
+  clearFormulaTargeting: createAction("sheet/clearFormulaTargeting"),
   commitEdit: createAction(
     "sheet/commitEdit",
     (value?: string, range?: { startCol: number; startRow: number; endCol: number; endRow: number } | null) => ({
@@ -39,6 +60,19 @@ export const sheetActions = {
       range,
     }),
   ),
+  recordOptimisticUpdates: createAction(
+    "sheet/recordOptimisticUpdates",
+    (updates: ReadonlyArray<CellUpdate>) => ({ updates }),
+  ),
+  removeOptimisticUpdates: createAction(
+    "sheet/removeOptimisticUpdates",
+    (updates: ReadonlyArray<CellUpdate>) => ({ updates }),
+  ),
+  setOptimisticUpdates: createAction(
+    "sheet/setOptimisticUpdates",
+    (updates: ReadonlyArray<CellUpdate>) => ({ updates }),
+  ),
+  clearPendingUpdates: createAction("sheet/clearPendingUpdates"),
   cancelEdit: createAction("sheet/cancelEdit"),
   setActiveCell: createAction("sheet/setActiveCell", (col: number, row: number) => ({ col, row })),
   clearActiveCell: createAction("sheet/clearActiveCell"),

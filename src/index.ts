@@ -17,7 +17,12 @@ export type { VirtualScrollContextValue } from "./components/scrollarea/VirtualS
 export { SheetProvider, useSheetContext } from "./modules/spreadsheet/SheetContext";
 export type { SheetContextValue, SheetProviderProps } from "./modules/spreadsheet/SheetContext";
 export { SpreadSheetProvider, useSpreadSheetContext } from "./modules/spreadsheet/SpreadSheetContext";
-export type { SpreadSheetContextValue, SpreadSheetProviderProps } from "./modules/spreadsheet/SpreadSheetContext";
+export type {
+  SpreadSheetContextValue,
+  SpreadSheetProviderProps,
+  CellUpdateRequestOptions,
+  CellUpdateResult,
+} from "./modules/spreadsheet/SpreadSheetContext";
 export { sheetActions } from "./modules/spreadsheet/sheetActions";
 export type {
   SheetState,

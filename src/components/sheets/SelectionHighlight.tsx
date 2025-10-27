@@ -21,6 +21,7 @@ import {
 import { selectionToRange } from "../../modules/spreadsheet/sheetReducer";
 import { deriveFillHandlePreview, computeAutofillUpdates } from "../../modules/spreadsheet/autofill";
 import type { AutofillRequest, FillHandlePreview } from "../../modules/spreadsheet/autofill";
+import type { FormulaReferenceHighlight } from "../../modules/spreadsheet/formulaTargetingTypes";
 import styles from "./SelectionHighlight.module.css";
 
 export type SelectionHighlightProps = {
@@ -34,6 +35,11 @@ type VisibleRangeRect = {
   y: number;
   width: number;
   height: number;
+};
+
+type FormulaHighlightRect = {
+  rect: VisibleRangeRect;
+  highlight: FormulaReferenceHighlight;
 };
 
 const calculateVisibleRangeRect = (
@@ -75,6 +81,15 @@ const calculateVisibleRangeRect = (
   return { x, y, width, height };
 };
 
+const toSelectionRange = (range: FormulaReferenceHighlight["range"]): SelectionRange => {
+  return {
+    startCol: range.startCol,
+    endCol: range.endCol,
+    startRow: range.startRow,
+    endRow: range.endRow,
+  } satisfies SelectionRange;
+};
+
 /**
  * Renders selection highlights (range, anchor, fill handle) using SVG overlay.
  * @param props - Component props
@@ -98,6 +113,8 @@ export const SelectionHighlight = ({
     editingSelection,
     editorActivity,
     isDragging,
+    formulaReferenceHighlights,
+    formulaTargeting,
   } = state;
 
   const isInlineEditing = editorActivity.cellEditor ? editingSelection !== null : false;
@@ -173,6 +190,78 @@ export const SelectionHighlight = ({
   }, [
     isDragging,
     draggingRange,
+    viewportRect,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    headerColumnWidth,
+    headerRowHeight,
+  ]);
+
+  const formulaReferenceRects = useMemo(() => {
+    return formulaReferenceHighlights
+      .filter((highlight) => highlight.sheetId === sheet.id)
+      .map((highlight) => {
+        const rect = calculateVisibleRangeRect(
+          toSelectionRange(highlight.range),
+          viewportRect,
+          columnSizes,
+          rowSizes,
+          defaultCellWidth,
+          defaultCellHeight,
+          headerColumnWidth,
+          headerRowHeight,
+        );
+        if (!rect) {
+          return null;
+        }
+        return {
+          rect,
+          highlight,
+        } satisfies FormulaHighlightRect;
+      })
+      .filter((entry): entry is FormulaHighlightRect => entry !== null);
+  }, [
+    formulaReferenceHighlights,
+    sheet.id,
+    viewportRect,
+    columnSizes,
+    rowSizes,
+    defaultCellWidth,
+    defaultCellHeight,
+    headerColumnWidth,
+    headerRowHeight,
+  ]);
+
+  const formulaTargetPreviewRect = useMemo(() => {
+    if (!formulaTargeting || !formulaTargeting.previewRange) {
+      return null;
+    }
+    if (formulaTargeting.previewSheetId !== sheet.id) {
+      return null;
+    }
+    const rect = calculateVisibleRangeRect(
+      toSelectionRange(formulaTargeting.previewRange),
+      viewportRect,
+      columnSizes,
+      rowSizes,
+      defaultCellWidth,
+      defaultCellHeight,
+      headerColumnWidth,
+      headerRowHeight,
+    );
+    if (!rect) {
+      return null;
+    }
+    return {
+      rect,
+      startColor: formulaTargeting.startColor,
+      endColor: formulaTargeting.endColor,
+    };
+  }, [
+    formulaTargeting,
+    sheet.id,
     viewportRect,
     columnSizes,
     rowSizes,
@@ -342,8 +431,11 @@ export const SelectionHighlight = ({
         sheet,
       });
 
-      if (updates.length > 0) {
-        onCellsUpdate?.(Array.from(updates));
+      if (updates.length > 0 && onCellsUpdate) {
+        const result = onCellsUpdate(Array.from(updates), { errorMode: "suppress" });
+        if (result && result.status === "rejected") {
+          return;
+        }
       }
 
       actions.extendSelectionToCell(preview.targetCell.col, preview.targetCell.row);
@@ -464,6 +556,25 @@ export const SelectionHighlight = ({
     );
   };
 
+  const renderFormulaTargetPreview = useCallback((): ReactElement | null => {
+    if (!formulaTargetPreviewRect) {
+      return null;
+    }
+    return (
+      <rect
+        className={styles.formulaTargetPreview}
+        x={formulaTargetPreviewRect.rect.x}
+        y={formulaTargetPreviewRect.rect.y}
+        width={Math.max(0, formulaTargetPreviewRect.rect.width)}
+        height={Math.max(0, formulaTargetPreviewRect.rect.height)}
+        style={{
+          stroke: formulaTargetPreviewRect.startColor,
+          fill: `${formulaTargetPreviewRect.startColor}1f`,
+        }}
+      />
+    );
+  }, [formulaTargetPreviewRect]);
+
   return (
     <svg
       className={styles.highlight}
@@ -477,6 +588,39 @@ export const SelectionHighlight = ({
 
       {/* Selection highlight (after drag is finished) */}
       {renderSelectionHighlight()}
+
+      {/* Formula reference highlights */}
+      {formulaReferenceRects.map(({ rect, highlight }) => (
+        <g key={`formula-reference-${highlight.id}`} className={styles.formulaReference} data-label={highlight.label}>
+          <rect
+            className={styles.formulaReferenceRect}
+            x={rect.x}
+            y={rect.y}
+            width={Math.max(0, rect.width)}
+            height={Math.max(0, rect.height)}
+            style={{ stroke: highlight.startColor, fill: `${highlight.startColor}22` }}
+          />
+          <circle
+            className={styles.formulaReferenceMarker}
+            data-marker="start"
+            cx={rect.x + 3}
+            cy={rect.y + 3}
+            r={3}
+            style={{ fill: highlight.startColor }}
+          />
+          <circle
+            className={styles.formulaReferenceMarker}
+            data-marker="end"
+            cx={rect.x + Math.max(0, rect.width) - 3}
+            cy={rect.y + Math.max(0, rect.height) - 3}
+            r={3}
+            style={{ fill: highlight.endColor }}
+          />
+        </g>
+      ))}
+
+      {/* Active formula targeting preview */}
+      {renderFormulaTargetPreview()}
 
       {/* Fill preview highlight */}
       {renderFillPreviewHighlight()}
@@ -494,3 +638,4 @@ export const SelectionHighlight = ({
 // - Reviewed src/components/Sheet.tsx to confirm fill handle interactions align with sheet actions dispatch.
 // - Reviewed src/components/Cell.tsx to ensure anchor highlighting complements per-cell data attributes.
 // - Reviewed src/modules/spreadsheet/autofill.ts to reuse preview and autofill computation helpers within the highlight overlay.
+// - Consulted src/modules/spreadsheet/SpreadSheetContext.tsx when adjusting FormulaValidationError handling to keep provider expectations intact.

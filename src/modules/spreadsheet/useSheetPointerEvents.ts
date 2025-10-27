@@ -2,14 +2,21 @@
  * @file Hook for handling pointer events on sheet container for rect-based selection and cell interaction.
  */
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { PointerEvent } from "react";
 import type { BoundActionCreators } from "../../utils/typedActions";
 import type { sheetActions } from "./sheetActions";
-import type { Sheet } from "../../types";
+import type { Sheet, SpreadSheet } from "../../types";
 import { findColumnAtPosition, findRowAtPosition } from "./gridLayout";
 import type { ColumnSizeMap, RowSizeMap } from "./gridLayout";
-import type { SelectionTarget } from "./sheetReducer";
+import type { SelectionTarget, EditingSelection, EditorActivity } from "./sheetReducer";
+import type { FormulaTargetingState, CellRange, FormulaReferenceHighlight } from "./formulaTargetingTypes";
+import { formatReferenceFromRange } from "../formula/editor/references";
+import {
+  analyseFormulaForTargeting,
+  createFallbackArgumentEntry,
+  type FormulaArgumentEntry,
+} from "./formulaTargetingUtils";
 
 export type UseSheetPointerEventsParams = {
   actions: BoundActionCreators<typeof sheetActions>;
@@ -24,8 +31,13 @@ export type UseSheetPointerEventsParams = {
   maxColumns: number;
   maxRows: number;
   sheet: Sheet;
+  spreadsheet: SpreadSheet;
   selection: SelectionTarget | null;
   selectionAnchor: { col: number; row: number } | null;
+  editingSelection: EditingSelection | null;
+  editingCaret: { start: number; end: number };
+  editorActivity: EditorActivity;
+  formulaTargeting: FormulaTargetingState | null;
 };
 
 export type UseSheetPointerEventsReturn = {
@@ -53,14 +65,121 @@ export const useSheetPointerEvents = ({
   maxColumns,
   maxRows,
   sheet,
+  spreadsheet,
   selection,
   selectionAnchor,
+  editingSelection,
+  editingCaret,
+  editorActivity,
+  formulaTargeting,
 }: UseSheetPointerEventsParams): UseSheetPointerEventsReturn => {
   const isDraggingRef = useRef(false);
   const pointerDownPosRef = useRef<{ x: number; y: number } | null>(null);
   const lastClickRef = useRef<{ col: number; row: number; time: number } | null>(null);
   const isShiftExtendingRef = useRef(false);
   const lastExtendedCellRef = useRef<{ col: number; row: number } | null>(null);
+  const formulaTargetPointerRef = useRef<{ pointerId: number | null; startCell: { col: number; row: number } | null }>({
+    pointerId: null,
+    startCell: null,
+  });
+
+  const isFormulaEditingActive = Boolean(
+    editingSelection && (editorActivity.formulaBar || editorActivity.cellEditor),
+  );
+
+  const targetingAnalysis = useMemo(() => {
+    if (!editingSelection) {
+      return {
+        analysis: null,
+        entries: [],
+        activeEntry: null,
+      } satisfies ReturnType<typeof analyseFormulaForTargeting>;
+    }
+    return analyseFormulaForTargeting({
+      value: editingSelection.value,
+      caret: editingCaret,
+      sheetId: sheet.id,
+      sheetName: sheet.name,
+      spreadsheet,
+    });
+  }, [editingSelection, editingCaret, sheet.id, sheet.name, spreadsheet]);
+
+  const defaultTargetingEntry = useMemo<FormulaArgumentEntry | null>(() => {
+    if (!editingSelection) {
+      return null;
+    }
+    if (targetingAnalysis.entries.length > 0) {
+      return targetingAnalysis.activeEntry ?? targetingAnalysis.entries[0] ?? null;
+    }
+    return createFallbackArgumentEntry({
+      caret: editingCaret,
+      sheetId: sheet.id,
+      sheetName: sheet.name,
+      value: editingSelection.value,
+    });
+  }, [editingSelection, editingCaret, sheet.id, sheet.name, targetingAnalysis]);
+
+  const targetingFunctionName = targetingAnalysis.analysis?.name ?? "";
+
+  const isTargetingReady = useCallback(
+    (targeting: FormulaTargetingState | null): boolean => {
+      if (!targeting) {
+        return false;
+      }
+      return isFormulaEditingActive;
+    },
+    [isFormulaEditingActive],
+  );
+
+  useEffect(() => {
+    const highlights = targetingAnalysis.entries
+      .map((entry) => entry.highlight)
+      .filter(
+        (highlight): highlight is FormulaReferenceHighlight => highlight !== null,
+      );
+    actions.setFormulaReferenceHighlights(highlights);
+    return () => {
+      actions.setFormulaReferenceHighlights([]);
+    };
+  }, [actions, targetingAnalysis.entries]);
+
+  const ensureFormulaTargeting = useCallback(
+    (currentSheetId: string): FormulaTargetingState | null => {
+      if (!isFormulaEditingActive) {
+        return null;
+      }
+      if (formulaTargeting) {
+        return formulaTargeting;
+      }
+      if (!defaultTargetingEntry) {
+        return null;
+      }
+      const targetingState: FormulaTargetingState = {
+        replaceStart: defaultTargetingEntry.replaceStart,
+        replaceEnd: defaultTargetingEntry.replaceEnd,
+        argumentLabel: defaultTargetingEntry.label,
+        functionName: targetingFunctionName,
+        argumentIndex: defaultTargetingEntry.argumentIndex,
+        originSheetId: sheet.id,
+        originSheetName: sheet.name,
+        startColor: defaultTargetingEntry.color.start,
+        endColor: defaultTargetingEntry.color.end,
+        previewRange: null,
+        previewSheetId: currentSheetId,
+      };
+      actions.startFormulaTargeting(targetingState);
+      return targetingState;
+    },
+    [
+      actions,
+      defaultTargetingEntry,
+      formulaTargeting,
+      isFormulaEditingActive,
+      sheet.id,
+      sheet.name,
+      targetingFunctionName,
+    ],
+  );
 
   const resolveInitialValue = useCallback(
     (col: number, row: number): string => {
@@ -109,10 +228,44 @@ export const useSheetPointerEvents = ({
     [defaultCellWidth, defaultCellHeight, columnSizes, rowSizes, maxColumns, maxRows],
   );
 
+  const createRangeFromCells = (start: { col: number; row: number }, end: { col: number; row: number }): CellRange => {
+    const startCol = Math.min(start.col, end.col);
+    const startRow = Math.min(start.row, end.row);
+    const endCol = Math.max(start.col, end.col) + 1;
+    const endRow = Math.max(start.row, end.row) + 1;
+    return {
+      startCol,
+      startRow,
+      endCol,
+      endRow,
+    };
+  };
+
   const handlePointerDown = useCallback(
     (event: PointerEvent<HTMLDivElement>): void => {
       const pos = getPositionFromPointer(event);
       if (!pos) {
+        return;
+      }
+
+      let activeTargeting = formulaTargeting;
+      if (!isTargetingReady(activeTargeting) && isFormulaEditingActive) {
+        activeTargeting = ensureFormulaTargeting(sheet.id);
+      }
+
+      if (isTargetingReady(activeTargeting)) {
+        event.preventDefault();
+        const cell = getCellAtPosition(pos.x, pos.y);
+        formulaTargetPointerRef.current = {
+          pointerId: event.pointerId,
+          startCell: cell,
+        };
+        event.currentTarget.setPointerCapture(event.pointerId);
+        if (cell) {
+          actions.updateFormulaTargetPreview(createRangeFromCells(cell, cell), sheet.id);
+        } else {
+          actions.updateFormulaTargetPreview(null, sheet.id);
+        }
         return;
       }
 
@@ -140,17 +293,50 @@ export const useSheetPointerEvents = ({
         return;
       }
     },
-    [getPositionFromPointer, getCellAtPosition, actions, selection, selectionAnchor],
+    [
+      actions,
+      ensureFormulaTargeting,
+      formulaTargeting,
+      getCellAtPosition,
+      getPositionFromPointer,
+      isFormulaEditingActive,
+      isTargetingReady,
+      selection,
+      selectionAnchor,
+      sheet.id,
+    ],
   );
 
   const handlePointerMove = useCallback(
     (event: PointerEvent<HTMLDivElement>): void => {
-      if (!pointerDownPosRef.current) {
+      const pos = getPositionFromPointer(event);
+      if (!pos) {
         return;
       }
 
-      const pos = getPositionFromPointer(event);
-      if (!pos) {
+      const pointerMatches = formulaTargetPointerRef.current.pointerId === event.pointerId;
+      if (pointerMatches && isTargetingReady(formulaTargeting)) {
+        const startCell = formulaTargetPointerRef.current.startCell;
+        const cell = getCellAtPosition(pos.x, pos.y);
+        if (!startCell) {
+          if (!cell) {
+            return;
+          }
+          formulaTargetPointerRef.current = {
+            pointerId: event.pointerId,
+            startCell: cell,
+          };
+          actions.updateFormulaTargetPreview(createRangeFromCells(cell, cell), sheet.id);
+          return;
+        }
+        if (!cell) {
+          return;
+        }
+        actions.updateFormulaTargetPreview(createRangeFromCells(startCell, cell), sheet.id);
+        return;
+      }
+
+      if (!pointerDownPosRef.current) {
         return;
       }
 
@@ -188,11 +374,43 @@ export const useSheetPointerEvents = ({
 
       actions.updateRectSelection(pos.x, pos.y);
     },
-    [getPositionFromPointer, actions],
+    [actions, formulaTargeting, getCellAtPosition, getPositionFromPointer, isTargetingReady, sheet.id],
   );
 
   const handlePointerUp = useCallback(
     (event: PointerEvent<HTMLDivElement>): void => {
+      const pointerMatches = formulaTargetPointerRef.current.pointerId === event.pointerId;
+      if (pointerMatches && isTargetingReady(formulaTargeting)) {
+        const pos = getPositionFromPointer(event);
+        event.currentTarget.releasePointerCapture(event.pointerId);
+        const startCell = formulaTargetPointerRef.current.startCell;
+        const endCell = pos ? getCellAtPosition(pos.x, pos.y) : null;
+        if (startCell) {
+          const finalCell = endCell ?? startCell;
+          const range = createRangeFromCells(startCell, finalCell);
+          const originSheetId = formulaTargeting?.originSheetId ?? sheet.id;
+          const sheetName = originSheetId === sheet.id ? null : sheet.name;
+          const reference = formatReferenceFromRange(range, sheetName);
+          const currentValue = editingSelection?.value ?? "";
+          const replaceStart = formulaTargeting?.replaceStart ?? 0;
+          const replaceEnd = formulaTargeting?.replaceEnd ?? replaceStart;
+          const prefix = currentValue.slice(0, replaceStart);
+          const suffix = currentValue.slice(replaceEnd);
+          const nextValue = `${prefix}${reference}${suffix}`;
+          actions.updateEditingValue(nextValue);
+          const caretIndex = replaceStart + reference.length;
+          actions.setEditingCaretRange(caretIndex, caretIndex);
+        }
+        actions.updateFormulaTargetPreview(null, sheet.id);
+        actions.clearFormulaTargeting();
+        formulaTargetPointerRef.current = { pointerId: null, startCell: null };
+        pointerDownPosRef.current = null;
+        lastExtendedCellRef.current = null;
+        isShiftExtendingRef.current = false;
+        isDraggingRef.current = false;
+        return;
+      }
+
       if (!pointerDownPosRef.current) {
         return;
       }
@@ -216,12 +434,19 @@ export const useSheetPointerEvents = ({
         const cell = getCellAtPosition(pos.x, pos.y);
         if (cell) {
           const now = Date.now();
-          const lastClick = lastClickRef.current;
-          const isDoubleClick =
-            lastClick !== null &&
-            lastClick.col === cell.col &&
-            lastClick.row === cell.row &&
-            now - lastClick.time < 300;
+          const isDoubleClick = (() => {
+            const previous = lastClickRef.current;
+            if (!previous) {
+              return false;
+            }
+            if (previous.col !== cell.col) {
+              return false;
+            }
+            if (previous.row !== cell.row) {
+              return false;
+            }
+            return now - previous.time < 300;
+          })();
 
           if (event.shiftKey) {
             actions.extendSelectionToCell(cell.col, cell.row);
@@ -238,8 +463,21 @@ export const useSheetPointerEvents = ({
       }
 
       pointerDownPosRef.current = null;
+      formulaTargetPointerRef.current = { pointerId: null, startCell: null };
     },
-    [getPositionFromPointer, getCellAtPosition, actions, resolveInitialValue],
+    [
+      actions,
+      editingSelection,
+      formulaTargeting,
+      getCellAtPosition,
+      getPositionFromPointer,
+      isTargetingReady,
+      resolveInitialValue,
+      selection,
+      selectionAnchor,
+      sheet.id,
+      sheet.name,
+    ],
   );
 
   return {

@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
-import type { ReactElement, KeyboardEvent, ChangeEvent } from "react";
+import type { ReactElement, KeyboardEvent, ChangeEvent, CompositionEvent } from "react";
 import { useVirtualScrollContext } from "../scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
 import { calculateColumnPosition, calculateRowPosition } from "../../modules/spreadsheet/gridLayout";
@@ -22,12 +22,69 @@ export const CellEditor = (): ReactElement | null => {
   const { state, actions, onCellsUpdate } = useSheetContext();
   const { editingSelection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
   const inputRef = useRef<HTMLInputElement>(null);
+  const isComposingRef = useRef(false);
+  const handleSelectionChange = useCallback(() => {
+    if (isComposingRef.current) {
+      return;
+    }
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? start;
+    actions.setEditingCaretRange(start, end);
+  }, [actions]);
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      actions.updateEditingValue(event.target.value);
+      const input = inputRef.current;
+      if (input) {
+        input.setCustomValidity("");
+      }
+      const { value: nextValue, selectionStart, selectionEnd } = event.target;
+      actions.updateEditingValue(nextValue);
+      if (!isComposingRef.current) {
+        const start = selectionStart ?? nextValue.length;
+        const end = selectionEnd ?? start;
+        actions.setEditingCaretRange(start, end);
+      }
     },
     [actions],
   );
+
+  const applyEditingUpdates = useCallback((): boolean => {
+    if (!editingSelection) {
+      return true;
+    }
+    if (!editingSelection.isDirty || !onCellsUpdate) {
+      return true;
+    }
+
+    const input = inputRef.current;
+    const committedValue = input ? input.value : editingSelection.value;
+    const updates = createUpdatesFromSelection(editingSelection, committedValue);
+    const result = onCellsUpdate(updates);
+    if (!result || result.status === "applied" || result.status === "unchanged") {
+      if (editingSelection.value !== committedValue) {
+        actions.updateEditingValue(committedValue);
+      }
+      return true;
+    }
+    if (result.status === "rejected") {
+      const input = inputRef.current;
+      if (input) {
+        input.setCustomValidity(result.error.message);
+        if (typeof input.reportValidity === "function") {
+          input.reportValidity();
+        }
+        requestAnimationFrame(() => {
+          input.focus({ preventScroll: true });
+        });
+      }
+      return false;
+    }
+    return true;
+  }, [actions, editingSelection, onCellsUpdate]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -36,29 +93,45 @@ export const CellEditor = (): ReactElement | null => {
       }
       if (event.key === "Enter") {
         event.preventDefault();
-        if (editingSelection?.isDirty && onCellsUpdate) {
-          const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
-          onCellsUpdate(updates);
+        const applied = applyEditingUpdates();
+        if (applied) {
+          actions.commitEdit();
         }
-        actions.commitEdit();
-      } else if (event.key === "Escape") {
+        return;
+      }
+      if (event.key === "Escape") {
         event.preventDefault();
         actions.cancelEdit();
       }
     },
-    [actions, editingSelection, onCellsUpdate],
+    [actions, applyEditingUpdates, editingSelection],
   );
 
   const handleBlur = useCallback(() => {
     if (!editingSelection) {
       return;
     }
-    if (editingSelection.isDirty && onCellsUpdate) {
-      const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
-      onCellsUpdate(updates);
+    if (!applyEditingUpdates()) {
+      return;
     }
     actions.commitEdit();
-  }, [actions, editingSelection, onCellsUpdate]);
+  }, [actions, applyEditingUpdates, editingSelection]);
+
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true;
+  }, []);
+
+  const handleCompositionEnd = useCallback(
+    (event: CompositionEvent<HTMLInputElement>) => {
+      isComposingRef.current = false;
+      const input = event.currentTarget;
+      const valueLength = input.value.length;
+      const start = input.selectionStart ?? valueLength;
+      const end = input.selectionEnd ?? start;
+      actions.setEditingCaretRange(start, end);
+    },
+    [actions],
+  );
 
   useEffect(() => {
     const input = inputRef.current;
@@ -70,12 +143,29 @@ export const CellEditor = (): ReactElement | null => {
 
     if (!editingSelection.isDirty) {
       input.select();
+      actions.setEditingCaretRange(0, input.value.length);
       return;
     }
 
     const caretPosition = input.value.length;
     input.setSelectionRange(caretPosition, caretPosition);
-  }, [editingSelection]);
+    actions.setEditingCaretRange(caretPosition, caretPosition);
+  }, [actions, editingSelection]);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+    if (!editingSelection) {
+      return;
+    }
+    const { start, end } = state.editingCaret;
+    if (input.selectionStart === start && input.selectionEnd === end) {
+      return;
+    }
+    input.setSelectionRange(start, end);
+  }, [editingSelection, state.editingCaret]);
 
   if (!editingSelection) {
     return null;
@@ -115,6 +205,11 @@ export const CellEditor = (): ReactElement | null => {
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
+        onSelect={handleSelectionChange}
+        onKeyUp={handleSelectionChange}
+        onMouseUp={handleSelectionChange}
         data-is-formula={isFormula}
         placeholder={placeholder}
       />
@@ -127,4 +222,6 @@ export const CellEditor = (): ReactElement | null => {
  * - Reviewed src/modules/spreadsheet/sheetReducer.ts to confirm editingSelection.isDirty toggles after the first input mutation.
  * - Consulted src/components/sheets/FormulaBar.tsx to keep caret synchronization consistent across both editing entry points.
  * - Inspected src/components/Sheet.tsx and src/components/SpreadSheet.tsx to verify rendering order and avoid focus contention with the formula bar.
+ * - Cross-checked src/modules/formula/errors.ts and src/modules/spreadsheet/SpreadSheetContext.tsx to align validation feedback wiring with provider behaviour.
+ * - Revisited src/modules/spreadsheet/cellUpdates.ts to ensure local inference matches spreadsheet-level validation.
  */

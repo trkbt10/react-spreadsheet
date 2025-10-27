@@ -4,10 +4,44 @@
 
 import { createContext, useContext, useState, useMemo, useCallback } from "react";
 import type { ReactNode, ReactElement } from "react";
-import type { SpreadSheet, Sheet, Cell, CellId } from "../../types";
+import type { SpreadSheet, Sheet } from "../../types";
 import type { Tab } from "../../components/layouts/Tabs";
 import { useFormulaEngineWithSpreadsheet } from "../formula/FormulaEngineContext";
-import type { FormulaEngine } from "../formula/engine";
+import { FormulaEngine } from "../formula/engine";
+import { FormulaValidationError } from "../formula/errors";
+import { applyUpdatesToSheet, type CellUpdate } from "./cellUpdates";
+
+const toColumnName = (index: number): string => {
+  if (index < 0) {
+    return "";
+  }
+  const prefix = toColumnName(Math.floor(index / 26) - 1);
+  const suffix = String.fromCharCode(65 + (index % 26));
+  return `${prefix}${suffix}`;
+};
+
+const formatCellPosition = (col: number, row: number): string => {
+  const columnName = toColumnName(col);
+  const rowNumber = row + 1;
+  return `${columnName}${rowNumber}`;
+};
+
+export type CellUpdateRequestOptions = {
+  errorMode?: "throw" | "suppress";
+};
+
+export type CellUpdateResult =
+  | {
+      status: "applied";
+      spreadsheet?: SpreadSheet;
+    }
+  | {
+      status: "unchanged";
+    }
+  | {
+      status: "rejected";
+      error: FormulaValidationError;
+    };
 
 /**
  * Context value containing spreadsheet information.
@@ -20,139 +54,13 @@ export type SpreadSheetContextValue = {
   tabs: Tab[];
   formulaEngine: FormulaEngine;
   handleTabChange: (tabId: string) => void;
-  handleCellsUpdate: (updates: Array<{ col: number; row: number; value: string }>) => void;
+  handleCellsUpdate: (
+    updates: Array<{ col: number; row: number; value: string }>,
+    options?: CellUpdateRequestOptions,
+  ) => CellUpdateResult;
 };
 
 const SpreadSheetContext = createContext<SpreadSheetContextValue | null>(null);
-
-type CellUpdate = {
-  col: number;
-  row: number;
-  value: string;
-};
-
-const NUMBER_PATTERN = /^-?\d+(?:\.\d+)?$/u;
-const BOOLEAN_PATTERN = /^(true|false)$/iu;
-
-const createCellId = (col: number, row: number): CellId => `${col}:${row}` as CellId;
-
-const inferCellFromValue = (col: number, row: number, rawValue: string, previous?: Cell): Cell | null => {
-  const trimmed = rawValue.trim();
-  if (trimmed.length === 0) {
-    return null;
-  }
-
-  const id = createCellId(col, row);
-
-  if (trimmed.startsWith("=")) {
-    return {
-      id,
-      x: col,
-      y: row,
-      type: "formula",
-      value: previous?.type === "formula" ? previous.value : null,
-      formula: trimmed,
-    } satisfies Cell;
-  }
-
-  if (NUMBER_PATTERN.test(trimmed)) {
-    return {
-      id,
-      x: col,
-      y: row,
-      type: "number",
-      value: Number.parseFloat(trimmed),
-    } satisfies Cell;
-  }
-
-  if (BOOLEAN_PATTERN.test(trimmed)) {
-    const normalized = trimmed.toLowerCase();
-    return {
-      id,
-      x: col,
-      y: row,
-      type: "boolean",
-      value: normalized === "true",
-    } satisfies Cell;
-  }
-
-  if (trimmed.toLowerCase() === "null") {
-    return {
-      id,
-      x: col,
-      y: row,
-      type: "null",
-      value: null,
-    } satisfies Cell;
-  }
-
-  return {
-    id,
-    x: col,
-    y: row,
-    type: "string",
-    value: rawValue,
-  } satisfies Cell;
-};
-
-const cellsEqual = (left: Cell | undefined, right: Cell | undefined): boolean => {
-  if (left === right) {
-    return true;
-  }
-  if (!left) {
-    return false;
-  }
-  if (!right) {
-    return false;
-  }
-
-  if (left.type !== right.type) {
-    return false;
-  }
-
-  if (!Object.is(left.value, right.value)) {
-    return false;
-  }
-
-  return left.formula === right.formula;
-};
-
-const applyUpdatesToSheet = (sheet: Sheet, updates: ReadonlyArray<CellUpdate>): Sheet => {
-  if (updates.length === 0) {
-    return sheet;
-  }
-
-  const nextCells: Sheet["cells"] = { ...sheet.cells };
-  let mutated = false;
-
-  updates.forEach(({ col, row, value }) => {
-    const cellId = createCellId(col, row);
-    const previous = nextCells[cellId];
-    const next = inferCellFromValue(col, row, value, previous);
-
-    if (!next) {
-      if (previous) {
-        delete nextCells[cellId];
-        mutated = true;
-      }
-      return;
-    }
-
-    if (!cellsEqual(previous, next)) {
-      nextCells[cellId] = next;
-      mutated = true;
-    }
-  });
-
-  if (!mutated) {
-    return sheet;
-  }
-
-  return {
-    ...sheet,
-    cells: nextCells,
-  } satisfies Sheet;
-};
 
 export type SpreadSheetProviderProps = {
   spreadsheet: SpreadSheet;
@@ -187,32 +95,69 @@ export const SpreadSheetProvider = ({ spreadsheet, children }: SpreadSheetProvid
   }, []);
 
   const handleCellsUpdate = useCallback(
-    (updates: Array<CellUpdate>) => {
+    (updates: Array<CellUpdate>, options?: CellUpdateRequestOptions): CellUpdateResult => {
       if (updates.length === 0) {
-        return;
+        return { status: "unchanged" };
       }
+      const errorMode = options?.errorMode ?? "throw";
+
+      let outcome: CellUpdateResult = { status: "unchanged" };
 
       setDocumentState((current) => {
         const sheetIndex = current.sheets.findIndex((sheet) => sheet.id === activeSheetId);
         if (sheetIndex === -1) {
+          outcome = { status: "unchanged" };
           return current;
         }
 
         const targetSheet = current.sheets[sheetIndex];
         const updatedSheet = applyUpdatesToSheet(targetSheet, updates);
         if (updatedSheet === targetSheet) {
+          outcome = { status: "unchanged" };
           return current;
         }
 
         const nextSheets = [...current.sheets];
         nextSheets[sheetIndex] = updatedSheet;
 
-        return {
+        const nextSpreadsheet: SpreadSheet = {
           ...current,
           sheets: nextSheets,
           updatedAt: new Date().toISOString(),
-        } satisfies SpreadSheet;
+        };
+
+        const targetUpdate = updates.find((update) => update.value.trim().startsWith("=")) ?? updates[0];
+
+        try {
+          FormulaEngine.fromSpreadsheet(nextSpreadsheet);
+        } catch (error) {
+          const failure = error instanceof Error ? error : new Error(String(error));
+          const cellLabel = formatCellPosition(targetUpdate.col, targetUpdate.row);
+          const validationError = new FormulaValidationError(
+            `Failed to validate formula at ${targetSheet.name}!${cellLabel}: ${failure.message}`,
+            {
+              sheetId: targetSheet.id,
+              sheetName: targetSheet.name,
+              column: targetUpdate.col,
+              row: targetUpdate.row,
+            },
+            failure,
+          );
+          outcome = { status: "rejected", error: validationError };
+          if (errorMode === "suppress") {
+            console.warn(
+              `Skipped applying updates due to formula validation error at ${targetSheet.name}!${cellLabel}: ${failure.message}`,
+            );
+            return current;
+          }
+          return current;
+        }
+
+        outcome = { status: "applied", spreadsheet: nextSpreadsheet };
+        return nextSpreadsheet;
       });
+
+      return outcome;
     },
     [activeSheetId],
   );
@@ -248,3 +193,9 @@ export const useSpreadSheetContext = (): SpreadSheetContextValue => {
   }
   return context;
 };
+
+/**
+ * Notes:
+ * - Reviewed src/modules/spreadsheet/SheetContext.tsx while threading cell update options through provider boundaries.
+ * - Coordinated with src/components/sheets/SelectionHighlight.tsx to keep suppressed validation errors consistent during autofill drags.
+ */

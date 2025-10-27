@@ -2,7 +2,7 @@
  * @file Shared types for the formula evaluation module.
  */
 
-import type { Cell, Sheet } from "../../types";
+import type { Cell } from "../../types";
 import type { FormulaAstNode } from "./ast";
 
 export type FormulaPrimitiveValue = string | number | boolean | null;

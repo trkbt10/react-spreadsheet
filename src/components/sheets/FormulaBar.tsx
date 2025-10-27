@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useRef, useMemo, useEffect } from "react";
-import type { ReactElement, KeyboardEvent, ChangeEvent } from "react";
+import type { ReactElement, KeyboardEvent, ChangeEvent, CompositionEvent } from "react";
 import { useSheetContext } from "../../modules/spreadsheet/SheetContext";
 import { useFormulaEngine } from "../../modules/formula/FormulaEngineContext";
 import { Toolbar } from "../toolbar/Toolbar";
@@ -55,12 +55,14 @@ export const FormulaBar = (): ReactElement => {
       input.focus({ preventScroll: true });
       if (shouldSelectAll) {
         input.select();
+        actions.setEditingCaretRange(0, input.value.length);
         return;
       }
       const caretPosition = input.value.length;
       input.setSelectionRange(caretPosition, caretPosition);
+      actions.setEditingCaretRange(caretPosition, caretPosition);
     });
-  }, []);
+  }, [actions]);
 
   useEffect(() => {
     if (!editingSelection || !editorActivity.formulaBar) {
@@ -68,6 +70,31 @@ export const FormulaBar = (): ReactElement => {
     }
     focusInput({ selectAll: !editingSelection.isDirty });
   }, [editingSelection, editorActivity.formulaBar, focusInput]);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+    if (!editingSelection || !editorActivity.formulaBar) {
+      return;
+    }
+    const { start, end } = state.editingCaret;
+    if (input.selectionStart === start && input.selectionEnd === end) {
+      return;
+    }
+    input.setSelectionRange(start, end);
+  }, [editingSelection, editorActivity.formulaBar, state.editingCaret]);
+
+  const handleSelectionChange = useCallback(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? start;
+    actions.setEditingCaretRange(start, end);
+  }, [actions]);
 
   const readCellDisplayValue = useCallback(
     (col: number, row: number): string => {
@@ -142,24 +169,66 @@ export const FormulaBar = (): ReactElement => {
 
   const isFormula = currentValue.startsWith("=");
   const displayedReference = cellReference === "" ? "\u00A0" : cellReference;
+  const isComposingRef = useRef(false);
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      actions.updateEditingValue(event.target.value);
+      const input = inputRef.current;
+      if (input) {
+        input.setCustomValidity("");
+      }
+      const { value: nextValue, selectionStart, selectionEnd } = event.target;
+      actions.updateEditingValue(nextValue);
+      if (!isComposingRef.current) {
+        const start = selectionStart ?? nextValue.length;
+        const end = selectionEnd ?? start;
+        actions.setEditingCaretRange(start, end);
+      }
     },
     [actions],
   );
+
+  const applyEditingUpdates = useCallback((): boolean => {
+    if (!editingSelection) {
+      return true;
+    }
+    if (!editingSelection.isDirty || !onCellsUpdate) {
+      return true;
+    }
+
+    const input = inputRef.current;
+    const committedValue = input ? input.value : editingSelection.value;
+    const updates = createUpdatesFromSelection(editingSelection, committedValue);
+    const result = onCellsUpdate(updates);
+    if (!result || result.status === "applied" || result.status === "unchanged") {
+      if (editingSelection.value !== committedValue) {
+        actions.updateEditingValue(committedValue);
+      }
+      return true;
+    }
+    if (result.status === "rejected") {
+      const input = inputRef.current;
+      if (input) {
+        input.setCustomValidity(result.error.message);
+        if (typeof input.reportValidity === "function") {
+          input.reportValidity();
+        }
+      }
+      focusInput({ selectAll: false });
+      return false;
+    }
+    return true;
+  }, [actions, editingSelection, onCellsUpdate, focusInput]);
 
   const commitEditingValue = useCallback(() => {
     if (!editingSelection) {
       return;
     }
-    if (editingSelection.isDirty && onCellsUpdate) {
-      const updates = createUpdatesFromSelection(editingSelection, editingSelection.value);
-      onCellsUpdate(updates);
+    if (!applyEditingUpdates()) {
+      return;
     }
     actions.commitEdit();
-  }, [actions, editingSelection, onCellsUpdate]);
+  }, [actions, applyEditingUpdates, editingSelection]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -196,6 +265,22 @@ export const FormulaBar = (): ReactElement => {
   const handleBlur = useCallback(() => {
     commitEditingValue();
   }, [commitEditingValue]);
+
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true;
+  }, []);
+
+  const handleCompositionEnd = useCallback(
+    (event: CompositionEvent<HTMLInputElement>) => {
+      isComposingRef.current = false;
+      const input = event.currentTarget;
+      const valueLength = input.value.length;
+      const start = input.selectionStart ?? valueLength;
+      const end = input.selectionEnd ?? start;
+      actions.setEditingCaretRange(start, end);
+    },
+    [actions],
+  );
 
   const handleStyleChange = useCallback(
     (newToolbarStyle: ToolbarStyle) => {
@@ -242,15 +327,20 @@ export const FormulaBar = (): ReactElement => {
         <div className={styles.inputWrapper}>
           <FormulaFunctionInput
             ref={inputRef}
-            className={styles.input}
-            type="text"
-            value={currentValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            data-is-formula={isFormula}
-            placeholder={placeholder}
+          className={styles.input}
+          type="text"
+          value={currentValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
+          onSelect={handleSelectionChange}
+          onKeyUp={handleSelectionChange}
+          onMouseUp={handleSelectionChange}
+          data-is-formula={isFormula}
+          placeholder={placeholder}
             disabled={isDisabled}
           />
         </div>
@@ -259,10 +349,12 @@ export const FormulaBar = (): ReactElement => {
   );
 };
 
+
 /**
  * Notes:
  * - Reviewed src/modules/spreadsheet/sheetReducer.ts to align with the unified selection state shape.
  * - Checked src/components/sheets/CellEditor.tsx and src/components/sheets/SelectionHighlight.tsx to ensure shared editing/selection behavior remained consistent after refactoring.
  * - Inspected src/modules/spreadsheet/SpreadSheetContext.tsx and formula engine utilities while integrating update propagation for formula bar edits.
  * - Re-validated pointer handling across src/modules/spreadsheet/useSheetPointerEvents.ts to ensure overlay interactions stop conflicting with formula bar focus.
+ * - Synced validation handling with src/modules/formula/errors.ts to surface matching error feedback between formula entry points.
  */

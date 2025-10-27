@@ -49,6 +49,27 @@
   cursor: crosshair;
 }
 
+.formulaReference {
+  pointer-events: none;
+}
+
+.formulaReferenceRect {
+  fill-opacity: 0.16;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.formulaReferenceMarker {
+  stroke: var(--color-bg-primary);
+  stroke-width: 1.2;
+}
+
+.formulaTargetPreview {
+  fill-opacity: 0.2;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 2;
+}
+
 .selectionInfo {
   fill: rgba(0, 0, 0, 0.7);
   font-family: monospace;

@@ -8,6 +8,7 @@ import type { Sheet as SheetType } from "../types";
 import { VirtualScroll } from "./scrollarea/VirtualScroll";
 import { useVirtualScrollContext } from "./scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../modules/spreadsheet/SheetContext";
+import { useSpreadSheetContext } from "../modules/spreadsheet/SpreadSheetContext";
 import { useSheetPointerEvents } from "../modules/spreadsheet/useSheetPointerEvents";
 import {
   calculateVisibleRange,
@@ -254,6 +255,7 @@ type SheetContentProps = {
 const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): ReactElement => {
   const { scrollLeft, scrollTop, viewportRect } = useVirtualScrollContext();
   const { sheet, state } = useSheetContext();
+  const { spreadsheet } = useSpreadSheetContext();
   const {
     columnSizes,
     rowSizes,
@@ -262,7 +264,9 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
     selection,
     selectionAnchor,
     editingSelection,
+    editingCaret,
     editorActivity,
+    formulaTargeting,
   } = state;
 
   const { handlePointerDown, handlePointerMove, handlePointerUp } = useSheetPointerEvents({
@@ -278,8 +282,13 @@ const SheetContent = ({ actions, maxColumns, maxRows }: SheetContentProps): Reac
     maxColumns,
     maxRows,
     sheet,
+    spreadsheet,
     selection,
     selectionAnchor,
+    editingSelection,
+    editingCaret,
+    editorActivity,
+    formulaTargeting,
   });
 
   return (

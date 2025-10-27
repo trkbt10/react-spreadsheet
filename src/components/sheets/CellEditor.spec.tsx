@@ -14,7 +14,9 @@ import { SheetProvider, useSheetContext } from "../../modules/spreadsheet/SheetC
 import type { BoundActionCreators } from "../../utils/typedActions";
 import { sheetActions } from "../../modules/spreadsheet/sheetActions";
 import type { EditingOrigin, SheetState } from "../../modules/spreadsheet/sheetReducer";
+import { FormulaValidationError } from "../../modules/formula/errors";
 import { CellEditor } from "./CellEditor";
+import type { CellUpdateResult, CellUpdateRequestOptions } from "../../modules/spreadsheet/SpreadSheetContext";
 
 const createVirtualScrollValue = (): UseVirtualScrollReturn => {
   const setScroll: UseVirtualScrollReturn["setScrollTop"] = () => {};
@@ -85,7 +87,12 @@ describe("CellEditor formula bar interaction", () => {
   const rootRef: { current: Root | null } = { current: null };
   const containerRef: { current: HTMLDivElement | null } = { current: null };
   const onCellsUpdateRef: {
-    current: ((updates: Array<{ col: number; row: number; value: string }>) => void) | null;
+    current:
+      | ((
+          updates: Array<{ col: number; row: number; value: string }>,
+          options?: CellUpdateRequestOptions,
+        ) => CellUpdateResult | void)
+      | null;
   } = { current: null };
 
   const renderWithProviders = (): void => {
@@ -144,7 +151,7 @@ describe("CellEditor formula bar interaction", () => {
   beforeEach(() => {
     actionsRef.current = null;
     stateRef.current = null;
-    onCellsUpdateRef.current = () => {};
+    onCellsUpdateRef.current = () => ({ status: "applied" });
     renderWithProviders();
   });
 
@@ -158,6 +165,7 @@ describe("CellEditor formula bar interaction", () => {
   });
 
   it("keeps inline editor hidden for multi-cell edits triggered by the formula bar", () => {
+    renderWithProviders();
     dispatchEdit("formulaBar", true);
 
     const container = containerRef.current;
@@ -173,6 +181,7 @@ describe("CellEditor formula bar interaction", () => {
   });
 
   it("activates inline editing for direct cell edits without focusing the formula bar", () => {
+    renderWithProviders();
     dispatchEdit("cellEditor", false);
 
     const container = containerRef.current;
@@ -188,6 +197,7 @@ describe("CellEditor formula bar interaction", () => {
   });
 
   it("treats single-cell formula bar edits as formula bar activity only", () => {
+    renderWithProviders();
     dispatchEdit("formulaBar", false);
 
     const container = containerRef.current;
@@ -200,5 +210,56 @@ describe("CellEditor formula bar interaction", () => {
     expect(stateRef.current?.editorActivity.formulaBar).toBe(true);
     expect(stateRef.current?.editorActivity.cellEditor).toBe(false);
     expect(stateRef.current?.editingSelection?.kind).toBe("cell");
+  });
+
+  it("keeps inline editor active when formula validation fails during commit", () => {
+    const failure = new FormulaValidationError(
+      "Failed to validate formula at Sheet 1!B2: Unexpected token in expression",
+      {
+        sheetId: "sheet-1",
+        sheetName: "Sheet 1",
+        column: 1,
+        row: 1,
+      },
+      new Error("Unexpected token in expression"),
+    );
+    const recordedUpdates: Array<Array<{ col: number; row: number; value: string }>> = [];
+    const failingHandler = (
+      updates: Array<{ col: number; row: number; value: string }>,
+    ): CellUpdateResult => {
+      recordedUpdates.push(updates);
+      return { status: "rejected", error: failure };
+    };
+    onCellsUpdateRef.current = failingHandler;
+
+    renderWithProviders();
+    dispatchEdit("cellEditor", false);
+
+    const container = containerRef.current;
+    expect(container).not.toBeNull();
+    if (!container) {
+      throw new Error("Container was not created");
+    }
+
+    const input = container.querySelector("input");
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error("Inline editor input was not rendered");
+    }
+
+    act(() => {
+      actionsRef.current?.updateEditingValue("=SUM(");
+    });
+
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    expect(recordedUpdates).toHaveLength(1);
+    const firstCall = recordedUpdates[0];
+    expect(firstCall).toEqual([{ col: 1, row: 1, value: "=SUM(" }]);
+    expect(stateRef.current?.editorActivity.cellEditor).toBe(true);
+    expect(stateRef.current?.editingSelection).not.toBeNull();
+    expect(input.validationMessage).toBe(failure.message);
   });
 });

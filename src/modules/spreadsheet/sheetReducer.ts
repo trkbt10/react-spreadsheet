@@ -17,6 +17,8 @@ import {
   clearSelection as clearSelectionState,
   createRangeSelectionWithoutAnchor,
 } from "./selectionState";
+import type { CellUpdate } from "./cellUpdates";
+import type { FormulaReferenceHighlight, FormulaTargetingState } from "./formulaTargetingTypes";
 
 export type SelectionRange = {
   startCol: number;
@@ -96,6 +98,171 @@ export const selectionToRange = (selection: SelectionTarget): SelectionRange => 
   };
 };
 
+const generateUpdatesFromRange = (range: SelectionRange, value: string): Array<CellUpdate> => {
+  const rowIndexes = Array.from({ length: range.endRow - range.startRow }, (_, index) => range.startRow + index);
+  return rowIndexes.flatMap((row) => {
+    const colIndexes = Array.from({ length: range.endCol - range.startCol }, (__, index) => range.startCol + index);
+    return colIndexes.map(
+      (col) =>
+        ({
+          col,
+          row,
+          value,
+        }) satisfies CellUpdate,
+    );
+  });
+};
+
+const highlightsEqual = (
+  left: ReadonlyArray<FormulaReferenceHighlight>,
+  right: ReadonlyArray<FormulaReferenceHighlight>,
+): boolean => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((highlight, index) => {
+    const other = right[index];
+    if (!other) {
+      return false;
+    }
+    if (highlight.range.startCol !== other.range.startCol) {
+      return false;
+    }
+    if (highlight.range.startRow !== other.range.startRow) {
+      return false;
+    }
+    if (highlight.range.endCol !== other.range.endCol) {
+      return false;
+    }
+    if (highlight.range.endRow !== other.range.endRow) {
+      return false;
+    }
+    if (highlight.startColor !== other.startColor) {
+      return false;
+    }
+    if (highlight.endColor !== other.endColor) {
+      return false;
+    }
+    if (highlight.label !== other.label) {
+      return false;
+    }
+    return highlight.sheetId === other.sheetId;
+  });
+};
+
+const caretEqual = (left: { start: number; end: number }, right: { start: number; end: number }): boolean => {
+  return left.start === right.start && left.end === right.end;
+};
+
+const previewEqual = (
+  left: FormulaTargetingState["previewRange"],
+  right: FormulaTargetingState["previewRange"],
+): boolean => {
+  if (!left || !right) {
+    return left === right;
+  }
+  if (left.startCol !== right.startCol) {
+    return false;
+  }
+  if (left.startRow !== right.startRow) {
+    return false;
+  }
+  if (left.endCol !== right.endCol) {
+    return false;
+  }
+  return left.endRow === right.endRow;
+};
+
+const targetingEqual = (left: FormulaTargetingState | null, right: FormulaTargetingState | null): boolean => {
+  if (!left || !right) {
+    return left === right;
+  }
+  if (left.replaceStart !== right.replaceStart) {
+    return false;
+  }
+  if (left.replaceEnd !== right.replaceEnd) {
+    return false;
+  }
+  if (left.argumentLabel !== right.argumentLabel) {
+    return false;
+  }
+  if (left.functionName !== right.functionName) {
+    return false;
+  }
+  if (left.argumentIndex !== right.argumentIndex) {
+    return false;
+  }
+  if (left.originSheetId !== right.originSheetId) {
+    return false;
+  }
+  if (left.originSheetName !== right.originSheetName) {
+    return false;
+  }
+  if (left.previewSheetId !== right.previewSheetId) {
+    return false;
+  }
+  if (left.startColor !== right.startColor) {
+    return false;
+  }
+  if (left.endColor !== right.endColor) {
+    return false;
+  }
+  return previewEqual(left.previewRange, right.previewRange);
+};
+
+const createUpdateKey = (update: CellUpdate): string => `${update.col}:${update.row}`;
+
+const mergeOptimisticUpdates = (
+  base: ReadonlyArray<CellUpdate>,
+  updates: ReadonlyArray<CellUpdate>,
+): ReadonlyArray<CellUpdate> => {
+  if (updates.length === 0) {
+    return base;
+  }
+
+  const baseMap = new Map(base.map((update) => [createUpdateKey(update), update] as const));
+  const mergedMap = updates.reduce(
+    (map, update) => {
+      map.set(createUpdateKey(update), update);
+      return map;
+    },
+    new Map(baseMap),
+  );
+
+  const merged = Array.from(mergedMap.values());
+  if (merged.length !== base.length) {
+    return merged;
+  }
+
+  const allMatching = merged.every((update) => {
+    const original = baseMap.get(createUpdateKey(update));
+    return original !== undefined && original.value === update.value;
+  });
+
+  return allMatching ? base : merged;
+};
+
+const pruneOptimisticUpdates = (
+  base: ReadonlyArray<CellUpdate>,
+  updates: ReadonlyArray<CellUpdate>,
+): ReadonlyArray<CellUpdate> => {
+  if (base.length === 0 || updates.length === 0) {
+    return base;
+  }
+
+  const keysToRemove = new Set(updates.map(createUpdateKey));
+  if (keysToRemove.size === 0) {
+    return base;
+  }
+
+  const next = base.filter((update) => !keysToRemove.has(createUpdateKey(update)));
+  if (next.length === base.length) {
+    return base;
+  }
+
+  return next;
+};
+
 export type SheetState = {
   columnSizes: ColumnSizeMap;
   rowSizes: RowSizeMap;
@@ -109,6 +276,11 @@ export type SheetState = {
   styleRegistry: StyleRegistry;
   editingSelection: EditingSelection | null;
   editorActivity: EditorActivity;
+  pendingUpdates: ReadonlyArray<CellUpdate>;
+  optimisticUpdates: ReadonlyArray<CellUpdate>;
+  editingCaret: { start: number; end: number };
+  formulaReferenceHighlights: ReadonlyArray<FormulaReferenceHighlight>;
+  formulaTargeting: FormulaTargetingState | null;
 };
 
 export type SheetAction = ActionUnion<typeof sheetActions>;
@@ -126,6 +298,11 @@ export const initialSheetState: SheetState = {
   styleRegistry: createStyleRegistry(),
   editingSelection: null,
   editorActivity: createInactiveEditors(),
+  pendingUpdates: [],
+  optimisticUpdates: [],
+  editingCaret: { start: 0, end: 0 },
+  formulaReferenceHighlights: [],
+  formulaTargeting: null,
 };
 
 const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(sheetActions, {
@@ -307,6 +484,12 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
         isDirty: false,
       },
       editorActivity,
+      editingCaret: {
+        start: 0,
+        end: initialValue.length,
+      },
+      formulaReferenceHighlights: [],
+      formulaTargeting: null,
     };
   },
 
@@ -327,6 +510,12 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
         isDirty: false,
       },
       editorActivity,
+      editingCaret: {
+        start: 0,
+        end: initialValue.length,
+      },
+      formulaReferenceHighlights: [],
+      formulaTargeting: null,
     };
   },
 
@@ -347,16 +536,165 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
     };
   },
 
-  commitEdit: (state) => {
-    // TODO: Apply the edit value to the actual cell data
-    // For now, we just clear the editing state
-    // The actual implementation should update sheet.cells based on:
-    // - action.payload.value (or state.editingSelection.value if not provided)
-    // - action.payload.range (or derived from state.editingSelection if not provided)
+  setEditingCaretRange: (state, action) => {
+    const nextCaret = {
+      start: action.payload.start,
+      end: action.payload.end,
+    };
+    if (caretEqual(state.editingCaret, nextCaret)) {
+      return state;
+    }
+    return {
+      ...state,
+      editingCaret: nextCaret,
+    };
+  },
+
+  setFormulaReferenceHighlights: (state, action) => {
+    if (highlightsEqual(state.formulaReferenceHighlights, action.payload.highlights)) {
+      return state;
+    }
+    return {
+      ...state,
+      formulaReferenceHighlights: action.payload.highlights,
+    };
+  },
+
+  startFormulaTargeting: (state, action) => {
+    const nextTargeting: FormulaTargetingState = {
+      ...action.payload.targeting,
+      previewRange: null,
+      previewSheetId: action.payload.targeting.previewSheetId ?? action.payload.targeting.originSheetId,
+    };
+    if (targetingEqual(state.formulaTargeting, nextTargeting)) {
+      return state;
+    }
+    return {
+      ...state,
+      formulaTargeting: nextTargeting,
+    };
+  },
+
+  updateFormulaTargetPreview: (state, action) => {
+    if (!state.formulaTargeting) {
+      return state;
+    }
+    const nextPreviewSheetId = action.payload.sheetId ?? state.formulaTargeting.previewSheetId;
+    if (
+      previewEqual(state.formulaTargeting.previewRange, action.payload.previewRange) &&
+      state.formulaTargeting.previewSheetId === nextPreviewSheetId
+    ) {
+      return state;
+    }
+    return {
+      ...state,
+      formulaTargeting: {
+        ...state.formulaTargeting,
+        previewRange: action.payload.previewRange,
+        previewSheetId: nextPreviewSheetId,
+      },
+    };
+  },
+
+  clearFormulaTargeting: (state) => {
+    if (!state.formulaTargeting) {
+      return state;
+    }
+    return {
+      ...state,
+      formulaTargeting: null,
+    };
+  },
+
+  commitEdit: (state, action) => {
+    const editingSelection = state.editingSelection;
+    const explicitRange = action.payload.range ?? null;
+    const overrideValue = action.payload.value;
+
+    if (!editingSelection && explicitRange === null) {
+      throw new Error("commitEdit requires an active editing selection or an explicit range");
+    }
+
+    if (
+      editingSelection !== null &&
+      !editingSelection.isDirty &&
+      overrideValue === undefined &&
+      explicitRange === null
+    ) {
+      return {
+        ...state,
+        editingSelection: null,
+        editorActivity: createInactiveEditors(),
+        pendingUpdates: [],
+        formulaReferenceHighlights: [],
+        formulaTargeting: null,
+        editingCaret: { start: 0, end: 0 },
+      };
+    }
+
+    const targetRange = explicitRange ?? (editingSelection ? selectionToRange(editingSelection) : null);
+    if (!targetRange) {
+      throw new Error("commitEdit could not determine a target range");
+    }
+
+    const valueToApply = overrideValue ?? editingSelection?.value;
+    if (valueToApply === undefined) {
+      throw new Error("commitEdit requires a value to apply");
+    }
+
+    const updates = generateUpdatesFromRange(targetRange, valueToApply);
+
     return {
       ...state,
       editingSelection: null,
       editorActivity: createInactiveEditors(),
+      pendingUpdates: updates,
+      optimisticUpdates: mergeOptimisticUpdates(state.optimisticUpdates, updates),
+      formulaReferenceHighlights: [],
+      formulaTargeting: null,
+      editingCaret: { start: 0, end: 0 },
+    };
+  },
+
+  clearPendingUpdates: (state) => {
+    if (state.pendingUpdates.length === 0) {
+      return state;
+    }
+    return {
+      ...state,
+      pendingUpdates: [],
+    };
+  },
+
+  recordOptimisticUpdates: (state, action) => {
+    const merged = mergeOptimisticUpdates(state.optimisticUpdates, action.payload.updates);
+    if (merged === state.optimisticUpdates) {
+      return state;
+    }
+    return {
+      ...state,
+      optimisticUpdates: merged,
+    };
+  },
+
+  removeOptimisticUpdates: (state, action) => {
+  const reduced = pruneOptimisticUpdates(state.optimisticUpdates, action.payload.updates);
+    if (reduced === state.optimisticUpdates) {
+      return state;
+    }
+    return {
+      ...state,
+      optimisticUpdates: reduced,
+    };
+  },
+
+  setOptimisticUpdates: (state, action) => {
+    if (state.optimisticUpdates === action.payload.updates) {
+      return state;
+    }
+    return {
+      ...state,
+      optimisticUpdates: action.payload.updates,
     };
   },
 
@@ -365,6 +703,9 @@ const actionHandlers = createActionHandlerMap<SheetState, typeof sheetActions>(s
       ...state,
       editingSelection: null,
       editorActivity: createInactiveEditors(),
+      formulaReferenceHighlights: [],
+      formulaTargeting: null,
+      editingCaret: { start: 0, end: 0 },
     };
   },
 
