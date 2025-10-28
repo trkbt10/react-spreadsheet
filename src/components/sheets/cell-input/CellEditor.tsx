@@ -3,12 +3,13 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
-import type { ReactElement, KeyboardEvent, ChangeEvent, CompositionEvent } from "react";
+import type { ReactElement, KeyboardEvent } from "react";
 import { useVirtualScrollContext } from "../../scrollarea/VirtualScrollContext";
 import { useSheetContext } from "../../../modules/spreadsheet/SheetContext";
 import { calculateColumnPosition, calculateRowPosition } from "../../../modules/spreadsheet/gridLayout";
 import { getSelectionAnchor } from "../../../modules/spreadsheet/selectionUtils";
 import { useEditingCommit } from "./useEditingCommit";
+import { useSpreadsheetEditorInput } from "./useSpreadsheetEditorInput";
 import styles from "./CellEditor.module.css";
 
 const HEADER_ROW_HEIGHT = 24;
@@ -23,7 +24,6 @@ export const CellEditor = (): ReactElement | null => {
   const { state, actions, onCellsUpdate } = useSheetContext();
   const { editingSelection, columnSizes, rowSizes, defaultCellWidth, defaultCellHeight } = state;
   const inputRef = useRef<HTMLInputElement>(null);
-  const isComposingRef = useRef(false);
   const hasCommittedRef = useRef(false);
 
   useEffect(() => {
@@ -32,34 +32,15 @@ export const CellEditor = (): ReactElement | null => {
     }
     hasCommittedRef.current = false;
   }, [editingSelection]);
-  const handleSelectionChange = useCallback(() => {
-    if (isComposingRef.current) {
-      return;
-    }
-    const input = inputRef.current;
-    if (!input) {
-      return;
-    }
-    const start = input.selectionStart ?? 0;
-    const end = input.selectionEnd ?? start;
-    actions.setEditingCaretRange(start, end);
-  }, [actions]);
-  const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const input = inputRef.current;
-      if (input) {
-        input.setCustomValidity("");
-      }
-      const { value: nextValue, selectionStart, selectionEnd } = event.target;
-      actions.updateEditingValue(nextValue);
-      if (!isComposingRef.current) {
-        const start = selectionStart ?? nextValue.length;
-        const end = selectionEnd ?? start;
-        actions.setEditingCaretRange(start, end);
-      }
-    },
-    [actions],
-  );
+  const { handleChange, handleSelectionChange, handleCompositionStart, handleCompositionEnd, syncCaretFromState } =
+    useSpreadsheetEditorInput({
+      editingSelection,
+      inputRef,
+      actions: {
+        updateEditingValue: actions.updateEditingValue,
+        setEditingCaretRange: actions.setEditingCaretRange,
+      },
+    });
 
   const { applyEditingUpdates, commitEditingValue } = useEditingCommit({
     editingSelection,
@@ -88,15 +69,15 @@ export const CellEditor = (): ReactElement | null => {
       }
       if (event.key === "Enter") {
         event.preventDefault();
-          const applied = applyEditingUpdates();
-          if (applied) {
-            commitEditingValue();
-          }
-          return;
+        const applied = applyEditingUpdates();
+        if (applied) {
+          commitEditingValue();
         }
-        if (event.key === "Escape") {
-          event.preventDefault();
-          actions.cancelEdit();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        actions.cancelEdit();
       }
     },
     [actions, applyEditingUpdates, commitEditingValue, editingSelection],
@@ -111,22 +92,6 @@ export const CellEditor = (): ReactElement | null => {
     }
     commitEditingValue();
   }, [applyEditingUpdates, commitEditingValue, editingSelection]);
-
-  const handleCompositionStart = useCallback(() => {
-    isComposingRef.current = true;
-  }, []);
-
-  const handleCompositionEnd = useCallback(
-    (event: CompositionEvent<HTMLInputElement>) => {
-      isComposingRef.current = false;
-      const input = event.currentTarget;
-      const valueLength = input.value.length;
-      const start = input.selectionStart ?? valueLength;
-      const end = input.selectionEnd ?? start;
-      actions.setEditingCaretRange(start, end);
-    },
-    [actions],
-  );
 
   useEffect(() => {
     const input = inputRef.current;
@@ -148,19 +113,11 @@ export const CellEditor = (): ReactElement | null => {
   }, [actions, editingSelection]);
 
   useEffect(() => {
-    const input = inputRef.current;
-    if (!input) {
-      return;
-    }
     if (!editingSelection) {
       return;
     }
-    const { start, end } = state.editingCaret;
-    if (input.selectionStart === start && input.selectionEnd === end) {
-      return;
-    }
-    input.setSelectionRange(start, end);
-  }, [editingSelection, state.editingCaret]);
+    syncCaretFromState(state.editingCaret);
+  }, [editingSelection, state.editingCaret, syncCaretFromState]);
 
   if (!editingSelection) {
     return null;
@@ -219,4 +176,6 @@ export const CellEditor = (): ReactElement | null => {
  * - Inspected src/components/Sheet.tsx and src/components/SpreadSheet.tsx to verify rendering order and avoid focus contention with the formula bar.
  * - Cross-checked src/modules/formula/errors.ts and src/modules/spreadsheet/SpreadSheetContext.tsx to align validation feedback wiring with provider behaviour.
  * - Revisited src/modules/spreadsheet/cellUpdates.ts to ensure local inference matches spreadsheet-level validation.
+ * - Re-read src/modules/spreadsheet/useSheetPointerEvents.ts to verify formula-targeting mode continues to react to caret updates.
+ * - Referenced src/modules/spreadsheet/formulaTargetingUtils.ts while reconciling caret placement expectations for range arguments.
  */

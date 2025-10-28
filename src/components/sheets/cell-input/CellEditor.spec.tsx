@@ -511,4 +511,50 @@ describe("CellEditor formula bar interaction", () => {
     expect(recordedUpdates.length).toBeGreaterThan(0);
     expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B2:B4)+B5")).toBe(true);
   });
+
+  it("commits dragged range formulas without reactivating the editor", () => {
+    const recordedUpdates: Array<Array<{ col: number; row: number; value: string }>> = [];
+    onCellsUpdateRef.current = (updates) => {
+      recordedUpdates.push(updates);
+      return { status: "applied" };
+    };
+
+    renderWithProviders(true);
+    dispatchEdit("cellEditor", false);
+
+    const container = containerRef.current;
+    expect(container).not.toBeNull();
+    if (!container) {
+      throw new Error("Container was not created");
+    }
+
+    const input = container.querySelector("input");
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error("Inline editor input was not rendered");
+    }
+
+    typeIntoInput(input, "=SUM(");
+
+    const columnX = 48 + 100 + 10;
+    const startY = 24 + 8 * 24 + 10;
+    const endY = 24 + 12 * 24 + 10;
+
+    dispatchPointer("pointerdown", columnX, startY);
+    dispatchPointer("pointerup", columnX, endY);
+
+    expect(stateRef.current?.editingSelection?.value).toBe("=SUM(B9:B13");
+
+    typeIntoInput(input, "=SUM(B9:B13)");
+
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    expect(recordedUpdates.length).toBeGreaterThan(0);
+    expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B9:B13)")).toBe(true);
+    expect(stateRef.current?.editingSelection).toBeNull();
+    expect(stateRef.current?.editorActivity.cellEditor).toBe(false);
+    expect(container.querySelector("input")).toBeNull();
+  });
 });

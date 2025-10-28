@@ -569,7 +569,7 @@ export const SelectionHighlight = ({
         height={Math.max(0, formulaTargetPreviewRect.rect.height)}
         style={{
           stroke: formulaTargetPreviewRect.startColor,
-          fill: `${formulaTargetPreviewRect.startColor}1f`,
+          fill: "url(#formula-target-preview-gradient)",
         }}
       />
     );
@@ -583,6 +583,28 @@ export const SelectionHighlight = ({
       height={svgHeight}
       viewBox={`0 0 ${svgWidth} ${svgHeight}`}
     >
+      <defs>
+        {formulaReferenceRects.map(({ highlight }) => (
+          <linearGradient
+            key={`formula-reference-gradient-${highlight.id}`}
+            id={`formula-reference-gradient-${highlight.id}`}
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor={highlight.startColor} />
+            <stop offset="100%" stopColor={highlight.endColor} />
+          </linearGradient>
+        ))}
+        {formulaTargetPreviewRect ? (
+          <linearGradient id="formula-target-preview-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={formulaTargetPreviewRect.startColor} />
+            <stop offset="100%" stopColor={formulaTargetPreviewRect.endColor} />
+          </linearGradient>
+        ) : null}
+      </defs>
+
       {/* Dragging range highlight (during drag) */}
       {renderDraggingHighlight()}
 
@@ -598,7 +620,10 @@ export const SelectionHighlight = ({
             y={rect.y}
             width={Math.max(0, rect.width)}
             height={Math.max(0, rect.height)}
-            style={{ stroke: highlight.startColor, fill: `${highlight.startColor}22` }}
+            style={{
+              stroke: highlight.startColor,
+              fill: `url(#formula-reference-gradient-${highlight.id})`,
+            }}
           />
           <circle
             className={styles.formulaReferenceMarker}

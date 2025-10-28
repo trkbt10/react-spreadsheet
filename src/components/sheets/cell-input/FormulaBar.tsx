@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useRef, useMemo, useEffect } from "react";
-import type { ReactElement, KeyboardEvent, ChangeEvent, CompositionEvent } from "react";
+import type { ReactElement, KeyboardEvent } from "react";
 import { useSheetContext } from "../../../modules/spreadsheet/SheetContext";
 import { useFormulaEngine } from "../../../modules/formula/FormulaEngineContext";
 import { Toolbar } from "../../toolbar/Toolbar";
@@ -15,6 +15,7 @@ import { selectionToRange } from "../../../modules/spreadsheet/sheetReducer";
 import { getSelectionAnchor } from "../../../modules/spreadsheet/selectionUtils";
 import { FormulaFunctionInput } from "./FormulaFunctionInput";
 import { useEditingCommit } from "./useEditingCommit";
+import { useSpreadsheetEditorInput } from "./useSpreadsheetEditorInput";
 import styles from "./FormulaBar.module.css";
 
 const toColumnName = (index: number): string => {
@@ -46,6 +47,16 @@ export const FormulaBar = (): ReactElement => {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasCommittedRef = useRef(false);
   useFormulaEngine();
+
+  const { handleChange, handleSelectionChange, handleCompositionStart, handleCompositionEnd, syncCaretFromState } =
+    useSpreadsheetEditorInput({
+      editingSelection,
+      inputRef,
+      actions: {
+        updateEditingValue: actions.updateEditingValue,
+        setEditingCaretRange: actions.setEditingCaretRange,
+      },
+    });
 
   const focusInput = useCallback((options?: { selectAll?: boolean }) => {
     const shouldSelectAll = options?.selectAll ?? true;
@@ -81,29 +92,11 @@ export const FormulaBar = (): ReactElement => {
   }, [editingSelection]);
 
   useEffect(() => {
-    const input = inputRef.current;
-    if (!input) {
-      return;
-    }
     if (!editingSelection || !editorActivity.formulaBar) {
       return;
     }
-    const { start, end } = state.editingCaret;
-    if (input.selectionStart === start && input.selectionEnd === end) {
-      return;
-    }
-    input.setSelectionRange(start, end);
-  }, [editingSelection, editorActivity.formulaBar, state.editingCaret]);
-
-  const handleSelectionChange = useCallback(() => {
-    const input = inputRef.current;
-    if (!input) {
-      return;
-    }
-    const start = input.selectionStart ?? 0;
-    const end = input.selectionEnd ?? start;
-    actions.setEditingCaretRange(start, end);
-  }, [actions]);
+    syncCaretFromState(state.editingCaret);
+  }, [editingSelection, editorActivity.formulaBar, state.editingCaret, syncCaretFromState]);
 
   const readCellDisplayValue = useCallback(
     (col: number, row: number): string => {
@@ -178,24 +171,6 @@ export const FormulaBar = (): ReactElement => {
 
   const isFormula = currentValue.startsWith("=");
   const displayedReference = cellReference === "" ? "\u00A0" : cellReference;
-  const isComposingRef = useRef(false);
-
-  const handleInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const input = inputRef.current;
-      if (input) {
-        input.setCustomValidity("");
-      }
-      const { value: nextValue, selectionStart, selectionEnd } = event.target;
-      actions.updateEditingValue(nextValue);
-      if (!isComposingRef.current) {
-        const start = selectionStart ?? nextValue.length;
-        const end = selectionEnd ?? start;
-        actions.setEditingCaretRange(start, end);
-      }
-    },
-    [actions],
-  );
 
   const { commitEditingValue } = useEditingCommit({
     editingSelection,
@@ -247,22 +222,6 @@ export const FormulaBar = (): ReactElement => {
     commitEditingValue();
   }, [commitEditingValue]);
 
-  const handleCompositionStart = useCallback(() => {
-    isComposingRef.current = true;
-  }, []);
-
-  const handleCompositionEnd = useCallback(
-    (event: CompositionEvent<HTMLInputElement>) => {
-      isComposingRef.current = false;
-      const input = event.currentTarget;
-      const valueLength = input.value.length;
-      const start = input.selectionStart ?? valueLength;
-      const end = input.selectionEnd ?? start;
-      actions.setEditingCaretRange(start, end);
-    },
-    [actions],
-  );
-
   const handleStyleChange = useCallback(
     (newToolbarStyle: ToolbarStyle) => {
       if (!selection) {
@@ -308,20 +267,20 @@ export const FormulaBar = (): ReactElement => {
         <div className={styles.inputWrapper}>
           <FormulaFunctionInput
             ref={inputRef}
-          className={styles.input}
-          type="text"
-          value={currentValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onCompositionStart={handleCompositionStart}
-          onCompositionEnd={handleCompositionEnd}
-          onSelect={handleSelectionChange}
-          onKeyUp={handleSelectionChange}
-          onMouseUp={handleSelectionChange}
-          data-is-formula={isFormula}
-          placeholder={placeholder}
+            className={styles.input}
+            type="text"
+            value={currentValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+            onSelect={handleSelectionChange}
+            onKeyUp={handleSelectionChange}
+            onMouseUp={handleSelectionChange}
+            data-is-formula={isFormula}
+            placeholder={placeholder}
             disabled={isDisabled}
           />
         </div>
@@ -337,5 +296,6 @@ export const FormulaBar = (): ReactElement => {
  * - Checked src/components/sheets/cell-input/CellEditor.tsx and src/components/sheets/SelectionHighlight.tsx to ensure shared editing/selection behavior remained consistent after refactoring.
  * - Inspected src/modules/spreadsheet/SpreadSheetContext.tsx and formula engine utilities while integrating update propagation for formula bar edits.
  * - Re-validated pointer handling across src/modules/spreadsheet/useSheetPointerEvents.ts to ensure overlay interactions stop conflicting with formula bar focus.
+ * - Cross-checked src/components/sheets/cell-input/useSpreadsheetEditorInput.ts to keep input handler semantics synchronised with the inline editor.
  * - Synced validation handling with src/modules/formula/errors.ts to surface matching error feedback between formula entry points.
  */

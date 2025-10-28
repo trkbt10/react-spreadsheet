@@ -230,6 +230,14 @@ describe("FormulaBar pointer-assisted editing", () => {
     });
   };
 
+  const waitForAnimationFrame = async (): Promise<void> => {
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => {
+        resolve();
+      });
+    });
+  };
+
   beforeEach(() => {
     actionsRef.current = null;
     stateRef.current = null;
@@ -348,6 +356,127 @@ describe("FormulaBar pointer-assisted editing", () => {
 
     expect(recordedUpdates.length).toBeGreaterThan(0);
     expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B2:B4)+B5")).toBe(true);
+  });
+
+  it("commits dragged range formulas entered through the formula bar", () => {
+    const recordedUpdates: Array<Array<{ col: number; row: number; value: string }>> = [];
+    onCellsUpdateRef.current = (updates) => {
+      recordedUpdates.push(updates);
+      return { status: "applied" };
+    };
+
+    renderWithProviders();
+
+    const actions = actionsRef.current;
+    if (!actions) {
+      throw new Error("Actions were not captured");
+    }
+
+    act(() => {
+      actions.setActiveCell(1, 1);
+      actions.startEditingCell(1, 1, "", "formulaBar");
+    });
+
+    const container = containerRef.current;
+    expect(container).not.toBeNull();
+    if (!container) {
+      throw new Error("Container was not created");
+    }
+
+    const input = container.querySelector('input[data-is-formula]');
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error("Formula bar input was not rendered");
+    }
+
+    typeIntoInput(input, "=SUM(");
+
+    const columnX = 48 + 100 + 10;
+    const startY = 24 + 8 * 24 + 10;
+    const endY = 24 + 12 * 24 + 10;
+
+    dispatchPointer("pointerdown", columnX, startY);
+    dispatchPointer("pointerup", columnX, endY);
+
+    expect(stateRef.current?.editingSelection?.value).toBe("=SUM(B9:B13");
+
+    typeIntoInput(input, "=SUM(B9:B13)");
+
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    expect(recordedUpdates.length).toBeGreaterThan(0);
+    expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B9:B13)")).toBe(true);
+    expect(stateRef.current?.editingSelection).toBeNull();
+    expect(stateRef.current?.editorActivity.formulaBar).toBe(false);
+  });
+
+  it("commits suggestion-applied range formulas without re-triggering edit mode", async () => {
+    const recordedUpdates: Array<Array<{ col: number; row: number; value: string }>> = [];
+    onCellsUpdateRef.current = (updates) => {
+      recordedUpdates.push(updates);
+      return { status: "applied" };
+    };
+
+    renderWithProviders();
+
+    const actions = actionsRef.current;
+    if (!actions) {
+      throw new Error("Actions were not captured");
+    }
+
+    act(() => {
+      actions.setActiveCell(1, 1);
+      actions.startEditingCell(1, 1, "", "formulaBar");
+    });
+
+    const container = containerRef.current;
+    expect(container).not.toBeNull();
+    if (!container) {
+      throw new Error("Container was not created");
+    }
+
+    const input = container.querySelector('input[data-is-formula]');
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error("Formula bar input was not rendered");
+    }
+
+    act(() => {
+      input.focus();
+    });
+
+    typeIntoInput(input, "=SUM");
+
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    await waitForAnimationFrame();
+
+    expect(input.value).toBe("=SUM()");
+    expect(stateRef.current?.editingSelection?.value).toBe("=SUM()");
+
+    const columnX = 48 + 100 + 10;
+    const startY = 24 + 8 * 24 + 10;
+    const endY = 24 + 12 * 24 + 10;
+
+    dispatchPointer("pointerdown", columnX, startY);
+    dispatchPointer("pointerup", columnX, endY);
+
+    expect(stateRef.current?.editingSelection?.value).toBe("=SUM(B9:B13)");
+    expect(stateRef.current?.editingSelection?.isDirty).toBe(true);
+    expect(input.value).toBe("=SUM(B9:B13)");
+
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    expect(recordedUpdates.length).toBeGreaterThan(0);
+    expect(recordedUpdates.every((call) => call[0]?.value === "=SUM(B9:B13)")).toBe(true);
+    expect(stateRef.current?.editingSelection).toBeNull();
+    expect(stateRef.current?.editorActivity.formulaBar).toBe(false);
   });
 });
 

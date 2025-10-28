@@ -10,9 +10,14 @@ import type {
   InputHTMLAttributes,
   KeyboardEvent,
   KeyboardEventHandler,
+  MouseEvent,
   ReactElement,
+  SyntheticEvent,
 } from "react";
-import { extractFormulaQuery } from "./formulaSuggestions/query";
+import {
+  getFormulaCompletionContext,
+  type FormulaCompletionContext,
+} from "./formulaSuggestions/query";
 import { filterFormulaSuggestions, loadFormulaSuggestions } from "./formulaSuggestions/data";
 import type { FormulaFunctionSuggestion } from "./formulaSuggestions/types";
 import styles from "./FormulaFunctionInput.module.css";
@@ -53,9 +58,58 @@ const renderSuggestionExample = (example: string | undefined): ReactElement | nu
   );
 };
 
+const clampCaret = (position: number, value: string): number => {
+  if (position < 0) {
+    return 0;
+  }
+  if (position > value.length) {
+    return value.length;
+  }
+  return position;
+};
+
+const replaceFunctionToken = (
+  currentValue: string,
+  context: Extract<FormulaCompletionContext, { kind: "function" }>,
+  suggestionName: string,
+): { nextValue: string; caret: number } => {
+  const { tokenStart, tokenEnd, hasOpeningParen } = context;
+  const beforeToken = currentValue.slice(0, tokenStart);
+  const afterToken = currentValue.slice(tokenEnd);
+
+  if (hasOpeningParen) {
+    const nextValue = `${beforeToken}${suggestionName}${afterToken}`;
+    const caret = tokenStart + suggestionName.length;
+    return {
+      nextValue,
+      caret,
+    };
+  }
+
+  const trimmedSuffix = afterToken.replace(/^\s*/, "");
+  const insert = `${suggestionName}()`;
+  const nextValue = `${beforeToken}${insert}${trimmedSuffix}`;
+  const caret = tokenStart + suggestionName.length + 1;
+  return {
+    nextValue,
+    caret,
+  };
+};
+
 export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunctionInputProps>(
   (props, forwardedRef): ReactElement => {
-    const { onChange, onKeyDown, onFocus, onBlur, className, value, ...rest } = props;
+    const {
+      onChange,
+      onKeyDown,
+      onFocus,
+      onBlur,
+      onSelect,
+      onKeyUp,
+      onMouseUp,
+      className,
+      value,
+      ...rest
+    } = props;
     const internalRef = useRef<HTMLInputElement>(null);
     const mergeRefs = useCallback(
       (node: HTMLInputElement | null) => {
@@ -74,14 +128,26 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
     const [isFocused, setIsFocused] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [hasNavigatedSuggestions, setHasNavigatedSuggestions] = useState(false);
+    const [caretPosition, setCaretPosition] = useState(() => value.length);
+
+    const updateCaretPosition = useCallback(() => {
+      const input = internalRef.current;
+      if (!input) {
+        return;
+      }
+      const caret = input.selectionStart ?? input.value.length;
+      setCaretPosition(caret);
+    }, []);
 
     const availableFunctions = useMemo<FormulaFunctionSuggestion[]>(() => {
       return loadFormulaSuggestions();
     }, []);
 
-    const query = useMemo(() => {
-      return extractFormulaQuery(value);
-    }, [value]);
+    const completionContext = useMemo<FormulaCompletionContext>(() => {
+      return getFormulaCompletionContext(value, caretPosition);
+    }, [caretPosition, value]);
+
+    const query = completionContext.kind === "function" ? completionContext.query : null;
 
     const filteredSuggestions = useMemo(() => {
       return filterFormulaSuggestions(availableFunctions, query);
@@ -96,39 +162,52 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
     const activeSuggestion = filteredSuggestions[highlightedIndex];
     const activeOptionId = activeSuggestion ? `${suggestionListId}-${highlightedIndex}` : undefined;
 
-    const shouldShowSuggestions = isFocused ? filteredSuggestions.length > 0 : false;
+    const shouldShowSuggestions =
+      isFocused && completionContext.kind === "function" ? filteredSuggestions.length > 0 : false;
 
     const focusHandler = useCallback(
       (event: FocusEvent<HTMLInputElement>) => {
         setIsFocused(true);
+        updateCaretPosition();
         onFocus?.(event);
       },
-      [onFocus],
+      [onFocus, updateCaretPosition],
     );
 
     const blurHandler = useCallback(
       (event: FocusEvent<HTMLInputElement>) => {
         setIsFocused(false);
+        updateCaretPosition();
         onBlur?.(event);
       },
-      [onBlur],
+      [onBlur, updateCaretPosition],
     );
 
-    const applySuggestion = useCallback((suggestion: FormulaFunctionSuggestion) => {
-      const input = internalRef.current;
-      if (!input) {
-        return;
-      }
-      const nextValue = `=${suggestion.name}(`;
-      const setter = getActiveSetter(input);
-      setter(nextValue);
-      const inputEvent = new Event("input", { bubbles: true });
-      input.dispatchEvent(inputEvent);
-      setHighlightedIndex(0);
-      requestAnimationFrame(() => {
-        input.setSelectionRange(nextValue.length, nextValue.length);
-      });
-    }, []);
+    const applySuggestion = useCallback(
+      (suggestion: FormulaFunctionSuggestion) => {
+        if (completionContext.kind !== "function") {
+          return;
+        }
+
+        const input = internalRef.current;
+        if (!input) {
+          return;
+        }
+        const { nextValue, caret } = replaceFunctionToken(input.value, completionContext, suggestion.name);
+        const setter = getActiveSetter(input);
+        setter(nextValue);
+        const inputEvent = new Event("input", { bubbles: true });
+        input.dispatchEvent(inputEvent);
+        setHighlightedIndex(0);
+        setHasNavigatedSuggestions(false);
+        requestAnimationFrame(() => {
+          const caretPosition = clampCaret(caret, nextValue);
+          input.setSelectionRange(caretPosition, caretPosition);
+          setCaretPosition(caretPosition);
+        });
+      },
+      [completionContext],
+    );
 
     const keyDownHandler = useCallback(
       (event: KeyboardEvent<HTMLInputElement>) => {
@@ -157,7 +236,8 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
             return;
           }
           if (event.key === "Tab" || event.key === "Enter") {
-            const shouldApplySuggestion = hasNavigatedSuggestions || (query !== null && query !== "");
+            const hasTypedQuery = query !== null && query !== "";
+            const shouldApplySuggestion = hasNavigatedSuggestions ? true : hasTypedQuery;
             if (shouldApplySuggestion) {
               event.preventDefault();
               const targetSuggestion = filteredSuggestions[highlightedIndex];
@@ -174,14 +254,51 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
         }
         onKeyDown?.(event);
       },
-      [applySuggestion, filteredSuggestions, hasNavigatedSuggestions, highlightedIndex, onKeyDown, query, shouldShowSuggestions],
+      [
+        applySuggestion,
+        filteredSuggestions,
+        hasNavigatedSuggestions,
+        highlightedIndex,
+        onKeyDown,
+        query,
+        shouldShowSuggestions,
+      ],
     );
 
     const changeHandler = useCallback(
       (event: ChangeEvent<HTMLInputElement>) => {
         onChange?.(event);
+        updateCaretPosition();
       },
-      [onChange],
+      [onChange, updateCaretPosition],
+    );
+
+    useEffect(() => {
+      updateCaretPosition();
+    }, [updateCaretPosition, value]);
+
+    const selectHandler = useCallback(
+      (event: SyntheticEvent<HTMLInputElement>) => {
+        updateCaretPosition();
+        onSelect?.(event);
+      },
+      [onSelect, updateCaretPosition],
+    );
+
+    const keyUpHandler = useCallback(
+      (event: KeyboardEvent<HTMLInputElement>) => {
+        updateCaretPosition();
+        onKeyUp?.(event);
+      },
+      [onKeyUp, updateCaretPosition],
+    );
+
+    const mouseUpHandler = useCallback(
+      (event: MouseEvent<HTMLInputElement>) => {
+        updateCaretPosition();
+        onMouseUp?.(event);
+      },
+      [onMouseUp, updateCaretPosition],
     );
 
     const suggestionPanel = useMemo(() => {
@@ -233,6 +350,9 @@ export const FormulaFunctionInput = forwardRef<HTMLInputElement, FormulaFunction
           onBlur={blurHandler}
           onChange={changeHandler}
           onKeyDown={keyDownHandler}
+          onSelect={selectHandler}
+          onKeyUp={keyUpHandler}
+          onMouseUp={mouseUpHandler}
           aria-autocomplete="list"
           aria-controls={shouldShowSuggestions ? suggestionListId : undefined}
           aria-activedescendant={activeOptionId}

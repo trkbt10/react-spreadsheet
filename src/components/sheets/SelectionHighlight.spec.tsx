@@ -146,4 +146,46 @@ describe("SelectionHighlight editing visibility", () => {
     dispatchEdit("cell", "cellEditor");
     expect(querySelectionGroup()).toBeNull();
   });
+
+  it("renders gradient fills for formula reference highlights", () => {
+    const actions = actionsRef.current;
+    if (!actions) {
+      throw new Error("Sheet actions are not available");
+    }
+
+    act(() => {
+      actions.setFormulaReferenceHighlights([
+        {
+          id: "highlight-1",
+          label: "A1:B2",
+          sheetId: "sheet-1",
+          startColor: "#2563eb",
+          endColor: "#ec4899",
+          range: {
+            startCol: 0,
+            endCol: 2,
+            startRow: 0,
+            endRow: 2,
+          },
+        },
+      ]);
+    });
+
+    const container = containerRef.current;
+    expect(container).not.toBeNull();
+    if (!container) {
+      throw new Error("Container not initialised");
+    }
+
+    const gradient = container.querySelector("#formula-reference-gradient-highlight-1");
+    expect(gradient).not.toBeNull();
+
+    const rect = container.querySelector('rect[class*="formulaReferenceRect"]');
+    expect(rect).not.toBeNull();
+    if (!(rect instanceof Element)) {
+      throw new Error("Formula reference rect not rendered");
+    }
+
+    expect(rect.getAttribute("style")).toContain("url(#formula-reference-gradient-highlight-1)");
+  });
 });
